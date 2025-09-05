@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes - Eco Tag</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar (mismo que en products.html) -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-leaf"></i>
+                    <span>Eco Tag</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="products.html" class="menu-item">
+                    <i class="fas fa-cube"></i>
+                    <span>Productos</span>
+                </a>
+                <a href="scans.html" class="menu-item">
+                    <i class="fas fa-qrcode"></i>
+                    <span>Escaneos</span>
+                </a>
+                <a href="reports.html" class="menu-item active">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reportes</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-certificate"></i>
+                    <span>Certificaciones</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Configuración</span>
+                </a>
+                <a href="index.html" class="menu-item">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Volver al Sitio</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1 class="page-title">Reportes y Análisis</h1>
+                <div class="user-menu">
+                    <div class="user-info">
+                        <div class="user-name" id="userCompany">Empresa</div>
+                        <div class="user-role" id="userPlan">Plan</div>
+                    </div>
+                    <div class="user-avatar" id="userAvatar">EE</div>
+                </div>
+            </div>
+            
+            <!-- Filtros de Reportes -->
+            <div class="content-section">
+                <h2 class="section-title">Generar Reporte</h2>
+                <form id="reportForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="reportType">Tipo de Reporte</label>
+                            <select id="reportType" class="form-control" required>
+                                <option value="">Seleccionar tipo</option>
+                                <option value="sustainability">Sostenibilidad</option>
+                                <option value="environmental">Impacto Ambiental</option>
+                                <option value="products">Análisis de Productos</option>
+                                <option value="improvements">Recomendaciones de Mejora</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="dateRange">Rango de Fechas</label>
+                            <select id="dateRange" class="form-control" required>
+                                <option value="7">Últimos 7 días</option>
+                                <option value="30">Últimos 30 días</option>
+                                <option value="90">Últimos 3 meses</option>
+                                <option value="180">Últimos 6 meses</option>
+                                <option value="365">Último año</option>
+                                <option value="custom">Personalizado</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="customDateRange" style="display: none;">
+                            <label>Rango Personalizado</label>
+                            <div class="date-inputs">
+                                <input type="date" id="startDate" class="form-control">
+                                <span>a</span>
+                                <input type="date" id="endDate" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="reportFormat">Formato</label>
+                            <select id="reportFormat" class="form-control" required>
+                                <option value="pdf">PDF</option>
+                                <option value="csv">CSV</option>
+                                <option value="excel">Excel</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" id="previewReport">
+                            <i class="fas fa-eye"></i> Vista Previa
+                        </button>
+                        <button type="submit" class="btn btn-green">
+                            <i class="fas fa-download"></i> Generar Reporte
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Reportes Predefinidos -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2 class="section-title">Reportes Predefinidos</h2>
+                </div>
+                
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <div class="report-icon">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <h3>Reporte de Sostenibilidad Mensual</h3>
+                        <p>Análisis mensual del desempeño de sostenibilidad de todos tus productos.</p>
+                        <button class="btn btn-outline download-report" data-report="monthly-sustainability">
+                            <i class="fas fa-download"></i> Descargar
+                        </button>
+                    </div>
+                    
+                    <div class="report-card">
+                        <div class="report-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Evolución de Puntuaciones</h3>
+                        <p>Comparativa histórica de las puntuaciones de sostenibilidad de tus productos.</p>
+                        <button class="btn btn-outline download-report" data-report="score-evolution">
+                            <i class="fas fa-download"></i> Descargar
+                        </button>
+                    </div>
+                    
+                    <div class="report-card">
+                        <div class="report-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <h3>Productos Destacados</h3>
+                        <p>Reporte de productos con mejor desempeño en sostenibilidad.</p>
+                        <button class="btn btn-outline download-report" data-report="top-products">
+                            <i class="fas fa-download"></i> Descargar
+                        </button>
+                    </div>
+                    
+                    <div class="report-card">
+                        <div class="report-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h3>Oportunidades de Mejora</h3>
+                        <p>Análisis de áreas de oportunidad para mejorar la sostenibilidad.</p>
+                        <button class="btn btn-outline download-report" data-report="improvement-opportunities">
+                            <i class="fas fa-download"></i> Descargar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Vista Previa de Reporte -->
+            <div class="content-section" id="reportPreview" style="display: none;">
+                <div class="section-header">
+                    <h2 class="section-title">Vista Previa del Reporte</h2>
+                    <button class="btn btn-outline" id="closePreview">
+                        <i class="fas fa-times"></i> Cerrar
+                    </button>
+                </div>
+                
+                <div class="preview-container">
+                    <div class="preview-placeholder">
+                        <i class="fas fa-file-alt"></i>
+                        <p>Vista previa del reporte generado</p>
+                        <small>En una implementación real, aquí se mostraría el reporte</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toggle-sidebar">
+        <i class="fas fa-bars"></i>
+    </div>
+    
+    <div class="login-redirect" id="loginRedirect">
+        <i class="fas fa-lock"></i>
+        <h2>Acceso Requerido</h2>
+        <p>Debes iniciar sesión para acceder a los reportes de Eco Tag.</p>
+        <button class="btn btn-green" id="goToLogin">Iniciar Sesión</button>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Script específico para la página de reportes
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar autenticación
+            const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+            const loginRedirect = document.getElementById('loginRedirect');
+            const dashboardContent = document.querySelector('.dashboard-container');
+            
+            if (!currentUser) {
+                if (loginRedirect) loginRedirect.style.display = 'block';
+                if (dashboardContent) dashboardContent.style.display = 'none';
+                
+                document.getElementById('goToLogin').addEventListener('click', function() {
+                    window.location.href = 'index.html';
+                });
+            } else {
+                if (loginRedirect) loginRedirect.style.display = 'none';
+                if (dashboardContent) dashboardContent.style.display = 'flex';
+                
+                // Actualizar información del usuario
+                updateUserInfo(currentUser);
+                
+                // Configurar eventos
+                setupReportsEvents();
+            }
+            
+            // Toggle sidebar en móviles
+            const toggleSidebar = document.querySelector('.toggle-sidebar');
+            const sidebar = document.querySelector('.sidebar');
+            
+            if (toggleSidebar && sidebar) {
+                toggleSidebar.addEventListener('click', function() {
+                    sidebar.classList.toggle('open');
+                    
+                    if (sidebar.classList.contains('open')) {
+                        sidebar.style.width = '250px';
+                        document.querySelector('.main-content').style.marginLeft = '250px';
+                    } else {
+                        sidebar.style.width = '70px';
+                        document.querySelector('.main-content').style.marginLeft = '70px';
+                    }
+                });
+            }
+            
+            function updateUserInfo(user) {
+                const userName = document.getElementById('userCompany');
+                const userPlan = document.getElementById('userPlan');
+                const userAvatar = document.getElementById('userAvatar');
+                
+                if (userName && user.company) {
+                    userName.textContent = user.company;
+                }
+                
+                if (userPlan && user.plan) {
+                    userPlan.textContent = 'Plan ' + user.plan.charAt(0).toUpperCase() + user.plan.slice(1);
+                }
+                
+                if (userAvatar && user.company) {
+                    userAvatar.textContent = user.company.charAt(0) + user.company.charAt(1);
+                }
+            }
+            
+            function setupReportsEvents() {
+                // Mostrar/ocultar rango de fechas personalizado
+                document.getElementById('dateRange').addEventListener('change', function() {
+                    const customDateRange = document.getElementById('customDateRange');
+                    if (this.value === 'custom') {
+                        customDateRange.style.display = 'block';
+                    } else {
+                        customDateRange.style.display = 'none';
+                    }
+                });
+                
+                // Vista previa de reporte
+                document.getElementById('previewReport').addEventListener('click', function() {
+                    const reportPreview = document.getElementById('reportPreview');
+                    reportPreview.style.display = 'block';
+                    
+                    // Scroll to preview
+                    reportPreview.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+                
+                // Cerrar vista previa
+                document.getElementById('closePreview').addEventListener('click', function() {
+                    document.getElementById('reportPreview').style.display = 'none';
+                });
+                
+                // Generar reporte
+                document.getElementById('reportForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const reportType = document.getElementById('reportType').value;
+                    const dateRange = document.getElementById('dateRange').value;
+                    const reportFormat = document.getElementById('reportFormat').value;
+                    
+                    if (!reportType) {
+                        showNotification('Por favor selecciona un tipo de reporte', 'error');
+                        return;
+                    }
+                    
+                    // Simular generación de reporte
+                    showNotification(`Generando reporte en formato ${reportFormat.toUpperCase()}...`, 'info');
+                    
+                    setTimeout(() => {
+                        showNotification('Reporte generado y descargado correctamente', 'success');
+                    }, 2000);
+                });
+                
+                // Descargar reportes predefinidos
+                document.querySelectorAll('.download-report').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const reportType = this.getAttribute('data-report');
+                        showNotification(`Descargando reporte ${reportType}...`, 'info');
+                        
+                        setTimeout(() => {
+                            showNotification('Reporte descargado correctamente', 'success');
+                        }, 1500);
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

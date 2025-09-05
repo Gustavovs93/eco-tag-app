@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificaciones - Eco Tag</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Estilos específicos para certificaciones */
+        .certification-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .badge-pending {
+            background: rgba(241, 196, 15, 0.1);
+            color: var(--warning);
+        }
+        
+        .badge-approved {
+            background: rgba(46, 204, 113, 0.1);
+            color: var(--success);
+        }
+        
+        .badge-rejected {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--accent);
+        }
+        
+        .badge-expired {
+            background: rgba(149, 165, 166, 0.1);
+            color: #95a5a6;
+        }
+        
+        .certification-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .certification-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        
+        .certification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .certification-title {
+            font-size: 1.3rem;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+        
+        .certification-product {
+            color: #777;
+            font-size: 0.95rem;
+        }
+        
+        .certification-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-label {
+            font-size: 0.85rem;
+            color: #777;
+            margin-bottom: 5px;
+        }
+        
+        .detail-value {
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .certification-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .certification-progress {
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #777;
+        }
+        
+        .requirements-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+        
+        .requirements-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .requirements-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .requirement-status {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+        
+        .status-completed {
+            background: var(--success);
+            color: white;
+        }
+        
+        .status-pending {
+            background: #f0f0f0;
+            color: #777;
+        }
+        
+        .status-rejected {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .certification-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+        
+        .cert-type-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            text-align: center;
+            border: 1px solid #eee;
+            cursor: pointer;
+        }
+        
+        .cert-type-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+        }
+        
+        .cert-type-card.selected {
+            border-color: var(--primary);
+            background: rgba(46, 204, 113, 0.05);
+        }
+        
+        .cert-type-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(46, 204, 113, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+        
+        .cert-type-card h3 {
+            margin-bottom: 15px;
+            color: var(--dark);
+            font-size: 1.2rem;
+        }
+        
+        .cert-type-card p {
+            color: #777;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .cert-type-features {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .cert-type-features li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .cert-type-features li:last-child {
+            border-bottom: none;
+        }
+        
+        .cert-type-features i {
+            color: var(--primary);
+        }
+        
+        @media (max-width: 768px) {
+            .certification-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .certification-actions {
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+            
+            .certification-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .certification-types {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-leaf"></i>
+                    <span>Eco Tag</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="products.html" class="menu-item">
+                    <i class="fas fa-cube"></i>
+                    <span>Productos</span>
+                </a>
+                <a href="scans.html" class="menu-item">
+                    <i class="fas fa-qrcode"></i>
+                    <span>Escaneos</span>
+                </a>
+                <a href="reports.html" class="menu-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reportes</span>
+                </a>
+                <a href="certifications.html" class="menu-item active">
+                    <i class="fas fa-certificate"></i>
+                    <span>Certificaciones</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Configuración</span>
+                </a>
+                <a href="index.html" class="menu-item">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Volver al Sitio</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1 class="page-title">Certificaciones de Sostenibilidad</h1>
+                <div class="user-menu">
+                    <div class="user-info">
+                        <div class="user-name" id="userCompany">Empresa</div>
+                        <div class="user-role" id="userPlan">Plan</div>
+                    </div>
+                    <div class="user-avatar" id="userAvatar">EE</div>
+                </div>
+            </div>
+            
+            <!-- Action Bar -->
+            <div class="action-bar">
+                <div class="view-options">
+                    <span>Filtrar por:</span>
+                    <select id="statusFilter">
+                        <option value="all">Todas</option>
+                        <option value="pending">Pendientes</option>
+                        <option value="approved">Aprobadas</option>
+                        <option value="rejected">Rechazadas</option>
+                        <option value="expired">Expiradas</option>
+                    </select>
+                </div>
+                <button class="btn btn-green" id="newCertificationBtn">
+                    <i class="fas fa-plus"></i> Nueva Certificación
+                </button>
+            </div>
+            
+            <!-- Estadísticas Rápidas -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(241, 196, 15, 0.1); color: var(--warning);">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="pendingCerts">0</h3>
+                        <p>Pendientes</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(46, 204, 113, 0.1); color: var(--success);">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="approvedCerts">0</h3>
+                        <p>Aprobadas</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(231, 76, 60, 0.1); color: var(--accent);">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="rejectedCerts">0</h3>
+                        <p>Rechazadas</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(149, 165, 166, 0.1); color: #95a5a6;">
+                        <i class="fas fa-calendar-times"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="expiredCerts">0</h3>
+                        <p>Expiradas</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Lista de Certificaciones -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2 class="section-title">Mis Certificaciones</h2>
+                    <div class="table-info" id="certificationsInfo">Mostrando 0 certificaciones</div>
+                </div>
+                
+                <div id="certificationsList">
+                    <!-- Las certificaciones se cargarán dinámicamente -->
+                    <div class="empty-state">
+                        <i class="fas fa-certificate"></i>
+                        <h3>No hay certificaciones</h3>
+                        <p>Comienza solicitando tu primera certificación de sostenibilidad</p>
+                        <button class="btn btn-green" id="startCertification">
+                            <i class="fas fa-plus"></i> Solicitar Certificación
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para Nueva Certificación -->
+    <div class="modal" id="newCertificationModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Solicitar Nueva Certificación</h2>
+            
+            <div class="certification-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 33%;"></div>
+                </div>
+                <div class="progress-labels">
+                    <span>Producto</span>
+                    <span>Tipo</span>
+                    <span>Revisión</span>
+                </div>
+            </div>
+            
+            <form id="certificationForm">
+                <!-- Paso 1: Selección de Producto -->
+                <div class="form-step" id="step1">
+                    <div class="form-group">
+                        <label for="certProduct">Seleccionar Producto</label>
+                        <select id="certProduct" class="form-control" required>
+                            <option value="">Seleccionar producto...</option>
+                            <!-- Los productos se cargarán dinámicamente -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" id="cancelCertification">Cancelar</button>
+                        <button type="button" class="btn btn-green" id="nextToStep2">Siguiente</button>
+                    </div>
+                </div>
+                
+                <!-- Paso 2: Selección de Tipo -->
+                <div class="form-step" id="step2" style="display: none;">
+                    <h3>Selecciona el Tipo de Certificación</h3>
+                    <p>Elige la certificación que mejor se adapte a las características de tu producto</p>
+                    
+                    <div class="certification-types">
+                        <div class="cert-type-card" data-type="eco-basic">
+                            <div class="cert-type-icon">
+                                <i class="fas fa-seedling"></i>
+                            </div>
+                            <h3>Eco Basic</h3>
+                            <p>Certificación básica de sostenibilidad para productos con impacto ambiental reducido</p>
+                            <ul class="cert-type-features">
+                                <li><i class="fas fa-check"></i> Análisis de ciclo de vida básico</li>
+                                <li><i class="fas fa-check"></i> Evaluación de materiales</li>
+                                <li><i class="fas fa-check"></i> Validez: 1 año</li>
+                                <li><i class="fas fa-check"></i> Incluye sello digital</li>
+                            </ul>
+                            <div class="cert-type-price">$299</div>
+                        </div>
+                        
+                        <div class="cert-type-card" data-type="eco-premium">
+                            <div class="cert-type-icon">
+                                <i class="fas fa-award"></i>
+                            </div>
+                            <h3>Eco Premium</h3>
+                            <p>Certificación avanzada para productos con excelente desempeño ambiental</p>
+                            <ul class="cert-type-features">
+                                <li><i class="fas fa-check"></i> Análisis de ciclo de vida completo</li>
+                                <li><i class="fas fa-check"></i> Evaluación de cadena de suministro</li>
+                                <li><i class="fas fa-check"></i> Validez: 2 años</li>
+                                <li><i class="fas fa-check"></i> Sello físico y digital</li>
+                                <li><i class="fas fa-check"></i> Inclusión en directorio eco</li>
+                            </ul>
+                            <div class="cert-type-price">$599</div>
+                        </div>
+                        
+                        <div class="cert-type-card" data-type="carbon-neutral">
+                            <div class="cert-type-icon">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <h3>Carbon Neutral</h3>
+                            <p>Para productos que compensan todas sus emisiones de carbono</p>
+                            <ul class="cert-type-features">
+                                <li><i class="fas fa-check"></i> Cálculo de huella de carbono</li>
+                                <li><i class="fas fa-check"></i> Plan de compensación verificado</li>
+                                <li><i class="fas fa-check"></i> Validez: 1 año</li>
+                                <li><i class="fas fa-check"></i> Certificado de neutralidad</li>
+                                <li><i class="fas fa-check"></i> Marketing especializado</li>
+                            </ul>
+                            <div class="cert-type-price">$899</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" id="backToStep1">Atrás</button>
+                        <button type="button" class="btn btn-green" id="nextToStep3">Siguiente</button>
+                    </div>
+                </div>
+                
+                <!-- Paso 3: Revisión y Confirmación -->
+                <div class="form-step" id="step3" style="display: none;">
+                    <h3>Revisar Solicitud</h3>
+                    <p>Confirma los detalles de tu solicitud de certificación</p>
+                    
+                    <div class="certification-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Producto</span>
+                            <span class="detail-value" id="reviewProduct">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Tipo de Certificación</span>
+                            <span class="detail-value" id="reviewType">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Costo</span>
+                            <span class="detail-value" id="reviewPrice">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Validez</span>
+                            <span class="detail-value" id="reviewValidity">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="termsAgreement" required>
+                            Acepto los términos y condiciones del proceso de certificación
+                        </label>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" id="backToStep2">Atrás</button>
+                        <button type="submit" class="btn btn-green">Solicitar Certificación</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal de Detalles de Certificación -->
+    <div class="modal" id="certificationDetailModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="certificationDetailContent">
+                <!-- Los detalles de la certificación se cargarán dinámicamente -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="toggle-sidebar">
+        <i class="fas fa-bars"></i>
+    </div>
+    
+    <div class="login-redirect" id="loginRedirect">
+        <i class="fas fa-lock"></i>
+        <h2>Acceso Requerido</h2>
+        <p>Debes iniciar sesión para acceder a las certificaciones de Eco Tag.</p>
+        <button class="btn btn-green" id="goToLogin">Iniciar Sesión</button>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Script específico para la página de certificaciones
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar autenticación
+            const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+            const loginRedirect = document.getElementById('loginRedirect');
+            const dashboardContent = document.querySelector('.dashboard-container');
+            
+            if (!currentUser) {
+                if (loginRedirect) loginRedirect.style.display = 'block';
+                if (dashboardContent) dashboardContent.style.display = 'none';
+                
+                document.getElementById('goToLogin').addEventListener('click', function() {
+                    window.location.href = 'index.html';
+                });
+            } else {
+                if (loginRedirect) loginRedirect.style.display = 'none';
+                if (dashboardContent) dashboardContent.style.display = 'flex';
+                
+                // Actualizar información del usuario
+                updateUserInfo(currentUser);
+                
+                // Cargar certificaciones
+                loadCertifications();
+                
+                // Cargar productos para el formulario
+                loadProductsForCertification();
+                
+                // Configurar eventos
+                setupCertificationsEvents();
+            }
+            
+            // Toggle sidebar en móviles
+            const toggleSidebar = document.querySelector('.toggle-sidebar');
+            const sidebar = document.querySelector('.sidebar');
+            
+            if (toggleSidebar && sidebar) {
+                toggleSidebar.addEventListener('click', function() {
+                    sidebar.classList.toggle('open');
+                    
+                    if (sidebar.classList.contains('open')) {
+                        sidebar.style.width = '250px';
+                        document.querySelector('.main-content').style.marginLeft = '250px';
+                    } else {
+                        sidebar.style.width = '70px';
+                        document.querySelector('.main-content').style.marginLeft = '70px';
+                    }
+                });
+            }
+            
+            function updateUserInfo(user) {
+                const userName = document.getElementById('userCompany');
+                const userPlan = document.getElementById('userPlan');
+                const userAvatar = document.getElementById('userAvatar');
+                
+                if (userName && user.company) {
+                    userName.textContent = user.company;
+                }
+                
+                if (userPlan && user.plan) {
+                    userPlan.textContent = 'Plan ' + user.plan.charAt(0).toUpperCase() + user.plan.slice(1);
+                }
+                
+                if (userAvatar && user.company) {
+                    userAvatar.textContent = user.company.charAt(0) + user.company.charAt(1);
+                }
+            }
+            
+            function loadCertifications() {
+                // En una implementación real, esto cargaría certificaciones de una API
+                // Por ahora usamos datos de ejemplo
+                const certifications = [
+                    {
+                        id: 1,
+                        product: {
+                            id: 1,
+                            name: "Botella de Plástico Reciclado",
+                            category: "Envases"
+                        },
+                        type: "eco-basic",
+                        status: "approved",
+                        score: 82,
+                        issueDate: "2023-05-15",
+                        expiryDate: "2024-05-15",
+                        certificateId: "ECO-2023-001",
+                        requirements: [
+                            { name: "Análisis de materiales", status: "completed" },
+                            { name: "Evaluación de proceso", status: "completed" },
+                            { name: "Verificación documental", status: "completed" }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        product: {
+                            id: 2,
+                            name: "Camiseta Orgánica",
+                            category: "Textil"
+                        },
+                        type: "eco-premium",
+                        status: "pending",
+                        score: 88,
+                        issueDate: null,
+                        expiryDate: null,
+                        certificateId: null,
+                        requirements: [
+                            { name: "Análisis de materiales", status: "completed" },
+                            { name: "Evaluación de proceso", status: "pending" },
+                            { name: "Verificación documental", status: "pending" },
+                            { name: "Auditoría de proveedores", status: "pending" }
+                        ]
+                    },
+                    {
+                        id: 3,
+                        product: {
+                            id: 3,
+                            name: "Smartphone X200",
+                            category: "Electrónica"
+                        },
+                        type: "carbon-neutral",
+                        status: "rejected",
+                        score: 65,
+                        issueDate: null,
+                        expiryDate: null,
+                        certificateId: null,
+                        requirements: [
+                            { name: "Análisis de materiales", status: "completed" },
+                            { name: "Cálculo de huella", status: "completed" },
+                            { name: "Plan de compensación", status: "rejected" }
+                        ],
+                        rejectionReason: "El plan de compensación de carbono no cumple con los criterios mínimos establecidos."
+                    }
+                ];
+                
+                // Guardar en localStorage para simular persistencia
+                localStorage.setItem('certifications', JSON.stringify(certifications));
+                
+                // Renderizar certificaciones
+                renderCertifications(certifications);
+                
+                // Actualizar estadísticas
+                updateCertificationStats(certifications);
+            }
+            
+            function renderCertifications(certifications) {
+                const certificationsList = document.getElementById('certificationsList');
+                const statusFilter = document.getElementById('statusFilter').value;
+                
+                // Filtrar certificaciones según el filtro seleccionado
+                let filteredCerts = certifications;
+                if (statusFilter !== 'all') {
+                    filteredCerts = certifications.filter(cert => cert.status === statusFilter);
+                }
+                
+                // Actualizar información
+                document.getElementById('certificationsInfo').textContent = `Mostrando ${filteredCerts.length} certificaciones`;
+                
+                // Limpiar lista
+                certificationsList.innerHTML = '';
+                
+                // Mostrar mensaje si no hay certificaciones
+                if (filteredCerts.length === 0) {
+                    certificationsList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-certificate"></i>
+                            <h3>No hay certificaciones ${statusFilter !== 'all' ? 'con este filtro' : ''}</h3>
+                            <p>${statusFilter !== 'all' ? 'Intenta con otro filtro o ' : ''}Solicita tu primera certificación</p>
+                            <button class="btn btn-green" id="startCertificationFromEmpty">
+                                <i class="fas fa-plus"></i> Solicitar Certificación
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Configurar evento del botón
+                    document.getElementById('startCertificationFromEmpty').addEventListener('click', function() {
+                        openModal(document.getElementById('newCertificationModal'));
+                    });
+                    
+                    return;
+                }
+                
+                // Llenar lista con certificaciones
+                filteredCerts.forEach(cert => {
+                    const certElement = document.createElement('div');
+                    certElement.className = 'certification-card';
+                    
+                    // Determinar texto y clase del badge según el estado
+                    let statusText, statusClass;
+                    switch(cert.status) {
+                        case 'pending':
+                            statusText = 'Pendiente';
+                            statusClass = 'badge-pending';
+                            break;
+                        case 'approved':
+                            statusText = 'Aprobada';
+                            statusClass = 'badge-approved';
+                            break;
+                        case 'rejected':
+                            statusText = 'Rechazada';
+                            statusClass = 'badge-rejected';
+                            break;
+                        case 'expired':
+                            statusText = 'Expirada';
+                            statusClass = 'badge-expired';
+                            break;
+                    }
+                    
+                    // Determinar texto del tipo de certificación
+                    let typeText;
+                    switch(cert.type) {
+                        case 'eco-basic':
+                            typeText = 'Eco Basic';
+                            break;
+                        case 'eco-premium':
+                            typeText = 'Eco Premium';
+                            break;
+                        case 'carbon-neutral':
+                            typeText = 'Carbon Neutral';
+                            break;
+                    }
+                    
+                    certElement.innerHTML = `
+                        <div class="certification-header">
+                            <div>
+                                <h3 class="certification-title">${typeText}</h3>
+                                <p class="certification-product">${cert.product.name} • ${cert.product.category}</p>
+                            </div>
+                            <span class="certification-badge ${statusClass}">
+                                <i class="fas ${cert.status === 'pending' ? 'fa-clock' : cert.status === 'approved' ? 'fa-check' : cert.status === 'rejected' ? 'fa-times' : 'fa-calendar-times'}"></i>
+                                ${statusText}
+                            </span>
+                        </div>
+                        
+                        <div class="certification-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Puntuación</span>
+                                <span class="detail-value">${cert.score}%</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">ID de Certificado</span>
+                                <span class="detail-value">${cert.certificateId || 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Emisión</span>
+                                <span class="detail-value">${cert.issueDate ? formatDate(cert.issueDate) : 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Expiración</span>
+                                <span class="detail-value">${cert.expiryDate ? formatDate(cert.expiryDate) : 'N/A'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="certification-actions">
+                            <button class="btn btn-outline view-cert-details" data-id="${cert.id}">
+                                <i class="fas fa-eye"></i> Ver Detalles
+                            </button>
+                            ${cert.status === 'approved' ? `
+                                <button class="btn btn-green download-cert" data-id="${cert.id}">
+                                    <i class="fas fa-download"></i> Descargar
+                                </button>
+                            ` : ''}
+                            ${cert.status === 'rejected' ? `
+                                <button class="btn btn-outline reapply-cert" data-id="${cert.id}">
+                                    <i class="fas fa-redo"></i> Volver a Solicitar
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                    
+                    certificationsList.appendChild(certElement);
+                });
+                
+                // Configurar eventos para los botones
+                document.querySelectorAll('.view-cert-details').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const certId = this.getAttribute('data-id');
+                        viewCertificationDetails(certId);
+                    });
+                });
+                
+                document.querySelectorAll('.download-cert').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const certId = this.getAttribute('data-id');
+                        downloadCertificate(certId);
+                    });
+                });
+                
+                document.querySelectorAll('.reapply-cert').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const certId = this.getAttribute('data-id');
+                        reapplyCertification(certId);
+                    });
+                });
+            }
+            
+            function updateCertificationStats(certifications) {
+                // Calcular estadísticas
+                const pending = certifications.filter(c => c.status === 'pending').length;
+                const approved = certifications.filter(c => c.status === 'approved').length;
+                const rejected = certifications.filter(c => c.status === 'rejected').length;
+                const expired = certifications.filter(c => c.status === 'expired').length;
+                
+                // Actualizar UI
+                document.getElementById('pendingCerts').textContent = pending;
+                document.getElementById('approvedCerts').textContent = approved;
+                document.getElementById('rejectedCerts').textContent = rejected;
+                document.getElementById('expiredCerts').textContent = expired;
+            }
+            
+            function loadProductsForCertification() {
+                // Cargar productos para el formulario de certificación
+                const products = JSON.parse(localStorage.getItem('products') || '[]');
+                const productSelect = document.getElementById('certProduct');
+                
+                // Limpiar select
+                productSelect.innerHTML = '<option value="">Seleccionar producto...</option>';
+                
+                // Agregar productos
+                products.forEach(product => {
+                    if (product.status === 'active') {
+                        const option = document.createElement('option');
+                        option.value = product.id;
+                        option.textContent = `${product.name} (${product.category})`;
+                        productSelect.appendChild(option);
+                    }
+                });
+            }
+            
+            function viewCertificationDetails(certId) {
+                const certifications = JSON.parse(localStorage.getItem('certifications') || '[]');
+                const cert = certifications.find(c => c.id == certId);
+                
+                if (!cert) return;
+                
+                const modal = document.getElementById('certificationDetailModal');
+                const content = document.getElementById('certificationDetailContent');
+                
+                // Determinar texto y clase del badge según el estado
+                let statusText, statusClass;
+                switch(cert.status) {
+                    case 'pending':
+                        statusText = 'Pendiente';
+                        statusClass = 'badge-pending';
+                        break;
+                    case 'approved':
+                        statusText = 'Aprobada';
+                        statusClass = 'badge-approved';
+                        break;
+                    case 'rejected':
+                        statusText = 'Rechazada';
+                        statusClass = 'badge-rejected';
+                        break;
+                    case 'expired':
+                        statusText = 'Expirada';
+                        statusClass = 'badge-expired';
+                        break;
+                }
+                
+                // Determinar texto del tipo de certificación
+                let typeText;
+                switch(cert.type) {
+                    case 'eco-basic':
+                        typeText = 'Eco Basic';
+                        break;
+                    case 'eco-premium':
+                        typeText = 'Eco Premium';
+                        break;
+                    case 'carbon-neutral':
+                        typeText = 'Carbon Neutral';
+                        break;
+                }
+                
+                content.innerHTML = `
+                    <h2>Detalles de Certificación</h2>
+                    <div class="certification-detail">
+                        <div class="certification-header">
+                            <div>
+                                <h3>${typeText}</h3>
+                                <p>${cert.product.name} • ${cert.product.category}</p>
+                            </div>
+                            <span class="certification-badge ${statusClass}">
+                                <i class="fas ${cert.status === 'pending' ? 'fa-clock' : cert.status === 'approved' ? 'fa-check' : cert.status === 'rejected' ? 'fa-times' : 'fa-calendar-times'}"></i>
+                                ${statusText}
+                            </span>
+                        </div>
+                        
+                        <div class="certification-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Puntuación de Sostenibilidad</span>
+                                <span class="detail-value">${cert.score}%</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">ID de Certificado</span>
+                                <span class="detail-value">${cert.certificateId || 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Fecha de Emisión</span>
+                                <span class="detail-value">${cert.issueDate ? formatDate(cert.issueDate) : 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Fecha de Expiración</span>
+                                <span class="detail-value">${cert.expiryDate ? formatDate(cert.expiryDate) : 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Tipo</span>
+                                <span class="detail-value">${typeText}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Estado</span>
+                                <span class="detail-value"><span class="certification-badge ${statusClass}">${statusText}</span></span>
+                            </div>
+                        </div>
+                        
+                        ${cert.requirements ? `
+                            <h4>Progreso de Requisitos</h4>
+                            <ul class="requirements-list">
+                                ${cert.requirements.map(req => `
+                                    <li>
+                                        <span class="requirement-status ${req.status === 'completed' ? 'status-completed' : req.status === 'rejected' ? 'status-rejected' : 'status-pending'}">
+                                            <i class="fas ${req.status === 'completed' ? 'fa-check' : req.status === 'rejected' ? 'fa-times' : 'fa-clock'}"></i>
+                                        </span>
+                                        ${req.name}
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        ` : ''}
+                        
+                        ${cert.rejectionReason ? `
+                            <div class="detail-section">
+                                <h4>Razón de Rechazo</h4>
+                                <p>${cert.rejectionReason}</p>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="certification-actions">
+                            ${cert.status === 'approved' ? `
+                                <button class="btn btn-green download-cert" data-id="${cert.id}">
+                                    <i class="fas fa-download"></i> Descargar Certificado
+                                </button>
+                            ` : ''}
+                            ${cert.status === 'rejected' ? `
+                                <button class="btn btn-outline reapply-cert" data-id="${cert.id}">
+                                    <i class="fas fa-redo"></i> Volver a Solicitar
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                // Configurar eventos de los botones dentro del modal
+                const downloadBtn = content.querySelector('.download-cert');
+                const reapplyBtn = content.querySelector('.reapply-cert');
+                
+                if (downloadBtn) {
+                    downloadBtn.addEventListener('click', function() {
+                        downloadCertificate(certId);
+                        closeModal(modal);
+                    });
+                }
+                
+                if (reapplyBtn) {
+                    reapplyBtn.addEventListener('click', function() {
+                        reapplyCertification(certId);
+                        closeModal(modal);
+                    });
+                }
+                
+                openModal(modal);
+            }
+            
+            function downloadCertificate(certId) {
+                const certifications = JSON.parse(localStorage.getItem('certifications') || '[]');
+                const cert = certifications.find(c => c.id == certId);
+                
+                if (!cert) return;
+                
+                // Simular descarga
+                showNotification(`Descargando certificado ${cert.certificateId}...`, 'info');
+                
+                setTimeout(() => {
+                    showNotification('Certificado descargado correctamente', 'success');
+                }, 1500);
+            }
+            
+            function reapplyCertification(certId) {
+                const certifications = JSON.parse(localStorage.getItem('certifications') || '[]');
+                const cert = certifications.find(c => c.id == certId);
+                
+                if (!cert) return;
+                
+                // Abrir modal de nueva certificación con los datos precargados
+                openModal(document.getElementById('newCertificationModal'));
+                
+                // Preseleccionar el producto
+                document.getElementById('certProduct').value = cert.product.id;
+                
+                // Preseleccionar el tipo de certificación
+                document.querySelectorAll('.cert-type-card').forEach(card => {
+                    if (card.getAttribute('data-type') === cert.type) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
+                });
+                
+                showNotification('Puedes volver a solicitar la certificación con la información previa', 'info');
+            }
+            
+            function setupCertificationsEvents() {
+                // Filtro de estado
+                document.getElementById('statusFilter').addEventListener('change', function() {
+                    const certifications = JSON.parse(localStorage.getItem('certifications') || '[]');
+                    renderCertifications(certifications);
+                });
+                
+                // Botón de nueva certificación
+                document.getElementById('newCertificationBtn').addEventListener('click', function() {
+                    openModal(document.getElementById('newCertificationModal'));
+                });
+                
+                // Botón de inicio desde empty state
+                const startCertificationBtn = document.getElementById('startCertification');
+                if (startCertificationBtn) {
+                    startCertificationBtn.addEventListener('click', function() {
+                        openModal(document.getElementById('newCertificationModal'));
+                    });
+                }
+                
+                // Wizard de nueva certificación
+                let currentStep = 1;
+                let selectedCertType = null;
+                
+                // Paso 1: Selección de producto
+                document.getElementById('nextToStep2').addEventListener('click', function() {
+                    const productSelect = document.getElementById('certProduct');
+                    if (!productSelect.value) {
+                        showNotification('Por favor selecciona un producto', 'error');
+                        return;
+                    }
+                    
+                    // Ocultar paso actual, mostrar siguiente
+                    document.getElementById('step1').style.display = 'none';
+                    document.getElementById('step2').style.display = 'block';
+                    
+                    // Actualizar barra de progreso
+                    document.querySelector('.progress-fill').style.width = '66%';
+                    
+                    currentStep = 2;
+                });
+                
+                // Selección de tipo de certificación
+                document.querySelectorAll('.cert-type-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        // Deseleccionar todos
+                        document.querySelectorAll('.cert-type-card').forEach(c => {
+                            c.classList.remove('selected');
+                        });
+                        
+                        // Seleccionar este
+                        this.classList.add('selected');
+                        selectedCertType = this.getAttribute('data-type');
+                    });
+                });
+                
+                // Paso 2: Selección de tipo
+                document.getElementById('nextToStep3').addEventListener('click', function() {
+                    if (!selectedCertType) {
+                        showNotification('Por favor selecciona un tipo de certificación', 'error');
+                        return;
+                    }
+                    
+                    // Obtener detalles del tipo seleccionado
+                    const selectedCard = document.querySelector(`.cert-type-card[data-type="${selectedCertType}"]`);
+                    const typeName = selectedCard.querySelector('h3').textContent;
+                    const price = selectedCard.querySelector('.cert-type-price').textContent;
+                    
+                    // Obtener detalles del producto seleccionado
+                    const productSelect = document.getElementById('certProduct');
+                    const productName = productSelect.options[productSelect.selectedIndex].text;
+                    
+                    // Determinar validez según el tipo
+                    let validity = "1 año";
+                    if (selectedCertType === 'eco-premium') validity = "2 años";
+                    
+                    // Actualizar paso de revisión
+                    document.getElementById('reviewProduct').textContent = productName;
+                    document.getElementById('reviewType').textContent = typeName;
+                    document.getElementById('reviewPrice').textContent = price;
+                    document.getElementById('reviewValidity').textContent = validity;
+                    
+                    // Ocultar paso actual, mostrar siguiente
+                    document.getElementById('step2').style.display = 'none';
+                    document.getElementById('step3').style.display = 'block';
+                    
+                    // Actualizar barra de progreso
+                    document.querySelector('.progress-fill').style.width = '100%';
+                    
+                    currentStep = 3;
+                });
+                
+                // Botones de retroceso
+                document.getElementById('backToStep1').addEventListener('click', function() {
+                    document.getElementById('step2').style.display = 'none';
+                    document.getElementById('step1').style.display = 'block';
+                    document.querySelector('.progress-fill').style.width = '33%';
+                    currentStep = 1;
+                });
+                
+                document.getElementById('backToStep2').addEventListener('click', function() {
+                    document.getElementById('step3').style.display = 'none';
+                    document.getElementById('step2').style.display = 'block';
+                    document.querySelector('.progress-fill').style.width = '66%';
+                    currentStep = 2;
+                });
+                
+                // Cancelar certificación
+                document.getElementById('cancelCertification').addEventListener('click', function() {
+                    closeModal(document.getElementById('newCertificationModal'));
+                    resetCertificationForm();
+                });
+                
+                // Enviar formulario de certificación
+                document.getElementById('certificationForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    if (!document.getElementById('termsAgreement').checked) {
+                        showNotification('Debes aceptar los términos y condiciones', 'error');
+                        return;
+                    }
+                    
+                    // Obtener datos del formulario
+                    const productId = document.getElementById('certProduct').value;
+                    const products = JSON.parse(localStorage.getItem('products') || '[]');
+                    const product = products.find(p => p.id == productId);
+                    
+                    if (!product) {
+                        showNotification('Error: Producto no encontrado', 'error');
+                        return;
+                    }
+                    
+                    // Crear nueva certificación
+                    const newCertification = {
+                        id: Date.now(),
+                        product: {
+                            id: product.id,
+                            name: product.name,
+                            category: product.category
+                        },
+                        type: selectedCertType,
+                        status: "pending",
+                        score: product.score,
+                        issueDate: null,
+                        expiryDate: null,
+                        certificateId: null,
+                        requirements: getRequirementsForType(selectedCertType),
+                        appliedDate: new Date().toISOString()
+                    };
+                    
+                    // Guardar certificación
+                    const certifications = JSON.parse(localStorage.getItem('certifications') || '[]');
+                    certifications.push(newCertification);
+                    localStorage.setItem('certifications', JSON.stringify(certifications));
+                    
+                    // Cerrar modal y resetear formulario
+                    closeModal(document.getElementById('newCertificationModal'));
+                    resetCertificationForm();
+                    
+                    // Recargar certificaciones
+                    renderCertifications(certifications);
+                    updateCertificationStats(certifications);
+                    
+                    showNotification('Certificación solicitada correctamente. Estará pendiente de revisión.', 'success');
+                });
+            }
+            
+            function getRequirementsForType(type) {
+                // Devuelve los requisitos según el tipo de certificación
+                switch(type) {
+                    case 'eco-basic':
+                        return [
+                            { name: "Análisis de materiales", status: "pending" },
+                            { name: "Evaluación de proceso", status: "pending" },
+                            { name: "Verificación documental", status: "pending" }
+                        ];
+                    case 'eco-premium':
+                        return [
+                            { name: "Análisis de materiales", status: "pending" },
+                            { name: "Evaluación de proceso", status: "pending" },
+                            { name: "Verificación documental", status: "pending" },
+                            { name: "Auditoría de proveedores", status: "pending" }
+                        ];
+                    case 'carbon-neutral':
+                        return [
+                            { name: "Análisis de materiales", status: "pending" },
+                            { name: "Cálculo de huella", status: "pending" },
+                            { name: "Plan de compensación", status: "pending" }
+                        ];
+                    default:
+                        return [];
+                }
+            }
+            
+            function resetCertificationForm() {
+                // Resetear formulario
+                document.getElementById('certProduct').value = "";
+                document.querySelectorAll('.cert-type-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                document.getElementById('termsAgreement').checked = false;
+                
+                // Volver al paso 1
+                document.getElementById('step2').style.display = 'none';
+                document.getElementById('step3').style.display = 'none';
+                document.getElementById('step1').style.display = 'block';
+                
+                // Resetear barra de progreso
+                document.querySelector('.progress-fill').style.width = '33%';
+                
+                currentStep = 1;
+                selectedCertType = null;
+            }
+            
+            function formatDate(dateString) {
+                const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                return new Date(dateString).toLocaleDateString('es-ES', options);
+            }
+        });
+    </script>
+</body>
+</html>

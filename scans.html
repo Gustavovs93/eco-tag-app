@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Tag - Historial de Escaneos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2ecc71;
+            --secondary: #3498db;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --accent: #e74c3c;
+            --success: #27ae60;
+            --warning: #f39c12;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f9fc;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .logo i {
+            color: white;
+        }
+        
+        .logo a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        
+        nav a:hover, nav a.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+        
+        .btn-outline:hover {
+            background: white;
+            color: var(--primary);
+        }
+        
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background: var(--light);
+            transform: translateY(-2px);
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: 40px 0;
+            min-height: calc(100vh - 200px);
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            color: var(--dark);
+        }
+        
+        .page-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn-green {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-green:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        /* Stats Overview */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(46, 204, 113, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+        }
+        
+        .stat-icon i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #777;
+            font-weight: 500;
+        }
+        
+        /* Filters */
+        .filters {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .filter-item label {
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+        
+        .filter-select {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            min-width: 150px;
+        }
+        
+        /* Scans Table */
+        .scans-table-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            overflow-x: auto;
+        }
+        
+        .scans-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .scans-table th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark);
+            border-bottom: 2px solid #eee;
+        }
+        
+        .scans-table td {
+            padding: 15px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .scans-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .product-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .product-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(46, 204, 113, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .product-icon i {
+            color: var(--primary);
+        }
+        
+        .product-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .product-name {
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .product-category {
+            font-size: 0.85rem;
+            color: #777;
+        }
+        
+        .score-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-block;
+        }
+        
+        .score-high {
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--success);
+        }
+        
+        .score-medium {
+            background: rgba(243, 156, 18, 0.1);
+            color: var(--warning);
+        }
+        
+        .score-low {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--accent);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-icon {
+            padding: 8px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-icon:hover {
+            background: #f8f9fa;
+            transform: translateY(-1px);
+        }
+        
+        .btn-icon.view {
+            color: var(--primary);
+        }
+        
+        .btn-icon.download {
+            color: var(--secondary);
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #777;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #999;
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 40px 0 20px;
+            margin-top: auto;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .footer-links h3 {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .footer-links ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-links li {
+            margin-bottom: 8px;
+        }
+        
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: #999;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            nav ul {
+                gap: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .stats-overview {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-item {
+                width: 100%;
+            }
+            
+            .filter-select {
+                width: 100%;
+            }
+            
+            .scans-table {
+                min-width: 600px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="index.html">
+                        <i class="fas fa-leaf"></i>
+                        <span>Eco Tag</span>
+                    </a>
+                </div>
+                
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="products.html">Productos</a></li>
+                        <li><a href="scans.html" class="active">Escaneos</a></li>
+                        <li><a href="index.html#pricing">Planes</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="auth-buttons">
+                    <button class="btn btn-outline" id="loginBtn">Iniciar Sesión</button>
+                    <button class="btn btn-primary" id="userBtn">Registrarse</button>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-title">Historial de Escaneos</h1>
+                <div class="page-actions">
+                    <button class="btn btn-green" id="newScanBtn">
+                        <i class="fas fa-qrcode"></i> Nuevo Escaneo
+                    </button>
+                    <button class="btn btn-outline" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Estadísticas -->
+            <div class="stats-overview" id="statsOverview">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-value" id="totalScans">0</div>
+                    <div class="stat-label">Total de Escaneos</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-value" id="avgScore">0%</div>
+                    <div class="stat-label">Puntuación Promedio</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-value" id="bestScore">0%</div>
+                    <div class="stat-label">Mejor Puntuación</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-value" id="lastScan">-</div>
+                    <div class="stat-label">Último Escaneo</div>
+                </div>
+            </div>
+            
+            <!-- Tabla de escaneos -->
+            <div class="scans-table-container">
+                <table class="scans-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Puntuación</th>
+                            <th>Fecha</th>
+                            <th>Huella de Carbono</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scansTableBody">
+                        <!-- Los escaneos se cargarán aquí -->
+                    </tbody>
+                </table>
+                
+                <!-- Estado vacío -->
+                <div class="empty-state" id="emptyState">
+                    <i class="fas fa-search"></i>
+                    <h3>No hay escaneos registrados</h3>
+                    <p>Realiza tu primer escaneo para ver el historial aquí</p>
+                    <button class="btn btn-green" style="margin-top: 20px;" id="firstScanBtn">
+                        <i class="fas fa-qrcode"></i> Realizar Primer Escaneo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <div class="footer-logo">
+                        <i class="fas fa-leaf"></i>
+                        <span>Eco Tag</span>
+                    </div>
+                    <p>Transformando productos para un futuro más verde y sostenible.</p>
+                </div>
+                
+                <div class="footer-links">
+                    <h3>Enlaces rápidos</h3>
+                    <ul>
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="products.html">Productos</a></li>
+                        <li><a href="scans.html">Escaneos</a></li>
+                        <li><a href="index.html#pricing">Planes</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-links">
+                    <h3>Contacto</h3>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> info@ecotag.com</li>
+                        <li><i class="fas fa-phone"></i> +34 912 345 678</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Madrid, España</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2023 Eco Tag. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notifications container -->
+    <div id="notifications-container"></div>
+
+    <!-- Scripts -->
+    <script src="api.js"></script>
+    <script src="utils.js"></script>
+    <script src="auth.js"></script>
+
+    <script>
+        // ==============================================
+        // APLICACIÓN PRINCIPAL - ESCANEOS
+        // ==============================================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar autenticación
+            if (!authManager.isAuthenticated()) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Variables globales
+            let userScans = [];
+            
+            // Elementos DOM
+            const loginBtn = document.getElementById('loginBtn');
+            const userBtn = document.getElementById('userBtn');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const newScanBtn = document.getElementById('newScanBtn');
+            const firstScanBtn = document.getElementById('firstScanBtn');
+            const scansTableBody = document.getElementById('scansTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const statsOverview = document.getElementById('statsOverview');
+            
+            // Inicializar UI
+            updateAuthUI();
+            loadUserScans();
+            
+            // Cargar escaneos del usuario
+            async function loadUserScans() {
+                try {
+                    const result = await EcoTagAPI.getUserScans(authManager.getToken());
+                    
+                    if (result.success) {
+                        userScans = result.data.scans;
+                        
+                        if (userScans.length > 0) {
+                            updateStats();
+                            displayScans(userScans);
+                        } else {
+                            showEmptyState();
+                        }
+                    }
+                } catch (error) {
+                    showNotification('Error al cargar escaneos: ' + error.message, 'error');
+                    if (error.message.includes('Token') || error.message.includes('autenticación')) {
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 2000);
+                    }
+                }
+            }
+            
+            // Mostrar estado vacío
+            function showEmptyState() {
+                emptyState.style.display = 'block';
+                scansTableBody.innerHTML = '';
+                statsOverview.style.display = 'none';
+            }
+            
+            // Actualizar estadísticas
+            function updateStats() {
+                if (userScans.length === 0) {
+                    document.getElementById('totalScans').textContent = '0';
+                    document.getElementById('avgScore').textContent = '0%';
+                    document.getElementById('bestScore').textContent = '0%';
+                    document.getElementById('lastScan').textContent = '-';
+                    return;
+                }
+                
+                // Total de escaneos
+                document.getElementById('totalScans').textContent = userScans.length;
+                
+                // Puntuación promedio
+                const avgScore = userScans.reduce((sum, scan) => sum + scan.sustainability_score, 0) / userScans.length;
+                document.getElementById('avgScore').textContent = Math.round(avgScore) + '%';
+                
+                // Mejor puntuación
+                const bestScore = Math.max(...userScans.map(scan => scan.sustainability_score));
+                document.getElementById('bestScore').textContent = bestScore + '%';
+                
+                // Último escaneo
+                const lastScan = userScans[0];
+                document.getElementById('lastScan').textContent = formatDate(lastScan.scanned_at).split(',')[0];
+                
+                statsOverview.style.display = 'grid';
+            }
+            
+            // Mostrar escaneos en la tabla
+            function displayScans(scans) {
+                emptyState.style.display = 'none';
+                scansTableBody.innerHTML = '';
+                
+                scans.forEach(scan => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>
+                            <div class="product-cell">
+                                <div class="product-icon">
+                                    <i class="fas fa-box"></i>
+                                </div>
+                                <div class="product-info">
+                                    <span class="product-name">${scan.product.name}</span>
+                                    <span class="product-category">${scan.product.category}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="score-badge ${getScoreClass(scan.sustainability_score)}">
+                                ${scan.sustainability_score}%
+                            </span>
+                        </td>
+                        <td>${formatDate(scan.scanned_at)}</td>
+                        <td>${scan.environmental_impact.carbon_footprint}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-icon view" title="Ver detalles">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-icon download" title="Descargar reporte">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    
+                    // Añadir event listeners a los botones
+                    const viewBtn = row.querySelector('.btn-icon.view');
+                    const downloadBtn = row.querySelector('.btn-icon.download');
+                    
+                    viewBtn.addEventListener('click', () => viewScanDetails(scan.scan_id));
+                    downloadBtn.addEventListener('click', () => downloadScanReport(scan.scan_id));
+                    
+                    scansTableBody.appendChild(row);
+                });
+            }
+            
+            // Función para ver detalles del escaneo
+            function viewScanDetails(scanId) {
+                const scan = userScans.find(s => s.scan_id === scanId);
+                if (scan) {
+                    showNotification(`Viendo detalles de: ${scan.product.name}`, 'info');
+                    // Mostrar detalles completos
+                    alert(`Detalles del escaneo:\nProducto: ${scan.product.name}\nPuntuación: ${scan.sustainability_score}%\nFecha: ${formatDate(scan.scanned_at)}\n\nRecomendaciones:\n${scan.improvement_recommendations.map(r => `• ${r.suggestion} (${r.impact})`).join('\n')}`);
+                }
+            }
+            
+            // Función para descargar reporte
+            function downloadScanReport(scanId) {
+                showNotification('Descargando reporte del escaneo...', 'success');
+                // Simular descarga
+                setTimeout(() => {
+                    showNotification('Reporte descargado correctamente', 'success');
+                }, 1500);
+            }
+            
+            // Botón de nuevo escaneo
+            newScanBtn.addEventListener('click', () => {
+                window.location.href = 'index.html#scanner';
+            });
+            
+            firstScanBtn.addEventListener('click', () => {
+                window.location.href = 'index.html#scanner';
+            });
+            
+            // Botón de actualizar
+            refreshBtn.addEventListener('click', () => {
+                loadUserScans();
+                showNotification('Escaneos actualizados', 'success');
+            });
+        });
+    </script>
+</body>
+</html>

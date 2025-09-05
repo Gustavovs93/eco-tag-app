@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Tag - Mis Productos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2ecc71;
+            --secondary: #3498db;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --accent: #e74c3c;
+            --success: #27ae60;
+            --warning: #f39c12;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f9fc;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .logo i {
+            color: white;
+        }
+        
+        .logo a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        
+        nav a:hover, nav a.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+        
+        .btn-outline:hover {
+            background: white;
+            color: var(--primary);
+        }
+        
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background: var(--light);
+            transform: translateY(-2px);
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: 40px 0;
+            min-height: calc(100vh - 200px);
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            color: var(--dark);
+        }
+        
+        .page-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn-green {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-green:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        }
+        
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .product-name {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+        
+        .product-category {
+            color: #777;
+            font-size: 0.9rem;
+            background: #f8f9fa;
+            padding: 4px 12px;
+            border-radius: 15px;
+            display: inline-block;
+        }
+        
+        .product-score {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .score-bar {
+            flex: 1;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .score-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .score-value {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--dark);
+            min-width: 40px;
+            text-align: right;
+        }
+        
+        .product-details {
+            margin: 15px 0;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            color: #777;
+            font-weight: 500;
+        }
+        
+        .detail-value {
+            color: var(--dark);
+            font-weight: 600;
+        }
+        
+        .product-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #f5f5f5;
+        }
+        
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+        
+        .btn-icon {
+            padding: 8px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #777;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #999;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        
+        .modal .close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .modal .close:hover {
+            color: var(--accent);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.2);
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-left: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .notification.success {
+            background: var(--success);
+        }
+        
+        .notification.error {
+            background: var(--accent);
+        }
+        
+        .notification.warning {
+            background: var(--warning);
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 40px 0 20px;
+            margin-top: auto;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .footer-links h3 {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .footer-links ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-links li {
+            margin-bottom: 8px;
+        }
+        
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: #999;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            nav ul {
+                gap: 15px;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .product-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="index.html">
+                        <i class="fas fa-leaf"></i>
+                        <span>Eco Tag</span>
+                    </a>
+                </div>
+                
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="index.html#scanner">Escáner</a></li>
+                        <li><a href="products.html" class="active">Mis Productos</a></li>
+                        <li><a href="scans.html">Mis Escaneos</a></li>
+                        <li><a href="index.html#pricing">Planes</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="auth-buttons">
+                    <button class="btn btn-outline" id="loginBtn">Iniciar Sesión</button>
+                    <button class="btn btn-primary" id="userBtn">Registrarse</button>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-title">Mis Productos</h1>
+                <div class="page-actions">
+                    <button class="btn btn-green" id="addProductBtn">
+                        <i class="fas fa-plus"></i> Nuevo Producto
+                    </button>
+                    <button class="btn btn-outline" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                </div>
+            </div>
+            
+            <div id="productsContainer">
+                <div class="empty-state" id="emptyState">
+                    <i class="fas fa-box-open"></i>
+                    <h3>No tienes productos registrados</h3>
+                    <p>Comienza agregando tu primer producto para analizar su sostenibilidad</p>
+                    <button class="btn btn-green" style="margin-top: 20px;" id="addFirstProduct">
+                        <i class="fas fa-plus"></i> Agregar Primer Producto
+                    </button>
+                </div>
+                
+                <div class="products-grid" id="productsGrid" style="display: none;">
+                    <!-- Los productos se cargarán dinámicamente aquí -->
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <div class="footer-logo">
+                        <i class="fas fa-leaf"></i>
+                        <span>Eco Tag</span>
+                    </div>
+                    <p>Transformando productos para un futuro más verde y sostenible.</p>
+                </div>
+                
+                <div class="footer-links">
+                    <h3>Enlaces rápidos</h3>
+                    <ul>
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="index.html#scanner">Escáner</a></li>
+                        <li><a href="products.html">Mis Productos</a></li>
+                        <li><a href="scans.html">Mis Escaneos</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-links">
+                    <h3>Contacto</h3>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> info@ecotag.com</li>
+                        <li><i class="fas fa-phone"></i> +34 912 345 678</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Madrid, España</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2023 Eco Tag. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Add Product Modal -->
+    <div class="modal" id="addProductModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Agregar Nuevo Producto</h2>
+            <form id="addProductForm">
+                <div class="form-group">
+                    <label for="productName">Nombre del Producto</label>
+                    <input type="text" id="productName" class="form-control" placeholder="Ej: Botella de agua" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="productCategory">Categoría</label>
+                    <select id="productCategory" class="form-control" required>
+                        <option value="">Seleccionar categoría</option>
+                        <option value="Alimentos">Alimentos</option>
+                        <option value="Bebidas">Bebidas</option>
+                        <option value="Electrónicos">Electrónicos</option>
+                        <option value="Textil">Textil</option>
+                        <option value="Hogar">Hogar</option>
+                        <option value="Cosméticos">Cosméticos</option>
+                        <option value="Otros">Otros</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="productDescription">Descripción (Opcional)</label>
+                    <textarea id="productDescription" class="form-control" placeholder="Describe brevemente tu producto" rows="3"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-green" id="submitProductBtn">
+                    <span id="submitText">Agregar Producto</span>
+                    <div class="spinner" id="submitSpinner" style="display: none;"></div>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notifications container -->
+    <div id="notifications-container"></div>
+
+    <!-- Scripts -->
+    <script src="api.js"></script>
+    <script src="utils.js"></script>
+    <script src="auth.js"></script>
+
+    <script>
+        // ==============================================
+        // APLICACIÓN PRINCIPAL - PRODUCTOS
+        // ==============================================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar autenticación
+            if (!authManager.isAuthenticated()) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Variables globales
+            let userProducts = [];
+            
+            // Elementos DOM
+            const loginBtn = document.getElementById('loginBtn');
+            const userBtn = document.getElementById('userBtn');
+            const addProductBtn = document.getElementById('addProductBtn');
+            const addFirstProductBtn = document.getElementById('addFirstProduct');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const addProductModal = document.getElementById('addProductModal');
+            const addProductForm = document.getElementById('addProductForm');
+            const closeModalBtn = addProductModal.querySelector('.close');
+            const productsGrid = document.getElementById('productsGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            // Inicializar UI
+            updateAuthUI();
+            loadUserProducts();
+            
+            // Cargar productos del usuario
+            async function loadUserProducts() {
+                try {
+                    const result = await EcoTagAPI.getUserProducts(authManager.getToken());
+                    
+                    if (result.success) {
+                        userProducts = result.data.products;
+                        
+                        if (userProducts.length > 0) {
+                            displayProducts(userProducts);
+                        } else {
+                            showEmptyState();
+                        }
+                    }
+                } catch (error) {
+                    showNotification('Error al cargar productos: ' + error.message, 'error');
+                    if (error.message.includes('Token') || error.message.includes('autenticación')) {
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 2000);
+                    }
+                }
+            }
+            
+            // Mostrar estado vacío
+            function showEmptyState() {
+                emptyState.style.display = 'block';
+                productsGrid.style.display = 'none';
+            }
+            
+            // Mostrar productos en la grid
+            function displayProducts(products) {
+                emptyState.style.display = 'none';
+                productsGrid.style.display = 'grid';
+                productsGrid.innerHTML = '';
+                
+                products.forEach(product => {
+                    const productCard = document.createElement('div');
+                    productCard.className = 'product-card';
+                    productCard.innerHTML = `
+                        <div class="product-header">
+                            <div>
+                                <h3 class="product-name">${product.name}</h3>
+                                <span class="product-category">${product.category}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="product-score">
+                            <div class="score-bar">
+                                <div class="score-fill" style="width: ${product.sustainability_score}%"></div>
+                            </div>
+                            <span class="score-value">${product.sustainability_score}%</span>
+                        </div>
+                        
+                        <div class="product-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Categoría:</span>
+                                <span class="detail-value">${product.category}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Creado:</span>
+                                <span class="detail-value">${formatDate(product.created_at)}</span>
+                            </div>
+                            ${product.last_scan ? `
+                            <div class="detail-item">
+                                <span class="detail-label">Último escaneo:</span>
+                                <span class="detail-value">${formatDate(product.last_scan)}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        ${product.description ? `
+                        <div class="product-description">
+                            <p>${product.description}</p>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="product-actions">
+                            <button class="btn btn-green btn-small" onclick="scanProduct('${product.id}')">
+                                <i class="fas fa-qrcode"></i> Escanear
+                            </button>
+                            <button class="btn btn-outline btn-small" onclick="viewProduct('${product.id}')">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                        </div>
+                    `;
+                    productsGrid.appendChild(productCard);
+                });
+            }
+            
+            // Función para escanear producto
+            window.scanProduct = function(productId) {
+                showNotification('Redirigiendo al escáner...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'index.html#scanner';
+                }, 1000);
+            };
+            
+            // Función para ver producto
+            window.viewProduct = function(productId) {
+                const product = userProducts.find(p => p.id === productId);
+                if (product) {
+                    showNotification(`Viendo detalles de: ${product.name}`, 'info');
+                    // Aquí podrías abrir un modal con detalles completos
+                    alert(`Detalles del producto:\nNombre: ${product.name}\nCategoría: ${product.category}\nPuntuación: ${product.sustainability_score}%\nCreado: ${formatDate(product.created_at)}${product.description ? '\nDescripción: ' + product.description : ''}`);
+                }
+            };
+            
+            // Abrir modal de agregar producto
+            addProductBtn.addEventListener('click', () => {
+                addProductModal.classList.add('active');
+            });
+            
+            addFirstProductBtn.addEventListener('click', () => {
+                addProductModal.classList.add('active');
+            });
+            
+            // Cerrar modal
+            closeModalBtn.addEventListener('click', () => {
+                addProductModal.classList.remove('active');
+            });
+            
+            // Enviar formulario de producto
+            addProductForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const name = document.getElementById('productName').value;
+                const category = document.getElementById('productCategory').value;
+                const description = document.getElementById('productDescription').value;
+                
+                if (!name || !category) {
+                    showNotification('Nombre y categoría son obligatorios', 'error');
+                    return;
+                }
+                
+                // Mostrar loading
+                document.getElementById('submitText').style.display = 'none';
+                document.getElementById('submitSpinner').style.display = 'block';
+                document.getElementById('submitProductBtn').disabled = true;
+                
+                try {
+                    const result = await EcoTagAPI.addProduct(authManager.getToken(), {
+                        name,
+                        category,
+                        description
+                    });
+                    
+                    if (result.success) {
+                        showNotification('Producto agregado correctamente', 'success');
+                        addProductModal.classList.remove('active');
+                        addProductForm.reset();
+                        
+                        // Recargar productos
+                        await loadUserProducts();
+                    } else {
+                        showNotification('Error: ' + result.message, 'error');
+                    }
+                } catch (error) {
+                    showNotification('Error: ' + error.message, 'error');
+                } finally {
+                    document.getElementById('submitText').style.display = 'block';
+                    document.getElementById('submitSpinner').style.display = 'none';
+                    document.getElementById('submitProductBtn').disabled = false;
+                }
+            });
+            
+            // Botón de actualizar
+            refreshBtn.addEventListener('click', () => {
+                loadUserProducts();
+                showNotification('Productos actualizados', 'success');
+            });
+            
+            // Cerrar modal al hacer clic fuera
+            window.addEventListener('click', (e) => {
+                if (e.target === addProductModal) {
+                    addProductModal.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
