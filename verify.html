@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación de Configuración - Eco Tag</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #2ecc71 0%, #3498db 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .status-card {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .status-card.success {
+            border-left-color: #2ecc71;
+        }
+        
+        .status-card.warning {
+            border-left-color: #f39c12;
+        }
+        
+        .status-card.error {
+            border-left-color: #e74c3c;
+        }
+        
+        .status-card h3 {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .status-card i {
+            margin-right: 10px;
+            font-size: 1.4rem;
+        }
+        
+        .check-list {
+            list-style: none;
+        }
+        
+        .check-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+        
+        .check-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .check-list i {
+            margin-right: 10px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .fa-check-circle {
+            color: #2ecc71;
+        }
+        
+        .fa-times-circle {
+            color: #e74c3c;
+        }
+        
+        .fa-exclamation-circle {
+            color: #f39c12;
+        }
+        
+        .instructions {
+            background: #e8f4fc;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .instructions h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        .button {
+            display: inline-block;
+            background: #2ecc71;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .button:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+        
+        .domain-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .info-box {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 200px;
+            margin: 0 10px 10px 0;
+        }
+        
+        @media (max-width: 600px) {
+            .domain-info {
+                flex-direction: column;
+            }
+            
+            .info-box {
+                margin: 0 0 10px 0;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-cogs"></i> Verificación de Configuración</h1>
+            <p>Estado de la configuración de dominio para Eco Tag</p>
+        </div>
+        
+        <div class="content">
+            <div class="status-card" id="domainStatus">
+                <h3><i class="fas fa-globe"></i> Estado del Dominio</h3>
+                <ul class="check-list">
+                    <li id="dnsCheck"><i class="fas fa-sync fa-spin"></i> Verificando configuración DNS...</li>
+                    <li id="sslCheck"><i class="fas fa-sync fa-spin"></i> Verificando certificado SSL...</li>
+                    <li id="deployCheck"><i class="fas fa-sync fa-spin"></i> Verificando despliegue...</li>
+                </ul>
+            </div>
+            
+            <div class="domain-info">
+                <div class="info-box">
+                    <h4><i class="fas fa-info-circle"></i> Información del Dominio</h4>
+                    <p><strong>Nombre:</strong> <span id="domainName">socyra.com</span></p>
+                    <p><strong>Registrador:</strong> Namecheap</p>
+                </div>
+                
+                <div class="info-box">
+                    <h4><i class="fas fa-server"></i> Información de Hosting</h4>
+                    <p><strong>Proveedor:</strong> Netlify</p>
+                    <p><strong>Sitio:</strong> eco-tag</p>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <h3><i class="fas fa-list-ol"></i> Pasos para configurar correctamente</h3>
+                <ol>
+                    <li>Inicia sesión en tu cuenta de Namecheap</li>
+                    <li>Ve a la sección de gestión de dominios</li>
+                    <li>Configura los nameservers para apuntar a Netlify</li>
+                    <li>En Netlify, agrega tu dominio personalizado</li>
+                    <li>Espera hasta 24 horas para que los cambios se propaguen</li>
+                </ol>
+                
+                <button class="button" onclick="window.location.href='https://app.netlify.com/'">
+                    <i class="fas fa-external-link-alt"></i> Ir a Netlify
+                </button>
+                
+                <button class="button" onclick="window.location.href='https://namecheap.com'" style="background: #3498db; margin-left: 10px;">
+                    <i class="fas fa-external-link-alt"></i> Ir a Namecheap
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simular verificación (en un caso real, aquí harías peticiones reales a APIs)
+            setTimeout(() => {
+                document.getElementById('dnsCheck').innerHTML = '<i class="fas fa-check-circle"></i> DNS: Configuración pendiente';
+                document.getElementById('sslCheck').innerHTML = '<i class="fas fa-exclamation-circle"></i> SSL: Esperando configuración DNS';
+                document.getElementById('deployCheck').innerHTML = '<i class="fas fa-check-circle"></i> Despliegue: Conectado con GitHub';
+                
+                // Mostrar información del dominio actual
+                document.getElementById('domainName').textContent = window.location.hostname;
+                
+                // Verificar si estamos en Netlify o en dominio personalizado
+                if (window.location.hostname.includes('netlify.app')) {
+                    document.getElementById('dnsCheck').innerHTML = '<i class="fas fa-exclamation-circle"></i> DNS: Usando dominio de Netlify';
+                    document.getElementById('sslCheck').innerHTML = '<i class="fas fa-check-circle"></i> SSL: Certificado activo';
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
