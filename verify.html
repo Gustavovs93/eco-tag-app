@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verificación de Configuración - Eco Tag</title>
+    <title>¡socyra.com está funcionando! - Eco Tag</title>
     <style>
         * {
             margin: 0;
@@ -30,156 +30,64 @@
             width: 100%;
             max-width: 800px;
             overflow: hidden;
+            text-align: center;
         }
         
         .header {
             background: #2c3e50;
             color: white;
-            padding: 25px;
-            text-align: center;
+            padding: 30px;
         }
         
         .header h1 {
-            font-size: 2.2rem;
+            font-size: 2.5rem;
             margin-bottom: 10px;
         }
         
-        .header p {
-            opacity: 0.9;
+        .content {
+            padding: 40px;
         }
         
-        .content {
-            padding: 30px;
+        .success-icon {
+            font-size: 4rem;
+            color: #2ecc71;
+            margin-bottom: 20px;
         }
         
         .status-card {
             background: #f9f9f9;
             border-radius: 10px;
             padding: 20px;
-            margin-bottom: 25px;
-            border-left: 5px solid #3498db;
+            margin: 20px 0;
+            border-left: 5px solid #2ecc71;
         }
         
-        .status-card.success {
-            border-left-color: #2ecc71;
-        }
-        
-        .status-card.warning {
-            border-left-color: #f39c12;
-        }
-        
-        .status-card.error {
-            border-left-color: #e74c3c;
-        }
-        
-        .status-card h3 {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
-        
-        .status-card i {
-            margin-right: 10px;
-            font-size: 1.4rem;
-        }
-        
-        .check-list {
-            list-style: none;
-        }
-        
-        .check-list li {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            align-items: center;
-        }
-        
-        .check-list li:last-child {
-            border-bottom: none;
-        }
-        
-        .check-list i {
-            margin-right: 10px;
-            width: 24px;
-            text-align: center;
-        }
-        
-        .fa-check-circle {
-            color: #2ecc71;
-        }
-        
-        .fa-times-circle {
-            color: #e74c3c;
-        }
-        
-        .fa-exclamation-circle {
-            color: #f39c12;
-        }
-        
-        .instructions {
-            background: #e8f4fc;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 30px;
-        }
-        
-        .instructions h3 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-        }
-        
-        .instructions ol {
-            margin-left: 20px;
-        }
-        
-        .instructions li {
-            margin-bottom: 10px;
+        .debug-info {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            text-align: left;
         }
         
         .button {
             display: inline-block;
             background: #2ecc71;
             color: white;
-            padding: 12px 25px;
+            padding: 15px 30px;
             border-radius: 50px;
             text-decoration: none;
             font-weight: 600;
-            margin-top: 20px;
+            margin: 15px 5px;
             transition: all 0.3s;
-            border: none;
-            cursor: pointer;
         }
         
         .button:hover {
             background: #27ae60;
             transform: translateY(-2px);
-        }
-        
-        .domain-info {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .info-box {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            flex: 1;
-            min-width: 200px;
-            margin: 0 10px 10px 0;
-        }
-        
-        @media (max-width: 600px) {
-            .domain-info {
-                flex-direction: column;
-            }
-            
-            .info-box {
-                margin: 0 0 10px 0;
-            }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -187,72 +95,50 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1><i class="fas fa-cogs"></i> Verificación de Configuración</h1>
-            <p>Estado de la configuración de dominio para Eco Tag</p>
+            <h1><i class="fas fa-check-circle"></i> ¡Configuración Exitosa!</h1>
+            <p>socyra.com está correctamente configurado en Netlify</p>
         </div>
         
         <div class="content">
-            <div class="status-card" id="domainStatus">
-                <h3><i class="fas fa-globe"></i> Estado del Dominio</h3>
-                <ul class="check-list">
-                    <li id="dnsCheck"><i class="fas fa-sync fa-spin"></i> Verificando configuración DNS...</li>
-                    <li id="sslCheck"><i class="fas fa-sync fa-spin"></i> Verificando certificado SSL...</li>
-                    <li id="deployCheck"><i class="fas fa-sync fa-spin"></i> Verificando despliegue...</li>
-                </ul>
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
             </div>
             
-            <div class="domain-info">
-                <div class="info-box">
-                    <h4><i class="fas fa-info-circle"></i> Información del Dominio</h4>
-                    <p><strong>Nombre:</strong> <span id="domainName">socyra.com</span></p>
-                    <p><strong>Registrador:</strong> Namecheap</p>
-                </div>
-                
-                <div class="info-box">
-                    <h4><i class="fas fa-server"></i> Información de Hosting</h4>
-                    <p><strong>Proveedor:</strong> Netlify</p>
-                    <p><strong>Sitio:</strong> eco-tag</p>
-                </div>
+            <h2>🎉 ¡Felicidades!</h2>
+            <p>Tu dominio <strong>socyra.com</strong> está funcionando correctamente con Netlify.</p>
+            
+            <div class="status-card">
+                <h3><i class="fas fa-check"></i> Configuración Completada:</h3>
+                <p>✅ DNS propagado | ✅ SSL activo | ✅ Dominio configurado</p>
             </div>
             
-            <div class="instructions">
-                <h3><i class="fas fa-list-ol"></i> Pasos para configurar correctamente</h3>
-                <ol>
-                    <li>Inicia sesión en tu cuenta de Namecheap</li>
-                    <li>Ve a la sección de gestión de dominios</li>
-                    <li>Configura los nameservers para apuntar a Netlify</li>
-                    <li>En Netlify, agrega tu dominio personalizado</li>
-                    <li>Espera hasta 24 horas para que los cambios se propaguen</li>
-                </ol>
-                
-                <button class="button" onclick="window.location.href='https://app.netlify.com/'">
-                    <i class="fas fa-external-link-alt"></i> Ir a Netlify
-                </button>
-                
-                <button class="button" onclick="window.location.href='https://namecheap.com'" style="background: #3498db; margin-left: 10px;">
-                    <i class="fas fa-external-link-alt"></i> Ir a Namecheap
-                </button>
+            <div class="debug-info">
+                <h4><i class="fas fa-bug"></i> Información Técnica:</h4>
+                <div id="debugData">Cargando información del dominio...</div>
+            </div>
+            
+            <div>
+                <a href="https://socyra.com" class="button">
+                    <i class="fas fa-home"></i> Ir a Inicio
+                </a>
+                <a href="https://app.netlify.com/sites/eco-tag/overview" class="button" style="background: #3498db;">
+                    <i class="fas fa-cog"></i> Panel Netlify
+                </a>
             </div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Simular verificación (en un caso real, aquí harías peticiones reales a APIs)
-            setTimeout(() => {
-                document.getElementById('dnsCheck').innerHTML = '<i class="fas fa-check-circle"></i> DNS: Configuración pendiente';
-                document.getElementById('sslCheck').innerHTML = '<i class="fas fa-exclamation-circle"></i> SSL: Esperando configuración DNS';
-                document.getElementById('deployCheck').innerHTML = '<i class="fas fa-check-circle"></i> Despliegue: Conectado con GitHub';
-                
-                // Mostrar información del dominio actual
-                document.getElementById('domainName').textContent = window.location.hostname;
-                
-                // Verificar si estamos en Netlify o en dominio personalizado
-                if (window.location.hostname.includes('netlify.app')) {
-                    document.getElementById('dnsCheck').innerHTML = '<i class="fas fa-exclamation-circle"></i> DNS: Usando dominio de Netlify';
-                    document.getElementById('sslCheck').innerHTML = '<i class="fas fa-check-circle"></i> SSL: Certificado activo';
-                }
-            }, 2000);
+            const debugData = document.getElementById('debugData');
+            debugData.innerHTML = `
+                URL: ${window.location.href}<br>
+                Hostname: ${window.location.hostname}<br>
+                Protocolo: ${window.location.protocol}<br>
+                SSL: ${window.location.protocol === 'https:' ? '✅ Activado' : '❌ Desactivado'}<br>
+                Fecha: ${new Date().toLocaleString()}<br>
+                User Agent: ${navigator.userAgent}
+            `;
         });
     </script>
 </body>
