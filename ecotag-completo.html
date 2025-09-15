@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eco Tag - Sostenibilidad Empresarial</title>
+    <!-- Agrega esto dentro del <head> de tu index.html -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -1008,8 +1014,42 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Completa tu Suscripción</h2>
+            <div class="plan-summary"></div>
             <p>Estás suscribiéndote al plan: <strong id="selected-plan">Selecciona un plan</strong></p>
+            
             <p>Precio: <strong id="selected-amount">-</strong></p>
+             </div>
+              <div class="payment-methods">
+            <h3>Método de Pago</h3>
+             <!-- Contenedor de botones de PayPal -->
+            <div id="paypal-button-container"></div>
+             <!-- Fallback para desarrollo/pruebas -->
+            <div id="paypal-fallback" style="display: none;">
+                <div class="dev-notice">
+                    <h4>Modo de Desarrollo</h4>
+                    <p>PayPal no está disponible en este momento. Puedes simular el proceso de pago:</p>
+                    
+                    <div class="simulation-buttons">
+                        <button type="button" class="btn btn-primary" id="simulateSuccess">
+                            Simular Pago Exitoso
+                        </button>
+                        <button type="button" class="btn btn-outline" id="simulateFailure">
+                            Simular Error de Pago
+                        </button>
+                    </div>
+                    
+                    <div class="test-credentials">
+                        <p><strong>Credenciales de prueba para PayPal Sandbox:</strong></p>
+                        <ul>
+                            <li>Email: sb-43f7po31158410@personal.example.com</li>
+                            <li>Contraseña: 123456789</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
             
             <div style="margin: 30px 0;">
                 <h3>Método de Pago</h3>
