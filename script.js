@@ -1,4 +1,59 @@
 // ==============================================
+// DEFINICIÓN GLOBAL EXPLÍCITA - PEGA ESTO AL PRINCIPIO
+// ==============================================
+
+// Limpiar funciones existentes por si hay conflicto
+if (typeof window.getEnvironmentVariable !== 'undefined') {
+    delete window.getEnvironmentVariable;
+}
+
+// Definir función globalmente
+window.getEnvironmentVariable = function(key) {
+    console.log('🔍 Buscando variable:', key);
+    
+    // 1. Netlify Functions
+    if (window.APP_CONFIG && window.APP_CONFIG[key]) {
+        console.log('✅ Encontrada en window.APP_CONFIG');
+        return window.APP_CONFIG[key];
+    }
+    
+    // 2. process.env (Netlify build)
+    if (typeof process !== 'undefined' && process.env && process.env[key]) {
+        console.log('✅ Encontrada en process.env');
+        return process.env[key];
+    }
+    
+    // 3. Valores por defecto
+    const defaults = {
+        'VITE_PAYPAL_CLIENT_ID': 'SB',
+        'NODE_ENV': 'development',
+        'URL': window.location.origin,
+        'SITE_NAME': 'Eco Tag'
+    };
+    
+    if (defaults[key]) {
+        console.log('⚠️ Usando valor por defecto para:', key);
+        return defaults[key];
+    }
+    
+    console.log('❌ Variable no encontrada:', key);
+    return null;
+};
+
+// Función para debug
+window.debugEnv = function() {
+    console.log('🐛 Debug de variables:');
+    console.log('📍 window.getEnvironmentVariable:', typeof window.getEnvironmentVariable);
+    console.log('🌐 window.APP_CONFIG:', window.APP_CONFIG);
+    console.log('🔧 process:', typeof process);
+    
+    // Probar la función
+    if (typeof window.getEnvironmentVariable === 'function') {
+        const paypalId = window.getEnvironmentVariable('VITE_PAYPAL_CLIENT_ID');
+        console.log('💰 PayPal ID:', paypalId);
+    }
+};
+// ==============================================
 // SIMULADOR DE BACKEND - APIs para Eco Tag
 // ==============================================
 
@@ -249,6 +304,26 @@ let isCheckingAuth = false;
 // ==============================================
 // FUNCIONES DE UTILIDAD
 // ==============================================
+/**
+ * Carga un script externo
+ * @param {string} url - URL del script a cargar
+ * @returns {Promise} Promesa que se resuelve cuando el script se carga
+ */
+function loadScript(url) {
+    return new Promise((resolve, reject) => {
+        // Verificar si el script ya está cargado
+        if (document.querySelector(`script[src="${url}"]`)) {
+            resolve();
+            return;
+        }
+        
+        const verifyscript = document.createElement('script');
+        script.src = url;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
 
 // Sistema de notificaciones
 function showNotification(message, type = 'success', duration = 5000) {
@@ -302,6 +377,230 @@ function closeModal(modal) {
     if (modal) {
         modal.classList.remove('active');
         document.body.style.overflow = 'auto';
+    }
+}
+// ==============================================
+// CONFIGURACIÓN DE PAYPAL - CORREGIDO
+// ==============================================
+
+// Obtener el Client ID de PayPal desde variables de entorno
+function initPayPalSafe() {
+    // SOLUCIÓN SEGURA - Sin import.meta.env
+    console.log('🔍 Buscando variable PayPal...');
+    
+    // Método 1: Netlify Functions (si están configuradas)
+    if (window.APP_CONFIG && window.APP_CONFIG.VITE_PAYPAL_CLIENT_ID) {
+        return window.APP_CONFIG.VITE_PAYPAL_CLIENT_ID;
+    }
+    
+    // Método 2: process.env (para Netlify durante el build)
+    if (typeof process !== 'undefined' && process.env && process.env.VITE_PAYPAL_CLIENT_ID) {
+        return process.env.VITE_PAYPAL_CLIENT_ID;
+    }
+    
+    // Método 3: URL parameter (para testing)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlId = urlParams.get('paypal_id');
+    if (urlId) return urlId;
+    
+    // Método 4: localStorage (para desarrollo)
+    const localId = localStorage.getItem('PAYPAL_CLIENT_ID');
+    if (localId) return localId;
+    
+    // Método 5: Fallback a sandbox
+    console.log('🌐 Usando PayPal Sandbox para desarrollo');
+    return 'SB'; // ID de Sandbox por defecto
+}
+
+// Función segura para inicializar PayPal
+function initPayPalSafe() {
+    try {
+        const clientId = getPayPalClientId();
+        
+        console.log('💰 PayPal Client ID:', clientId.startsWith('A') ? 
+            'PRODUCCIÓN (' + clientId.substring(0, 8) + '...)' : 
+            'SANDBOX (' + clientId + ')');
+        
+        // Cargar el SDK de PayPal
+        const paypal = document.createElement('script');
+        script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR`;
+        script.onload = () => {
+            console.log('✅ PayPal SDK cargado correctamente');
+            if (typeof paypal !== 'undefined') {
+                console.log('🎉 PayPal está disponible para usar');
+            }
+        };
+        script.onerror = (error) => {
+            console.error('❌ Error cargando PayPal SDK:', error);
+            showNotification('Error al cargar PayPal. Por favor, recarga la página.', 'error');
+        };
+        document.head.appendChild(script);
+        
+    } catch (error) {
+        console.error('❌ Error en initPayPalSafe:', error);
+        // Fallback a sandbox
+        const fallbackScript = document.createElement('script');
+        fallbackScript.src = 'https://www.paypal.com/sdk/js?client-id=SB&currency=EUR';
+        document.head.appendChild(fallbackScript);
+    }
+}
+
+// Reemplazar la función initPayPal existente
+function initPayPal() {
+    return initPayPalSafe();
+}
+
+// Inicializar PayPal
+async function initPayPalSafe() {
+    try {
+        const clientId = getPayPalClientId();
+        
+        // Cargar el SDK de PayPal
+        await loadScript(`https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR&components=buttons`);
+        
+        console.log('PayPal SDK cargado correctamente');
+        return true;
+    } catch (error) {
+        console.error('Error cargando PayPal SDK:', error);
+        return false;
+    }
+}
+
+// Configurar botones de PayPal
+function setupPayPalButtons(plan, amount) {
+    if (typeof paypal === 'undefined') {
+        console.error('PayPal SDK no está cargado');
+        return false;
+    }
+    
+    // Limpiar contenedor existente
+    const container = document.getElementById('paypal-button-container');
+    if (container) {
+        container.innerHTML = '';
+    }
+    
+    // Renderizar botones de PayPal
+    paypal.Buttons({
+        style: {
+            layout: 'vertical',
+            color: 'gold',
+            shape: 'rect',
+            label: 'paypal'
+        },
+        
+        createOrder: function(data, actions) {
+            return actions.order.create({
+                purchase_units: [{
+                    amount: {
+                        value: amount,
+                        currency_code: 'EUR'
+                    },
+                    description: `Suscripción ${plan} - Eco Tag`
+                }]
+            });
+        },
+        
+        onApprove: function(data, actions) {
+            return actions.order.capture().then(function(details) {
+                // Pago exitoso
+                handleSuccessfulPayment(details, plan, amount);
+            });
+        },
+        
+        onError: function(err) {
+            console.error('Error en pago PayPal:', err);
+            showNotification('Error en el procesamiento del pago. Por favor, intenta nuevamente.', 'error');
+        },
+        
+        onCancel: function(data) {
+            showNotification('Pago cancelado. Puedes intentarlo nuevamente cuando estés listo.', 'warning');
+        }
+    }).render('#paypal-button-container');
+    
+    return true;
+}
+
+// Manejar pago exitoso
+function handleSuccessfulPayment(details, plan, amount) {
+    console.log('Pago completado:', details);
+    
+    // Mostrar éxito de pago
+    showPaymentSuccess(plan, amount, details.id);
+    
+    // Actualizar el plan del usuario en el sistema
+    if (currentUser) {
+        currentUser.plan = plan;
+        showNotification(`¡Felicidades! Tu plan ${plan} ha sido activado.`, 'success');
+    }
+    
+    // Guardar información de la transacción
+    localStorage.setItem('last_transaction', JSON.stringify({
+        id: details.id,
+        plan: plan,
+        amount: amount,
+        date: new Date().toISOString(),
+        status: 'completed'
+    }));
+}
+
+// Mostrar interfaz de éxito de pago
+function showPaymentSuccess(plan, amount, transactionId) {
+    const paymentContainer = document.getElementById('paypal-button-container');
+    if (!paymentContainer) return;
+    
+    paymentContainer.innerHTML = `
+        <div class="payment-success">
+            <i class="fas fa-check-circle"></i>
+            <h3>¡Pago Completado Exitosamente!</h3>
+            <p>Gracias por suscribirte al plan <strong>${plan}</strong> de Eco Tag.</p>
+            <p>Precio: <strong>${amount}€/mes</strong></p>
+            <p>ID de transacción: <code>${transactionId}</code></p>
+            <button class="btn btn-primary" id="continue-to-dashboard">
+                Continuar al Dashboard
+            </button>
+        </div>
+    `;
+    
+    // Event listener para el botón de continuar
+    document.getElementById('continue-to-dashboard').addEventListener('click', function() {
+        closeModal(document.getElementById('paymentModal'));
+        
+        // Redirigir al dashboard después de un pago exitoso
+        setTimeout(() => {
+            window.location.href = 'dashboard.html';
+        }, 1000);
+    });
+}
+
+// Abrir modal de pago con el plan seleccionado
+function openPaymentModal(plan, amount) {
+    // Actualizar la información del modal
+    const planElement = document.getElementById('selected-plan');
+    const amountElement = document.getElementById('selected-amount');
+    
+    if (planElement) planElement.textContent = plan;
+    if (amountElement) amountElement.textContent = `${amount}€/mes`;
+    
+    // Almacenar información del plan seleccionado
+    window.selectedPlan = { plan, amount };
+    
+    // Abrir el modal
+    openModal(document.getElementById('paymentModal'));
+    
+    // Inicializar PayPal si está disponible
+    if (typeof paypal !== 'undefined') {
+        setupPayPalButtons(plan, amount);
+    } else {
+        // Intentar inicializar PayPal
+        initPayPal().then(success => {
+            if (success) {
+                setupPayPalButtons(plan, amount);
+            } else {
+                // Mostrar opción de simulación si PayPal no está disponible
+                const fallback = document.getElementById('paypal-fallback');
+                if (fallback) fallback.style.display = 'block';
+            }
+        });
     }
 }
 
@@ -710,6 +1009,43 @@ function setupAuthEventListeners() {
  */
 function setupEventListeners() {
     setupAuthEventListeners();
+     // Configurar botones de selección de plan
+    const planButtons = document.querySelectorAll('.payment-btn');
+    planButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const plan = this.dataset.plan;
+            const amount = this.dataset.amount.replace('$', '').replace('/mes', '');
+            openPaymentModal(plan, amount);
+        });
+    });
+    
+    // Configurar botones de simulación para desarrollo
+    const simulateSuccess = document.getElementById('simulateSuccess');
+    const simulateFailure = document.getElementById('simulateFailure');
+    
+    if (simulateSuccess) {
+        simulateSuccess.addEventListener('click', function() {
+            const plan = window.selectedPlan?.plan || 'professional';
+            const amount = window.selectedPlan?.amount || '79';
+            handleSuccessfulPayment(
+                { id: 'SIM-' + Math.random().toString(36).substr(2, 9).toUpperCase() },
+                plan,
+                amount
+            );
+        });
+    }
+    
+    if (simulateFailure) {
+        simulateFailure.addEventListener('click', function() {
+            showNotification('Error en el procesamiento del pago. Por favor, intenta con otro método.', 'error');
+        });
+    }
+    
+    // Inicializar PayPal cuando la aplicación esté lista
+    if (getPayPalClientId() !== 'SB') {
+        // Solo inicializar PayPal si no estamos usando el sandbox ID por defecto
+        initPayPal();
+    }
     // Aquí puedes agregar más configuraciones de event listeners
 }
 // script.js - Archivo principal (actualizado)
@@ -718,7 +1054,7 @@ function setupEventListeners() {
 // ==============================================
 
 // Cargar configuración primero
-const script = document.createElement('script');
+const loadscript = document.createElement('script');
 script.src = 'config.js';
 document.head.appendChild(script);
 
@@ -744,7 +1080,7 @@ function loadScript(src) {
             return;
         }
         
-        const script = document.createElement('script');
+        const verifyscript = document.createElement('script');
         script.src = src;
         script.onload = () => {
             console.log(`Script cargado: ${src}`);
@@ -762,6 +1098,141 @@ function loadScript(src) {
 async function initApp() {
     try {
         console.log('Inicializando aplicación Eco Tag...');
+
+         // Cargar variables de entorno primero
+        await loadNetlifyEnv();
+        
+        // Configurar PayPal con las variables cargadas
+        const paypalClientId = getEnvironmentVariable('VITE_PAYPAL_CLIENT_ID');
+        console.log('💰 PayPal Client ID:', paypalClientId);
+        
+        // Inicializar PayPal
+        if (paypalClientId) {
+            initPayPal(paypalClientId);
+        }
+
+        // CONFIGURACIÓN DE VARIABLES DE ENTORNO PARA NETLIFY
+function getEnvironmentVariable(key) {
+    // SOLUCIÓN SEGURA - Sin import.meta.env
+function getEnvironmentVariable(key) {
+    console.log('🔍 Buscando variable:', key);
+    
+    // MÉTODO 1: Netlify Functions (RECOMENDADO)
+    if (window.APP_CONFIG && window.APP_CONFIG[key]) {
+        console.log('✅ Variable encontrada en window.APP_CONFIG');
+        return window.APP_CONFIG[key];
+    }
+    
+    // MÉTODO 2: process.env (Para Netlify durante el build)
+    if (typeof process !== 'undefined' && process.env && process.env[key]) {
+        console.log('✅ Variable encontrada en process.env');
+        return process.env[key];
+    }
+    
+    // MÉTODO 3: URL parameters (Para testing)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlValue = urlParams.get(key.toLowerCase());
+    if (urlValue) {
+        console.log('✅ Variable encontrada en URL parameters');
+        return urlValue;
+    }
+    
+    // MÉTODO 4: localStorage (Para desarrollo)
+    const localValue = localStorage.getItem(key);
+    if (localValue) {
+        console.log('✅ Variable encontrada en localStorage');
+        return localValue;
+    }
+    
+    // MÉTODO 5: Valores por defecto
+    const defaultValue = getDefaultValue(key);
+    if (defaultValue) {
+        console.log('⚠️ Usando valor por defecto para:', key);
+        return defaultValue;
+    }
+    
+    console.log('❌ Variable no encontrada:', key);
+    return null;
+}
+
+// Función para valores por defecto
+function getDefaultValue(key) {
+    const defaults = {
+        'VITE_PAYPAL_CLIENT_ID': 'SB', // Sandbox mode
+        'NODE_ENV': 'development',
+        'URL': window.location.origin,
+        'SITE_NAME': 'Eco Tag',
+        'CONTACT_EMAIL': 'info@ecotag.com'
+    };
+    
+    return defaults[key] || null;
+}
+
+// Función para cargar variables desde Netlify Function
+async function loadNetlifyEnv() {
+    try {
+        console.log('🌐 Cargando variables desde Netlify...');
+        const response = await fetch('/.netlify/functions/get-env');
+        
+        if (response.ok) {
+            const env = await response.json();
+            window.APP_CONFIG = env;
+            console.log('✅ Variables cargadas:', Object.keys(env));
+            return env;
+        }
+    } catch (error) {
+        console.log('⚠️ No se pudo cargar desde Netlify Function:', error.message);
+    }
+    return null;
+}
+    
+    // Fallback para desarrollo
+    return window[key] || localStorage.getItem(key) || null;
+}
+
+// Configurar PayPal con variables de entorno
+function configurePayPal() {
+    const paypalClientId = getEnvironmentVariable('VITE_PAYPAL_CLIENT_ID');
+    
+    console.log('🔍 Buscando variable PayPal...');
+    
+    if (paypalClientId) {
+        console.log('✅ VITE_PAYPAL_CLIENT_ID encontrada:', paypalClientId.substring(0, 10) + '...');
+        console.log('🌐 Modo:', paypalClientId.startsWith('A') ? 'PRODUCCIÓN' : 'Sandbox');
+        
+        // Inicializar PayPal con el ID real
+        initRealPayPal(paypalClientId);
+        return true;
+    } else {
+        console.log('⚠️ VITE_PAYPAL_CLIENT_ID no encontrada');
+        console.log('💡 Usando modo sandbox para desarrollo');
+        
+        // Usar sandbox como fallback
+        initSandboxPayPal();
+        return false;
+    }
+}
+
+// Función para inicializar PayPal real
+function initRealPayPal(clientId) {
+    console.log('🚀 Inicializando PayPal en modo PRODUCCIÓN');
+    
+    // Cargar SDK de PayPal
+    const paypalscript = document.createElement('script');
+    script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR`;
+    script.onload = () => {
+        console.log('✅ PayPal SDK cargado (PRODUCCIÓN)');
+        setupPayPalButtons();
+    };
+    script.onerror = (error) => {
+        console.error('❌ Error cargando PayPal:', error);
+    };
+    document.head.appendChild(script);
+}
+
+// Ejecutar configuración segura
+initPayPalSafe();
+       
         
         // Cargar scripts básicos primero
         await loadScript('config.js');
@@ -854,5 +1325,45 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
 } else {
     initApp();
+    // ==============================================
+// HACER FUNCIONES GLOBALES - Agrega esto al FINAL
+// ==============================================
+
+// Hacer funciones disponibles globalmente para debugging
+window.getEnvironmentVariable = getEnvironmentVariable;
+window.testEnvironmentVariables = function() {
+    console.log('🧪 Probando variables de entorno...');
+    
+    const testVariables = ['VITE_PAYPAL_CLIENT_ID', 'NODE_ENV', 'URL'];
+    
+    testVariables.forEach(variable => {
+        const value = getEnvironmentVariable(variable);
+        console.log(`${value ? '✅' : '❌'} ${variable}:`, value || 'No encontrada');
+    });
+};
+
+// Función para debuggear Netlify env
+window.debugNetlifyEnv = function() {
+    console.log('🔍 Debug: Verificando variables Netlify...');
+    console.log('typeof process:', typeof process);
+    console.log('process.env:', typeof process !== 'undefined' ? process.env : 'undefined');
+    console.log('window.APP_CONFIG:', window.APP_CONFIG);
+};
+
+// Función para cargar variables manualmente
+window.loadEnvManually = async function() {
+    console.log('🔄 Cargando variables manualmente...');
+    await loadNetlifyEnv();
+    console.log('✅ Variables cargadas:', window.APP_CONFIG);
+};
+
+// Exponer otras funciones útiles para debugging
+window.showAppStatus = function() {
+    console.log('📊 Estado de la aplicación:');
+    console.log('• Dominio:', window.location.hostname);
+    console.log('• currentUser:', currentUser);
+    console.log('• authToken:', authToken ? 'Presente' : 'Ausente');
+    console.log('• PayPal SDK:', typeof paypal !== 'undefined' ? 'Cargado' : 'No cargado');
+};
 }
 }
