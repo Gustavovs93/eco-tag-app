@@ -1074,125 +1074,141 @@
     <!-- Scripts -->
     <script>
         // ==============================================
-        // SIMULACIÓN DE API Y AUTH (para demostración)
+        // PROTECCIÓN CONTRA REDECLARACIÓN DE VARIABLES
         // ==============================================
         
-        // Simular localStorage para almacenamiento de datos
-        if (!window.localStorage) {
-            window.localStorage = {
-                getItem: function(key) {
-                    return this[key] || null;
-                },
-                setItem: function(key, value) {
-                    this[key] = value.toString();
-                },
-                removeItem: function(key) {
-                    delete this[key];
-                }
-            };
-        }
-        
-        // Simulación de API
-        const EcoTagAPI = {
-            processScan: async function(token, data) {
-                // Simular retardo de red
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                // Simular respuesta del servidor
-                return {
-                    success: true,
-                    data: {
-                        product: {
-                            id: data.product_id,
-                            name: data.product_name,
-                            category: data.category
-                        },
-                        sustainability_score: Math.floor(Math.random() * 40) + 60, // Entre 60-100%
-                        improvement_recommendations: [
-                            {
-                                category: "Envase",
-                                suggestion: "Reducir plástico de un solo uso",
-                                impact: "Alto impacto"
-                            },
-                            {
-                                category: "Cadena de suministro",
-                                suggestion: "Utilizar proveedores locales",
-                                impact: "Medio impacto"
-                            },
-                            {
-                                category: "Energía",
-                                suggestion: "Implementar energías renovables",
-                                impact: "Alto impacto"
-                            }
-                        ]
+        // Verificar si EcoTagAPI ya existe antes de declararlo
+        if (typeof EcoTagAPI === 'undefined') {
+            // ==============================================
+            // SIMULACIÓN DE API Y AUTH (para demostración)
+            // ==============================================
+            
+            // Simular localStorage para almacenamiento de datos
+            if (!window.localStorage) {
+                window.localStorage = {
+                    getItem: function(key) {
+                        return this[key] || null;
+                    },
+                    setItem: function(key, value) {
+                        this[key] = value.toString();
+                    },
+                    removeItem: function(key) {
+                        delete this[key];
                     }
                 };
             }
-        };
-        
-        // Simulación de Auth Manager
-        const authManager = {
-            isAuthenticated: function() {
-                const user = localStorage.getItem('ecotag_user');
-                return user !== null;
-            },
             
-            getUser: function() {
-                const user = localStorage.getItem('ecotag_user');
-                return user ? JSON.parse(user) : null;
-            },
-            
-            getToken: function() {
-                return localStorage.getItem('ecotag_token') || 'simulated_token';
-            },
-            
-            login: async function(credentials) {
-                // Simular retardo de red
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                // Simular verificación de credenciales
-                if (credentials.email && credentials.password) {
-                    // Guardar en localStorage
-                    localStorage.setItem('ecotag_user', JSON.stringify({
-                        company: "Empresa Demo",
-                        email: credentials.email,
-                        plan: "profesional"
-                    }));
+            // Simulación de API
+            const EcoTagAPI = {
+                processScan: async function(token, data) {
+                    // Simular retardo de red
+                    await new Promise(resolve => setTimeout(resolve, 1500));
                     
-                    localStorage.setItem('ecotag_token', 'simulated_jwt_token');
-                    
-                    return { success: true, message: "Login exitoso" };
-                } else {
-                    return { success: false, message: "Credenciales inválidas" };
+                    // Simular respuesta del servidor
+                    return {
+                        success: true,
+                        data: {
+                            product: {
+                                id: data.product_id,
+                                name: data.product_name,
+                                category: data.category
+                            },
+                            sustainability_score: Math.floor(Math.random() * 40) + 60, // Entre 60-100%
+                            improvement_recommendations: [
+                                {
+                                    category: "Envase",
+                                    suggestion: "Reducir plástico de un solo uso",
+                                    impact: "Alto impacto"
+                                },
+                                {
+                                    category: "Cadena de suministro",
+                                    suggestion: "Utilizar proveedores locales",
+                                    impact: "Medio impacto"
+                                },
+                                {
+                                    category: "Energía",
+                                    suggestion: "Implementar energías renovables",
+                                    impact: "Alto impacto"
+                                }
+                            ]
+                        }
+                    };
                 }
-            },
+            };
             
-            register: async function(userData) {
-                // Simular retardo de net
-                await new Promise(resolve => setTimeout(resolve, 1500));
+            // Hacer la API globalmente accesible
+            window.EcoTagAPI = EcoTagAPI;
+        }
+
+        // Verificar si authManager ya existe antes de declararlo
+        if (typeof authManager === 'undefined') {
+            // Simulación de Auth Manager
+            const authManager = {
+                isAuthenticated: function() {
+                    const user = localStorage.getItem('ecotag_user');
+                    return user !== null;
+                },
                 
-                // Simular registro exitoso
-                if (userData.company && userData.email && userData.password) {
-                    // Guardar en localStorage
-                    localStorage.setItem('ecotag_user', JSON.stringify({
-                        company: userData.company,
-                        email: userData.email,
-                        plan: userData.plan
-                    }));
+                getUser: function() {
+                    const user = localStorage.getItem('ecotag_user');
+                    return user ? JSON.parse(user) : null;
+                },
+                
+                getToken: function() {
+                    return localStorage.getItem('ecotag_token') || 'simulated_token';
+                },
+                
+                login: async function(credentials) {
+                    // Simular retardo de red
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                     
-                    localStorage.setItem('ecotag_token', 'simulated_jwt_token');
+                    // Simular verificación de credenciales
+                    if (credentials.email && credentials.password) {
+                        // Guardar en localStorage
+                        localStorage.setItem('ecotag_user', JSON.stringify({
+                            company: "Empresa Demo",
+                            email: credentials.email,
+                            plan: "profesional"
+                        }));
+                        
+                        localStorage.setItem('ecotag_token', 'simulated_jwt_token');
+                        
+                        return { success: true, message: "Login exitoso" };
+                    } else {
+                        return { success: false, message: "Credenciales inválidas" };
+                    }
+                },
+                
+                register: async function(userData) {
+                    // Simular retardo de net
+                    await new Promise(resolve => setTimeout(resolve, 1500));
                     
-                    return { success: true, message: "Registro exitoso" };
-                } else {
-                    return { success: false, message: "Datos incompletos" };
+                    // Simular registro exitoso
+                    if (userData.company && userData.email && userData.password) {
+                        // Guardar en localStorage
+                        localStorage.setItem('ecotag_user', JSON.stringify({
+                            company: userData.company,
+                            email: userData.email,
+                            plan: userData.plan
+                        }));
+                        
+                        localStorage.setItem('ecotag_token', 'simulated_jwt_token');
+                        
+                        return { success: true, message: "Registro exitoso" };
+                    } else {
+                        return { success: false, message: "Datos incompletos" };
+                    }
+                },
+                
+                logout: function() {
+                    localStorage.removeItem('ecotag_user');
+                    localStorage.removeItem('ecotag_token');
                 }
-            },
+            };
             
-            logout: function() {
-                localStorage.removeItem('ecotag_user');
-                localStorage.removeItem('ecotag_token');
-            }
-        };
+            // Hacer authManager globalmente accesible
+            window.authManager = authManager;
+        }
         
         // Utilidades
         function isValidEmail(email) {
@@ -1802,6 +1818,7 @@
             }
         }
     </script>
-    <script src="script.js"></script>
+    <!-- Eliminamos la carga del script api.js para evitar conflictos -->
+    <!-- <script src="script.js"></script> -->
 </body>
 </html>
