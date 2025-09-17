@@ -1,0 +1,1824 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Tag - Sostenibilidad Empresarial</title>
+    <!-- Agrega esto dentro del <head> de tu index.html -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #2ecc71;
+            --primary-dark: #27ae60;
+            --secondary: #3498db;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --gray: #95a5a6;
+            --white: #ffffff;
+        }
+        
+        body {
+            background-color: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header y navegación */
+        header {
+            background-color: var(--white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            height: 40px;
+            margin-right: 10px;
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            color: var(--primary);
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 25px;
+        }
+        
+        nav ul li a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        nav ul li a:hover, 
+        nav ul li a.active {
+            color: var(--primary);
+        }
+        
+        .auth-buttons {
+            display: flex;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            margin-right: 10px;
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--dark);
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 150px 0 100px;
+            background: linear-gradient(135deg, #2ecc71 0%, #3498db 100%);
+            color: white;
+            text-align: center;
+        }
+        
+        .hero h2 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 30px;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        /* Scanner Section */
+        .scanner {
+            padding: 80px 0;
+            background-color: var(--white);
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+            color: var(--dark);
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .section-title p {
+            color: var(--gray);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .scanner-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .scanner-placeholder {
+            width: 300px;
+            height: 300px;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .scanner-placeholder::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 5px;
+            background-color: var(--primary);
+            animation: scan 2s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        
+        .scanner-placeholder i {
+            font-size: 5rem;
+            color: var(--gray);
+        }
+        
+        /* Resultados del escaneo */
+        .scan-result {
+            background-color: var(--white);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-top: 30px;
+            display: none;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .scan-result.active {
+            display: block;
+        }
+        
+        .product-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .product-info img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-right: 20px;
+            background-color: #f1f1f1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .product-info h4 {
+            font-size: 1.5rem;
+            color: var(--dark);
+        }
+        
+        .sustainability-score {
+            margin-bottom: 30px;
+        }
+        
+        .score-bar {
+            height: 20px;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .score-fill {
+            height: 100%;
+            background-color: var(--primary);
+            border-radius: 10px;
+            width: 0;
+            transition: width 1s ease-in-out;
+        }
+        
+        .improvement-list {
+            list-style: none;
+        }
+        
+        .improvement-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+        
+        .improvement-list li i {
+            color: var(--warning);
+            margin-right: 10px;
+        }
+        
+        /* Sección de precios */
+        .pricing {
+            padding: 80px 0;
+            background-color: #f9f9f9;
+        }
+        
+        .pricing-plans {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        
+        .pricing-plan {
+            background-color: var(--white);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 40px 30px;
+            text-align: center;
+            flex: 1;
+            min-width: 280px;
+            max-width: 350px;
+            transition: transform 0.3s;
+        }
+        
+        .pricing-plan:hover {
+            transform: translateY(-10px);
+        }
+        
+        .pricing-plan h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        .price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .price span {
+            font-size: 1rem;
+            color: var(--gray);
+        }
+        
+        .features {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .features li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .features li:last-child {
+            border-bottom: none;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: var(--white);
+            padding: 60px 0 30px;
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 40px;
+        }
+        
+        .footer-column {
+            flex: 1;
+            min-width: 250px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-column h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+        
+        .footer-column ul {
+            list-style: none;
+        }
+        
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-column ul li a {
+            color: var(--light);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-column ul li a:hover {
+            color: var(--primary);
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Modales */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background-color: var(--white);
+            border-radius: 10px;
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            position: relative;
+            transform: translateY(-50px);
+            transition: transform 0.3s;
+        }
+        
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .modal h2 {
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .form-footer {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .form-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+        
+        .btn-spinner {
+            display: none;
+        }
+        
+        /* Notificaciones */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: white;
+            z-index: 3000;
+            opacity: 0;
+            transform: translateY(100px);
+            transition: all 0.3s;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .notification.success {
+            background-color: var(--primary);
+        }
+        
+        .notification.error {
+            background-color: var(--danger);
+        }
+        
+        .notification.warning {
+            background-color: var(--warning);
+        }
+        
+        /* Overlay para menú móvil */
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 900;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Menú móvil */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100%;
+            background-color: var(--white);
+            z-index: 1000;
+            padding: 50px 20px;
+            transition: right 0.3s;
+            overflow-y: auto;
+        }
+        
+        .mobile-menu.active {
+            right: 0;
+            display: block;
+        }
+        
+        .mobile-menu ul {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+        
+        .mobile-menu ul li {
+            margin-bottom: 15px;
+        }
+        
+        .mobile-menu ul li a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            display: block;
+            padding: 10px 0;
+        }
+        
+        .close-menu {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            nav ul {
+                display: none;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .hero h2 {
+                font-size: 2.5rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .pricing-plans {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .pricing-plan {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero {
+                padding: 120px 0 80px;
+            }
+            
+            .hero h2 {
+                font-size: 2rem;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+            }
+            
+            .product-info {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .product-info img {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+        }
+        
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+        
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+            display: none;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Estilos para la simulación de pago */
+        .payment-success {
+            text-align: center;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .payment-success i {
+            font-size: 4rem;
+            color: #2ecc71;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .btn-green {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        
+        .btn-green:hover {
+            background-color: #27ae60;
+        }
+        
+        .payment-plan {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .payment-plan.selected {
+            border-color: #2ecc71;
+            background-color: #f0f9f0;
+        }
+        
+        .payment-plan h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        
+        .payment-plan p {
+            margin: 5px 0;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading overlay para mejor experiencia de usuario -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <i class="fas fa-leaf" style="font-size: 32px; color: #2ecc71;"></i>
+                <h1>Eco Tag</h1>
+            </div>
+            
+            <nav>
+                <ul>
+                    <li><a href="#" class="active">Inicio</a></li>
+                    <li><a href="#scanner">Escáner</a></li>
+                    <li><a href="#pricing">Precios</a></li>
+                    <li><a href="#contact">Contacto</a></li>
+                </ul>
+            </nav>
+            
+            <div class="auth-buttons">
+                <button class="btn btn-outline" id="loginBtn">Iniciar Sesión</button>
+                <button class="btn btn-primary" id="registerBtn">Registrarse</button>
+            </div>
+            
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+    
+    <!-- Overlay para menú móvil -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+    
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h2>Impulsa la Sostenibilidad de tus Productos</h2>
+            <p>Eco Tag te ayuda a medir, mejorar y comunicar el impacto ambiental de tus productos de manera transparente y verificable.</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" id="startBtn">Comenzar Ahora</button>
+                <button class="btn btn-outline" style="background-color: rgba(255,255,255,0.2); color: white; border-color: white;" id="demoBtn">Ver Demo</button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Scanner Section -->
+    <section class="scanner" id="scanner">
+        <div class="container">
+            <div class="section-title">
+                <h2>Escanea y Analiza</h2>
+                <p>Utiliza nuestro escáner para evaluar la sostenibilidad de cualquier producto y obtener recomendaciones personalizadas para mejorar.</p>
+            </div>
+            
+            <div class="scanner-container">
+                <div class="scanner-placeholder">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <button class="btn btn-primary" id="scanBtn">Escanear Ahora</button>
+                
+                <!-- Resultados del escaneo -->
+                <div class="scan-result" id="scanResult">
+                    <div class="product-info">
+                        <i class="fas fa-cube" style="font-size: 48px; padding: 16px; background: #f1f1f1; border-radius: 10px;"></i>
+                        <h4>Producto Escaneado</h4>
+                    </div>
+                    
+                    <div class="sustainability-score">
+                        <h3>Puntuación de Sostenibilidad</h3>
+                        <div class="score-bar">
+                            <div class="score-fill" style="width: 65%;"></div>
+                        </div>
+                        <p><span class="score-value">65%</span> Sostenible</p>
+                    </div>
+                    
+                    <div class="improvements">
+                        <h3>Recomendaciones de Mejora</h3>
+                        <ul class="improvement-list">
+                            <li><i class="fas fa-times-circle"></i> <strong>Envase:</strong> Reducir plástico de un solo uso (Alto impacto)</li>
+                            <li><i class="fas fa-times-circle"></i> <strong>Cadena de suministro:</strong> Utilizar proveedores locales (Medio impacto)</li>
+                            <li><i class="fas fa-times-circle"></i> <strong>Energía:</strong> Implementar energías renovables (Alto impacto)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <div class="section-title">
+                <h2>Planes de Precios</h2>
+                <p>Elige el plan que mejor se adapte a las necesidades de tu empresa y comienza tu journey hacia la sostenibilidad.</p>
+            </div>
+            
+            <div class="pricing-plans">
+                <div class="pricing-plan">
+                    <h3>Básico</h3>
+                    <div class="price">$29<span>/mes</span></div>
+                    <p>Ideal para pequeñas empresas</p>
+                    <ul class="features">
+                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Hasta 50 escaneos/mes</li>
+                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> 5 productos en dashboard</li>
+                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Reportes básicos</li>
+                        <li><i class="fas fa-times" style="color: #e74c3c;"></i> Soporte prioritario</li>
+                        <li><i class="fas fa-times" style="color: #e74c3c;"></i> Certificados EcoTag</li>
+                    </ul>
+                    <button class="btn btn-outline payment-btn" data-plan="basico" data-amount="$29/mes">Seleccionar Plan</button>
+                </div>
+                
+                <div class="pricing-plan" style="border: 2px solid #2ecc71; transform: scale(1.05);">
+                    <h3>Profesional</h3>
+                    <div class="price">$79<span>/mes</span></div>
+                    <p>Para empresas en crecimiento</p>
+                    <ul class="features">
+                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Escaneos ilimitados</li>
+                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> 50 productos en dashboard</li>
+                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Reportes avanzados</li>
+                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Soporte prioritario</li>
+                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Certificados EcoTag</li>
+                    </ul>
+                    <button class="btn btn-primary payment-btn" data-plan="profesional" data-amount="$79/mes">Seleccionar Plan</button>
+                </div>
+                
+                <div class="pricing-plan">
+                    <h3>Empresarial</h3>
+                    <div class="price">$199<span>/mes</span></div>
+                    <p>Para grandes corporaciones</p>
+                    <ul class="features">
+                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Escaneos ilimitados</li>
+                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Productos ilimitados</li>
+                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Reportes personalizados</li>
+                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Soporte 24/7</li>
+                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Certificados premium</li>
+                    </ul>
+                    <button class="btn btn-outline payment-btn" data-plan="empresarial" data-amount="$199/mes">Seleccionar Plan</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>Eco Tag</h3>
+                    <p>La plataforma líder en análisis de sostenibilidad para productos de consumo.</p>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Enlaces Rápidos</h3>
+                    <ul>
+                        <li><a href="#">Inicio</a></li>
+                        <li><a href="#scanner">Escáner</a></li>
+                        <li><a href="#pricing">Precios</a></li>
+                        <li><a href="#">Contacto</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Legal</h3>
+                    <ul>
+                        <li><a href="#">Términos de Servicio</a></li>
+                        <li><a href="#">Política de Privacidad</a></li>
+                        <li><a href="#">Cookies</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Contacto</h3>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> info@ecotag.com</li>
+                        <li><i class="fas fa-phone"></i> +34 912 345 678</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Madrid, España</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2023 Eco Tag - Todos los derechos reservados</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Modal de Login -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Iniciar Sesión</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" placeholder="tu@empresa.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Contraseña</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" id="loginSubmit">
+                    <span id="loginText">Iniciar Sesión</span>
+                    <span class="btn-spinner" id="loginSpinner" style="display: none;"><i class="fas fa-spinner fa-spin"></i></span>
+                </button>
+                <div class="form-footer">
+                    <p>¿No tienes cuenta? <a href="#" id="goToRegister">Regístrate aquí</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal de Registro -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Crear Cuenta</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="register-company">Empresa</label>
+                    <input type="text" id="register-company" placeholder="Nombre de tu empresa" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" placeholder="tu@empresa.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Contraseña</label>
+                    <input type="password" id="register-password" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-confirmPassword">Confirmar Contraseña</label>
+                    <input type="password" id="register-confirmPassword" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-plan">Plan</label>
+                    <select id="register-plan" required>
+                        <option value="">Selecciona un plan</option>
+                        <option value="basico">Básico ($29/mes)</option>
+                        <option value="profesional">Profesional ($79/mes)</option>
+                        <option value="empresarial">Empresarial ($199/mes)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" id="registerSubmit">
+                    <span id="registerText">Crear Cuenta</span>
+                    <span class="btn-spinner" id="registerSpinner" style="display: none;"><i class="fas fa-spinner fa-spin"></i></span>
+                </button>
+                <div class="form-footer">
+                    <p>¿Ya tienes cuenta? <a href="#" id="goToLogin">Inicia sesión aquí</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal de Pago -->
+    <div class="modal" id="paymentModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Completa tu Suscripción</h2>
+            <div class="plan-summary"></div>
+            <p>Estás suscribiéndote al plan: <strong id="selected-plan">Selecciona un plan</strong></p>
+            
+            <p>Precio: <strong id="selected-amount">-</strong></p>
+             </div>
+              <div class="payment-methods">
+            <h3>Método de Pago</h3>
+             <!-- Contenedor de botones de PayPal -->
+            <div id="paypal-button-container"></div>
+             <!-- Fallback para desarrollo/pruebas -->
+            <div id="paypal-fallback" style="display: none;">
+                <div class="dev-notice">
+                    <h4>Modo de Desarrollo</h4>
+                    <p>PayPal no está disponible en este momento. Puedes simular el proceso de pago:</p>
+                    
+                    <div class="simulation-buttons">
+                        <button type="button" class="btn btn-primary" id="simulateSuccess">
+                            Simular Pago Exitoso
+                        </button>
+                        <button type="button" class="btn btn-outline" id="simulateFailure">
+                            Simular Error de Pago
+                        </button>
+                    </div>
+                    
+                    <div class="test-credentials">
+                        <p><strong>Credenciales de prueba para PayPal Sandbox:</strong></p>
+                        <ul>
+                            <li>Email: sb-43f7po31158410@personal.example.com</li>
+                            <li>Contraseña: 123456789</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+            
+            <div style="margin: 30px 0;">
+                <h3>Método de Pago</h3>
+                <div id="paypal-button-container" style="display: none;"></div>
+                
+                <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                    <h4>Simulación de Pago</h4>
+                    <p>Para demostración, simula un proceso de pago:</p>
+                    <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-primary" id="simulateSuccess">Pago Exitoso</button>
+                        <button type="button" class="btn btn-outline" id="simulateFailure">Pago Fallido</button>
+                        <button type="button" class="btn btn-outline" id="simulateCancel">Cancelar Pago</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notificación -->
+    <div class="notification" id="notification"></div>
+
+    <!-- Scripts -->
+    <script>
+        // ==============================================
+        // PROTECCIÓN CONTRA REDECLARACIÓN DE VARIABLES
+        // ==============================================
+        
+        // Verificar si EcoTagAPI ya existe antes de declararlo
+        if (typeof EcoTagAPI === 'undefined') {
+            // ==============================================
+            // SIMULACIÓN DE API Y AUTH (para demostración)
+            // ==============================================
+            
+            // Simular localStorage para almacenamiento de datos
+            if (!window.localStorage) {
+                window.localStorage = {
+                    getItem: function(key) {
+                        return this[key] || null;
+                    },
+                    setItem: function(key, value) {
+                        this[key] = value.toString();
+                    },
+                    removeItem: function(key) {
+                        delete this[key];
+                    }
+                };
+            }
+            
+            // Simulación de API
+            const EcoTagAPI = {
+                processScan: async function(token, data) {
+                    // Simular retardo de red
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    
+                    // Simular respuesta del servidor
+                    return {
+                        success: true,
+                        data: {
+                            product: {
+                                id: data.product_id,
+                                name: data.product_name,
+                                category: data.category
+                            },
+                            sustainability_score: Math.floor(Math.random() * 40) + 60, // Entre 60-100%
+                            improvement_recommendations: [
+                                {
+                                    category: "Envase",
+                                    suggestion: "Reducir plástico de un solo uso",
+                                    impact: "Alto impacto"
+                                },
+                                {
+                                    category: "Cadena de suministro",
+                                    suggestion: "Utilizar proveedores locales",
+                                    impact: "Medio impacto"
+                                },
+                                {
+                                    category: "Energía",
+                                    suggestion: "Implementar energías renovables",
+                                    impact: "Alto impacto"
+                                }
+                            ]
+                        }
+                    };
+                }
+            };
+            
+            // Hacer la API globalmente accesible
+            window.EcoTagAPI = EcoTagAPI;
+        }
+
+        // Verificar si authManager ya existe antes de declararlo
+        if (typeof authManager === 'undefined') {
+            // Simulación de Auth Manager
+            const authManager = {
+                isAuthenticated: function() {
+                    const user = localStorage.getItem('ecotag_user');
+                    return user !== null;
+                },
+                
+                getUser: function() {
+                    const user = localStorage.getItem('ecotag_user');
+                    return user ? JSON.parse(user) : null;
+                },
+                
+                getToken: function() {
+                    return localStorage.getItem('ecotag_token') || 'simulated_token';
+                },
+                
+                login: async function(credentials) {
+                    // Simular retardo de red
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Simular verificación de credenciales
+                    if (credentials.email && credentials.password) {
+                        // Guardar en localStorage
+                        localStorage.setItem('ecotag_user', JSON.stringify({
+                            company: "Empresa Demo",
+                            email: credentials.email,
+                            plan: "profesional"
+                        }));
+                        
+                        localStorage.setItem('ecotag_token', 'simulated_jwt_token');
+                        
+                        return { success: true, message: "Login exitoso" };
+                    } else {
+                        return { success: false, message: "Credenciales inválidas" };
+                    }
+                },
+                
+                register: async function(userData) {
+                    // Simular retardo de net
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    
+                    // Simular registro exitoso
+                    if (userData.company && userData.email && userData.password) {
+                        // Guardar en localStorage
+                        localStorage.setItem('ecotag_user', JSON.stringify({
+                            company: userData.company,
+                            email: userData.email,
+                            plan: userData.plan
+                        }));
+                        
+                        localStorage.setItem('ecotag_token', 'simulated_jwt_token');
+                        
+                        return { success: true, message: "Registro exitoso" };
+                    } else {
+                        return { success: false, message: "Datos incompletos" };
+                    }
+                },
+                
+                logout: function() {
+                    localStorage.removeItem('ecotag_user');
+                    localStorage.removeItem('ecotag_token');
+                }
+            };
+            
+            // Hacer authManager globalmente accesible
+            window.authManager = authManager;
+        }
+        
+        // Utilidades
+        function isValidEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+        
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification ' + type;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Funciones globales para manejo de modales
+        function openModal(modal) {
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeModal(modal) {
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        }
+        
+        // ==============================================
+        // INTEGRACIÓN CON LA APLICACIÓN ECO TAG
+        // ==============================================
+        
+        // Esperar a que todos los recursos estén listos
+        window.addEventListener('load', function() {
+            // Ocultar loading overlay
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) {
+                setTimeout(() => {
+                    loadingOverlay.classList.add('hidden');
+                }, 500);
+            }
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mover la creación del menú móvil al principio para mejor rendimiento
+            initializeMobileMenu();
+            
+            // Inicializar modales
+            initializeModals();
+            
+            // Inicializar funcionalidad de escaneo
+            initializeScanner();
+            
+            // Inicializar funcionalidad de pago
+            initializePayment();
+            
+            // Configurar otros event listeners
+            setupEventListeners();
+            
+            // Verificar autenticación y redirigir si es necesario
+            checkAuthAndRedirect();
+        });
+        
+        function initializeMobileMenu() {
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            if (!mobileMenuBtn) return;
+            
+            const mobileMenu = document.createElement('div');
+            mobileMenu.classList.add('mobile-menu');
+            mobileMenu.innerHTML = `
+                <ul>
+                    <li><a href="#" class="active">Inicio</a></li>
+                    <li><a href="#scanner">Escáner</a></li>
+                    <li><a href="products.html">Mis Productos</a></li>
+                    <li><a href="scans.html">Mis Escaneos</a></li>
+                    <li><a href="#pricing">Precios</a></li>
+                    <li><a href="#contact">Contacto</a></li>
+                </ul>
+                <div class="auth-buttons">
+                    <button class="btn btn-outline" id="mobileLoginBtn">Iniciar Sesión</button>
+                    <button class="btn btn-primary" id="mobileRegisterBtn">Registrarse</button>
+                </div>
+                <div class="close-menu"><i class="fas fa-times"></i></div>
+            `;
+            document.body.appendChild(mobileMenu);
+            
+            const menuOverlay = document.getElementById('menuOverlay');
+            const closeMenu = mobileMenu.querySelector('.close-menu');
+            
+            mobileMenuBtn.addEventListener('click', function() {
+                mobileMenu.classList.add('active');
+                menuOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+            
+            function closeMobileMenu() {
+                mobileMenu.classList.remove('active');
+                menuOverlay.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+            
+            closeMenu.addEventListener('click', closeMobileMenu);
+            if (menuOverlay) {
+                menuOverlay.addEventListener('click', closeMobileMenu);
+            }
+            
+            // Event listeners para botones móviles
+            const mobileLoginBtn = document.getElementById('mobileLoginBtn');
+            const mobileRegisterBtn = document.getElementById('mobileRegisterBtn');
+            
+            if (mobileLoginBtn) {
+                mobileLoginBtn.addEventListener('click', function() {
+                    closeMobileMenu();
+                    openModal(document.getElementById('loginModal'));
+                });
+            }
+            
+            if (mobileRegisterBtn) {
+                mobileRegisterBtn.addEventListener('click', function() {
+                    closeMobileMenu();
+                    openModal(document.getElementById('registerModal'));
+                });
+            }
+        }
+        
+        function initializeModals() {
+            const loginModal = document.getElementById('loginModal');
+            const registerModal = document.getElementById('registerModal');
+            const paymentModal = document.getElementById('paymentModal');
+            const closeButtons = document.querySelectorAll('.close');
+            
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const modal = this.closest('.modal');
+                    closeModal(modal);
+                });
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(e) {
+                if (e.target.classList.contains('modal')) {
+                    closeModal(e.target);
+                }
+            });
+            
+            // Form submission
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLogin);
+            }
+            
+            const registerForm = document.getElementById('registerForm');
+            if (registerForm) {
+                registerForm.addEventListener('submit', handleRegister);
+            }
+            
+            // Navegación entre modales
+            const goToRegister = document.getElementById('goToRegister');
+            const goToLogin = document.getElementById('goToLogin');
+            
+            if (goToRegister) {
+                goToRegister.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    closeModal(loginModal);
+                    openModal(registerModal);
+                });
+            }
+            
+            if (goToLogin) {
+                goToLogin.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    closeModal(registerModal);
+                    openModal(loginModal);
+                });
+            }
+        }
+        
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const loginText = document.getElementById('loginText');
+            const loginSpinner = document.getElementById('loginSpinner');
+            const loginSubmit = document.getElementById('loginSubmit');
+            
+            // Validación básica
+            if (!isValidEmail(email)) {
+                showNotification('Por favor ingresa un email válido', 'error');
+                return;
+            }
+            
+            // Mostrar loading
+            if (loginText) loginText.style.display = 'none';
+            if (loginSpinner) loginSpinner.style.display = 'block';
+            if (loginSubmit) loginSubmit.disabled = true;
+            
+            try {
+                const result = await authManager.login({ email, password });
+                
+                if (result.success) {
+                    closeModal(document.getElementById('loginModal'));
+                    showNotification(`Bienvenido ${authManager.getUser().company}`, 'success');
+                    
+                    // Redirigir a productos si estamos en la página principal
+                    if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/') {
+                        setTimeout(() => {
+                            window.location.href = 'products.html';
+                        }, 1000);
+                    }
+                } else {
+                    showNotification('Error: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            } finally {
+                if (loginText) loginText.style.display = 'block';
+                if (loginSpinner) loginSpinner.style.display = 'none';
+                if (loginSubmit) loginSubmit.disabled = false;
+            }
+        }
+        
+        async function handleRegister(e) {
+            e.preventDefault();
+            
+            const company = document.getElementById('register-company').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirmPassword').value;
+            const plan = document.getElementById('register-plan').value;
+            const registerText = document.getElementById('registerText');
+            const registerSpinner = document.getElementById('registerSpinner');
+            const registerSubmit = document.getElementById('registerSubmit');
+            
+            // Validaciones
+            if (company.length < 2) {
+                showNotification('El nombre de la empresa debe tener al menos 2 caracteres', 'error');
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                showNotification('Por favor ingresa un email válido', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showNotification('La contraseña debe tener al menos 6 caracteres', 'error');
+                return;
+            }
+            
+            // Validar contraseñas
+            if (password !== confirmPassword) {
+                showNotification('Las contraseñas no coinciden', 'error');
+                return;
+            }
+            
+            // Mostrar loading
+            if (registerText) registerText.style.display = 'none';
+            if (registerSpinner) registerSpinner.style.display = 'block';
+            if (registerSubmit) registerSubmit.disabled = true;
+            
+            try {
+                const result = await authManager.register({
+                    company, email, password, confirmPassword, plan
+                });
+                
+                if (result.success) {
+                    closeModal(document.getElementById('registerModal'));
+                    showNotification(`¡Bienvenido a Eco Tag! Tu cuenta para ${company} ha sido creada.`, 'success');
+                    
+                    // Redirigir a productos después de registro exitoso
+                    setTimeout(() => {
+                        window.location.href = 'products.html';
+                    }, 1500);
+                } else {
+                    showNotification('Error: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            } finally {
+                if (registerText) registerText.style.display = 'block';
+                if (registerSpinner) registerSpinner.style.display = 'none';
+                if (registerSubmit) registerSubmit.disabled = false;
+            }
+        }
+        
+        function initializeScanner() {
+            const scanBtn = document.getElementById('scanBtn');
+            
+            if (scanBtn) {
+                scanBtn.addEventListener('click', handleScan);
+            }
+        }
+        
+        async function handleScan() {
+            if (!authManager.isAuthenticated()) {
+                showNotification('Por favor inicia sesión para escanear productos', 'warning');
+                openModal(document.getElementById('loginModal'));
+                return;
+            }
+            
+            const scanBtn = document.getElementById('scanBtn');
+            
+            // Simulate scanning process
+            scanBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Escaneando...';
+            scanBtn.disabled = true;
+            
+            try {
+                // Usar la API para procesar el escaneo
+                const result = await EcoTagAPI.processScan(authManager.getToken(), {
+                    product_id: "prod_" + Math.random().toString(36).substr(2, 9),
+                    product_name: "Producto Escaneado " + Math.floor(Math.random() * 1000),
+                    category: "General"
+                });
+                
+                // Mostrar resultados
+                const scanData = result.data;
+                const productTitle = document.querySelector('.product-info h4');
+                const scoreFill = document.querySelector('.score-fill');
+                const sustainabilityScore = document.querySelector('.sustainability-score span');
+                const recommendationsList = document.querySelector('.improvement-list');
+                
+                if (productTitle) productTitle.textContent = scanData.product.name;
+                if (scoreFill) scoreFill.style.width = scanData.sustainability_score + '%';
+                if (sustainabilityScore) sustainabilityScore.textContent = scanData.sustainability_score + '% Sostenible';
+                
+                // Actualizar recomendaciones
+                if (recommendationsList) {
+                    recommendationsList.innerHTML = '';
+                    
+                    scanData.improvement_recommendations.forEach(rec => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<i class="fas fa-times-circle"></i> <strong>${rec.category}:</strong> ${rec.suggestion} (${rec.impact})`;
+                        recommendationsList.appendChild(li);
+                    });
+                }
+                
+                const scanResult = document.getElementById('scanResult');
+                if (scanResult) {
+                    scanResult.classList.add('active');
+                    
+                    // Scroll to results
+                    scanResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                
+                showNotification('Escaneo completado correctamente', 'success');
+                
+            } catch (error) {
+                console.error('Error en escaneo:', error);
+                showNotification('Error al procesar el escaneo: ' + error.message, 'error');
+            } finally {
+                const scanBtn = document.getElementById('scanBtn');
+                if (scanBtn) {
+                    scanBtn.innerHTML = 'Escanear Ahora';
+                    scanBtn.disabled = false;
+                }
+            }
+        }
+        
+        function initializePayment() {
+            // PayPal Simulation
+            const simulateSuccess = document.getElementById('simulateSuccess');
+            const simulateFailure = document.getElementById('simulateFailure');
+            const simulateCancel = document.getElementById('simulateCancel');
+            
+            if (simulateSuccess) {
+                simulateSuccess.addEventListener('click', handleSuccessPayment);
+            }
+            
+            if (simulateFailure) {
+                simulateFailure.addEventListener('click', handleFailedPayment);
+            }
+            
+            if (simulateCancel) {
+                simulateCancel.addEventListener('click', handleCancelPayment);
+            }
+            
+            // Connect pricing cards to payment modal
+            const pricingButtons = document.querySelectorAll('.payment-btn');
+            pricingButtons.forEach(button => {
+                button.addEventListener('click', handlePricingButtonClick);
+            });
+            
+            // Reset payment modal when closed
+            const paymentModal = document.getElementById('paymentModal');
+            if (paymentModal) {
+                const paymentCloseBtn = paymentModal.querySelector('.close');
+                if (paymentCloseBtn) {
+                    paymentCloseBtn.addEventListener('click', resetPaymentModal);
+                }
+                
+                paymentModal.addEventListener('click', function(e) {
+                    if (e.target === paymentModal) {
+                        resetPaymentModal();
+                    }
+                });
+            }
+        }
+        
+        function handleSuccessPayment() {
+            console.log("Pago exitoso clickeado");
+            
+            // Obtener el plan seleccionado
+            const selectedPlanElement = document.getElementById('selected-plan');
+            const selectedAmountElement = document.getElementById('selected-amount');
+            
+            let plan = "Profesional";
+            let amount = "$79/mes";
+            
+            if (selectedPlanElement && selectedPlanElement.textContent !== "Selecciona un plan") {
+                plan = selectedPlanElement.textContent;
+            }
+            
+            if (selectedAmountElement && selectedAmountElement.textContent !== "-") {
+                amount = selectedAmountElement.textContent;
+            }
+            
+            console.log("Plan:", plan, "Amount:", amount);
+            
+            // Mostrar éxito de pago
+            showPaymentSuccess(plan, amount);
+        }
+        
+        function handleFailedPayment() {
+            showNotification('Error en el procesamiento del pago. Por favor, intenta con otro método de pago.', 'error');
+        }
+        
+        function handleCancelPayment() {
+            showNotification('Has cancelado el proceso de pago. Puedes intentarlo de nuevo cuando estés listo.', 'warning');
+            closeModal(document.getElementById('paymentModal'));
+        }
+        
+        // Show payment success - FUNCIÓN MEJORADA
+        function showPaymentSuccess(plan, amount) {
+            console.log("Mostrando éxito de pago para plan:", plan);
+            
+            // Ocultar botones de simulación
+            const simulationSection = document.querySelector('#paymentModal .modal-content > div');
+            if (simulationSection) {
+                simulationSection.style.display = 'none';
+            }
+            
+            // Crear contenedor de éxito
+            const successHTML = `
+                <div class="payment-success">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>¡Pago Completado Exitosamente!</h3>
+                    <p>Gracias por suscribirte al plan <strong>${plan}</strong> de Eco Tag.</p>
+                    <p>Precio: <strong>${amount}</strong></p>
+                    <p>ID de transacción: SIM-${Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
+                    <button class="btn btn-green" id="success-close">Continuar</button>
+                </div>
+            `;
+            
+            // Insertar el HTML de éxito
+            const paymentContent = document.querySelector('#paymentModal .modal-content');
+            if (paymentContent) {
+                // Remover éxito anterior si existe
+                const existingSuccess = document.getElementById('payment-success-container');
+                if (existingSuccess) {
+                    existingSuccess.remove();
+                }
+                
+                // Crear nuevo contenedor
+                const successContainer = document.createElement('div');
+                successContainer.id = 'payment-success-container';
+                successContainer.innerHTML = successHTML;
+                paymentContent.appendChild(successContainer);
+                
+                // Agregar evento al botón de continuar
+                setTimeout(() => {
+                    const successClose = document.getElementById('success-close');
+                    if (successClose) {
+                        successClose.addEventListener('click', function() {
+                            closeModal(document.getElementById('paymentModal'));
+                            showNotification('¡Bienvenido a Eco Tag! Tu plan ha sido activado.', 'success');
+                            
+                            // Limpiar para próxima vez
+                            setTimeout(() => {
+                                successContainer.remove();
+                                if (simulationSection) {
+                                    simulationSection.style.display = 'block';
+                                }
+                            }, 500);
+                        });
+                    }
+                }, 100);
+            }
+        }
+        
+        function handlePricingButtonClick() {
+            // Determine which plan was selected
+            const plan = this.dataset.plan;
+            const amount = this.dataset.amount;
+            
+            // Open payment modal
+            openModal(document.getElementById('paymentModal'));
+            
+            // Actualizar la información del plan seleccionado inmediatamente
+            const selectedPlanElement = document.getElementById('selected-plan');
+            const selectedAmountElement = document.getElementById('selected-amount');
+            
+            if (selectedPlanElement) {
+                selectedPlanElement.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+            }
+            
+            if (selectedAmountElement) {
+                selectedAmountElement.textContent = amount;
+            }
+        }
+        
+        // Reset payment modal to initial state
+        function resetPaymentModal() {
+            // Limpiar éxito de pago si existe
+            const successContainer = document.getElementById('payment-success-container');
+            if (successContainer) {
+                successContainer.remove();
+            }
+            
+            // Mostrar sección de simulación
+            const simulationSection = document.querySelector('#paymentModal .modal-content > div');
+            if (simulationSection) {
+                simulationSection.style.display = 'block';
+            }
+            
+            // Resetear texto de plan seleccionado
+            const selectedPlanElement = document.getElementById('selected-plan');
+            const selectedAmountElement = document.getElementById('selected-amount');
+            
+            if (selectedPlanElement) {
+                selectedPlanElement.textContent = "Selecciona un plan";
+            }
+            
+            if (selectedAmountElement) {
+                selectedAmountElement.textContent = "-";
+            }
+        }
+        
+        function setupEventListeners() {
+            // Botones de autenticación en el header
+            const loginBtn = document.getElementById('loginBtn');
+            const registerBtn = document.getElementById('registerBtn');
+            
+            if (loginBtn) {
+                loginBtn.addEventListener('click', () => {
+                    openModal(document.getElementById('loginModal'));
+                });
+            }
+            
+            if (registerBtn) {
+                registerBtn.addEventListener('click', () => {
+                    openModal(document.getElementById('registerModal'));
+                });
+            }
+            
+            // Start and demo buttons
+            const startBtn = document.getElementById('startBtn');
+            const demoBtn = document.getElementById('demoBtn');
+            
+            if (startBtn) {
+                startBtn.addEventListener('click', () => {
+                    if (authManager.isAuthenticated()) {
+                        showNotification(`Bienvenido de nuevo ${authManager.getUser().company}`, 'success');
+                    } else {
+                        openModal(document.getElementById('registerModal'));
+                    }
+                });
+            }
+            
+            if (demoBtn) {
+                demoBtn.addEventListener('click', () => {
+                    showNotification('Demo iniciada. Esta funcionalidad mostraría un recorrido por la aplicación.', 'success');
+                });
+            }
+            
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        }
+        
+        function checkAuthAndRedirect() {
+            // Redirigir si estamos en la página principal y el usuario está autenticado
+            if ((window.location.pathname.endsWith('index.html') || window.location.pathname === '/') && 
+                authManager.isAuthenticated()) {
+                setTimeout(() => {
+                    window.location.href = 'products.html';
+                }, 1500);
+            }
+        }
+    </script>
+    <!-- Eliminamos la carga del script api.js para evitar conflictos -->
+    <!-- <script src="script.js"></script> -->
+</body>
+</html>
