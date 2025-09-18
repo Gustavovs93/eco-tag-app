@@ -201,6 +201,79 @@
         body[data-auth="true"] .auth-buttons { display: none; }
         body[data-auth="true"] .user-menu { display: block; }
         .user-menu { display: none; }
+        /* Estilos para el escáner de cámara */
+.camera-view {
+    width: 100%;
+    max-width: 400px;
+    height: 300px;
+    background: #f1f1f1;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.camera-frame {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.scanning-frame {
+    text-align: center;
+    color: var(--gray);
+}
+
+.scanning-frame i {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.camera-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+#scanner-video, #scanner-canvas {
+    width: 100%;
+    max-width: 400px;
+    border-radius: 10px;
+    display: none;
+}
+
+#scanner-video.active, #scanner-canvas.active {
+    display: block;
+}
+
+.camera-view.hidden {
+    display: none;
+}
+
+.scanning-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 2px solid #2ecc71;
+    border-radius: 10px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
     </style>
 </head>
 <body>
@@ -265,11 +338,40 @@
             </div>
             
             <div class="scanner-container">
-                <div class="scanner-placeholder">
-                    <i class="fas fa-camera"></i>
-                </div>
-                <button class="btn btn-primary" id="scanBtn">Escanear Ahora</button>
+               <!-- ========================== -->
+            <!-- 🎥 NUEVO CÓDIGO DE CÁMARA -->
+            <!-- ========================== -->
+            <div class="scanner-wrapper">
+                <!-- Vista de cámara -->
+                <video id="scanner-video" autoplay playsinline hidden></video>
+                <canvas id="scanner-canvas" hidden></canvas>
                 
+                <!-- Vista de previsualización -->
+                <div id="camera-view" class="camera-view">
+                    <div class="camera-frame">
+                        <div class="scanning-frame">
+                            <i class="fas fa-camera"></i>
+                            <p>Enfoca el código de barras del producto</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Controles de cámara -->
+                <div class="camera-controls">
+                    <button id="start-camera" class="btn btn-primary">
+                        <i class="fas fa-camera"></i> Activar Cámara
+                    </button>
+                    <button id="capture-btn" class="btn btn-success" disabled>
+                        <i class="fas fa-camera"></i> Capturar
+                    </button>
+                    <button id="switch-camera" class="btn btn-outline" disabled>
+                        <i class="fas fa-sync-alt"></i> Cambiar Cámara
+                    </button>
+                </div>
+            </div>
+            <!-- ========================== -->
+            <!-- FIN NUEVO CÓDIGO -->
+            <!-- ========================== -->
                 <!-- Resultados del escaneo -->
                 <div class="scan-result" id="scanResult">
                     <div class="product-info">
@@ -732,6 +834,257 @@
 
             console.log('Eco Tag inicializado correctamente 🚀');
         });
+        // Variables globales para la cámara
+let stream = null;
+let currentFacingMode = 'environment'; // cámara trasera
+
+// Función para activar la cámara
+async function startCamera() {
+    try {
+        const video = document.getElementById('scanner-video');
+        const cameraView = document.getElementById('camera-view');
+        const startBtn = document.getElementById('start-camera');
+        const captureBtn = document.getElementById('capture-btn');
+        const switchBtn = document.getElementById('switch-camera');
+
+        // Solicitar acceso a la cámara
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { 
+                facingMode: currentFacingMode,
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
+            audio: false
+        });
+
+        // Configurar el video
+        video.srcObject = stream;
+        video.hidden = false;
+        video.classList.add('active');
+        
+        // Ocultar vista de placeholder
+        cameraView.classList.add('hidden');
+        
+        // Habilitar controles
+        captureBtn.disabled = false;
+        switchBtn.disabled = false;
+        startBtn.disabled = true;
+        
+        // Esperar a que el video cargue
+        video.onloadedmetadata = () => {
+            video.play();
+        };
+
+    } catch (error) {
+        console.error('Error accediendo a la cámara:', error);
+        showNotification('No se pudo acceder a la cámara', 'error');
+    }
+}
+
+// Función para cambiar entre cámaras
+async function switchCamera() {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+    }
+    
+    currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+    await startCamera();
+}
+
+// Función para capturar imagen
+function captureImage() {
+    const video = document.getElementById('scanner-video');
+    const canvas = document.getElementById('scanner-canvas');
+    const context = canvas.getContext('2d');
+
+    // Configurar canvas con las dimensiones del video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // Dibujar el frame actual en el canvas
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Obtener la imagen como data URL
+    const imageData = canvas.toDataURL('image/jpeg');
+    
+    // Procesar la imagen
+    processImage(imageData);
+    async function processImage(imageData) {
+    showNotification('Procesando imagen...', 'warning');
+    
+    try {
+        // Simulación MEJORADA con detección realista
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Simular análisis de imagen
+        const mockProduct = await simulateProductRecognition(imageData);
+        showScanResults(mockProduct);
+        
+    } catch (error) {
+        console.error('Error procesando imagen:', error);
+        showNotification('Error al procesar la imagen', 'error');
+    }
+}
+}
+
+// Función para procesar la imagen capturada
+async function processImage(imageData) {
+    showNotification('Procesando imagen...', 'warning');
+    
+    try {
+        const recognitionResult = await recognizeWithGoogleVision(imageData);
+        // Aquí implementaremos el reconocimiento
+        // Por ahora, simulamos el procesamiento
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Simular resultados de escaneo
+        const mockProduct = await simulateProductRecognition(imageData);
+        
+        // Mostrar resultados
+         showScanResults(recognitionResult);
+        
+    } catch (error) {
+        console.error('Error procesando imagen:', error);
+        showNotification('Error al procesar la imagen', 'error');
+    }
+}
+
+// Función para simular reconocimiento de producto
+async function simulateProductRecognition(imageData) {
+    // En una implementación real, aquí enviarías la imagen a un API
+    // Por ahora, simulamos datos de producto
+    
+    const products = [
+        {
+            name: "Botella de Agua Mineral",
+            brand: "AguaPure",
+            category: "Bebidas",
+            sustainabilityScore: 65,
+            barcode: "1234567890123",
+            recommendations: [
+                "Envase: Reducir plástico de un solo uso (Alto impacto)",
+                "Cadena de suministro: Utilizar proveedores locales (Medio impacto)",
+                "Energía: Implementar energías renovables (Alto impacto)"
+            ]
+        },
+        {
+            name: "Galletas Integrales",
+            brand: "NatureFood",
+            category: "Alimentos",
+            sustainabilityScore: 78,
+            barcode: "2345678901234",
+            recommendations: [
+                "Packaging: Usar materiales biodegradables (Alto impacto)",
+                "Ingredientes: Sourcing orgánico certificado (Medio impacto)"
+            ]
+        },
+        {
+            name: "Detergente Líquido",
+            brand: "EcoClean",
+            category: "Limpieza",
+            sustainabilityScore: 82,
+            barcode: "3456789012345",
+            recommendations: [
+                "Formula: Reducir químicos agresivos (Alto impacto)",
+                "Envase: Sistema de recarga disponible (Medio impacto)"
+            ]
+        }
+    ];
+
+    // Devolver un producto aleatorio para la demo
+    return products[Math.floor(Math.random() * products.length)];
+}
+
+// Función para mostrar resultados
+function showScanResults(product) {
+    const scanResult = document.getElementById('scanResult');
+    const scoreFill = document.querySelector('.score-fill');
+    const productName = document.querySelector('.product-info h4');
+    const scoreValue = document.querySelector('.score-value');
+    const improvementList = document.querySelector('.improvement-list');
+
+    // Actualizar datos
+    productName.textContent = product.name;
+    scoreValue.textContent = `${product.sustainabilityScore}%`;
+    scoreFill.style.width = `${product.sustainabilityScore}%`;
+
+    // Actualizar recomendaciones
+    improvementList.innerHTML = '';
+    product.recommendations.forEach(rec => {
+        const li = document.createElement('li');
+        li.innerHTML = `<i class="fas fa-times-circle"></i> ${rec}`;
+        improvementList.appendChild(li);
+    });
+
+    // Mostrar resultados
+    scanResult.classList.add('active');
+    scanResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Guardar en base de datos
+    saveScanToDatabase(product);
+
+    showNotification('Escaneo completado correctamente', 'success');
+}
+
+// Función para guardar en Firestore
+async function saveScanToDatabase(product) {
+    try {
+        const { auth } = window.firebaseAuth;
+        const { db, collection, addDoc, serverTimestamp } = window.firebaseFirestore;
+
+        const user = auth.currentUser;
+        if (!user) return;
+
+        await addDoc(collection(db, "scans"), {
+            productName: product.name,
+            productBrand: product.brand,
+            productCategory: product.category,
+            barcode: product.barcode,
+            sustainabilityScore: product.sustainabilityScore,
+            companyId: user.uid,
+            timestamp: serverTimestamp(),
+            recommendations: product.recommendations
+        });
+
+        console.log('Escaneo guardado en base de datos');
+
+    } catch (error) {
+        console.error('Error guardando escaneo:', error);
+    }
+}
+
+// Función para detener la cámara
+function stopCamera() {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+    }
+    
+    const video = document.getElementById('scanner-video');
+    const cameraView = document.getElementById('camera-view');
+    const startBtn = document.getElementById('start-camera');
+    const captureBtn = document.getElementById('capture-btn');
+    const switchBtn = document.getElementById('switch-camera');
+
+    video.classList.remove('active');
+    cameraView.classList.remove('hidden');
+    captureBtn.disabled = true;
+    switchBtn.disabled = true;
+    startBtn.disabled = false;
+}
+
+// Agregar event listeners para la cámara
+document.addEventListener('DOMContentLoaded', function() {
+    const startBtn = document.getElementById('start-camera');
+    const captureBtn = document.getElementById('capture-btn');
+    const switchBtn = document.getElementById('switch-camera');
+
+    if (startBtn) startBtn.addEventListener('click', startCamera);
+    if (captureBtn) captureBtn.addEventListener('click', captureImage);
+    if (switchBtn) switchBtn.addEventListener('click', switchCamera);
+
+    // Detener cámara cuando se cierra el modal o se cambia de página
+    window.addEventListener('beforeunload', stopCamera);
+});
     </script>
 </body>
 </html>
