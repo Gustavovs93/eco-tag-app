@@ -972,7 +972,7 @@ async function processImage(imageData) {
     showNotification('Procesando imagen...', 'warning');
     
     try {
-        //const recognitionResult = await recognizeWithGoogleVision(imageData);
+        const recognitionResult = await recognizeWithGoogleVision(imageData);
         // Aquí implementaremos el reconocimiento
         // Por ahora, simulamos el procesamiento
         await new Promise(resolve => setTimeout(resolve, 2000));
