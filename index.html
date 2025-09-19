@@ -910,12 +910,13 @@ function captureImage() {
     // Procesar la imagen
     
     processImage(imageData);
+}
     async function recognizeWithGoogleVision(imageData) {
     try {
         const base64Image = imageData.split(',')[1]; // Remover data:image/...
         
         // 🔑 REEMPLAZA CON TU API KEY DE GOOGLE CLOUD
-        const API_KEY = '//AIzaSyCkFzaDSMGMBzkx9k8Wap3-ZBavT-pDvB4';
+        const API_KEY = 'AIzaSyCkFzaDSMGMBzkx9k8Wap3-ZBavT-pDvB4';
         
         const response = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${API_KEY}`, {
             method: 'POST',
@@ -965,14 +966,14 @@ function processVisionResults(visionData) {
         recommendations: generateRecommendations(allDetections)
     };
 }
-}
+
 
 // Función para procesar la imagen capturada
 async function processImage(imageData) {
     showNotification('Procesando imagen...', 'warning');
     
     try {
-        const recognitionResult = await recognizeWithGoogleVision(imageData);
+        //const recognitionResult = await recognizeWithGoogleVision(imageData);
         // Aquí implementaremos el reconocimiento
         // Por ahora, simulamos el procesamiento
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -981,7 +982,7 @@ async function processImage(imageData) {
         const mockProduct = await simulateProductRecognition(imageData);
         
         // Mostrar resultados
-         showScanResults(recognitionResult);
+         showScanResults(mockProduct);
         
     } catch (error) {
         console.error('Error procesando imagen:', error);
