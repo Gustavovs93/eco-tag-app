@@ -2,9 +2,7 @@
 <html lang="es">
 <head>
     <!-- Agrega esto en el <head> de tu index.html -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
     <meta name="theme-color" content="#2ecc71">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -1005,10 +1003,20 @@ function captureImage() {
 // 🤖 FUNCIÓN PARA INTENTAR CAPTURA AUTOMÁTICA
 // ===============================
 function tryCapture() {
-  const video = document.getElementById('scanner-video');
-  if (video.readyState === video.HAVE_ENOUGH_DATA) {
-    captureImage();
-  }
+    // VERIFICAR Firebase antes de capturar
+    if (!window.firebaseApp || !window.firebaseApp.auth) {
+        console.log('Firebase no disponible, deteniendo escaneo automático');
+        if (scannerInterval) {
+            clearInterval(scannerInterval);
+            scannerInterval = null;
+        }
+        return;
+    }
+
+    const video = document.getElementById('scanner-video');
+    if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
+        captureImage();
+    }
 }
 // ===============================
 // ⛔ FUNCIÓN PARA DETENER CÁMARA
@@ -1204,19 +1212,38 @@ function showScanResults(product) {
     scanResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     // Guardar en base de datos
-    saveScanToDatabase(product);
+    //saveScanToDatabase(product);
 
     showNotification('Escaneo completado correctamente', 'success');
 }
+// VERIFICACIÓN DE FIREBASE
+console.log('🔥 Firebase App:', window.firebaseApp);
+console.log('🔥 Firebase Auth:', window.firebaseAuth);
+console.log('🔥 Firebase Firestore:', window.firebaseFirestore);
 
-// Función para guardar en Firestore
+// Verificar después de un tiempo (por la carga asíncrona)
+setTimeout(() => {
+    console.log('✅ Firebase cargado:', !!window.firebaseApp);
+    console.log('✅ Auth disponible:', !!window.firebaseApp?.auth);
+}, 2000);
+// FUNCIÓN CORREGIDA - saveScanToDatabase
 async function saveScanToDatabase(product) {
     try {
-        const { auth } = window.firebaseAuth;
+        // VERIFICAR que Firebase esté disponible
+        if (!window.firebaseApp || !window.firebaseApp.auth) {
+            console.warn('Firebase no está disponible - Modo demo');
+            return;
+        }
+
+        const { auth } = window.firebaseApp;
         const { db, collection, addDoc, serverTimestamp } = window.firebaseFirestore;
 
         const user = auth.currentUser;
-        if (!user) return;
+        
+        if (!user) {
+            console.log('Usuario no autenticado, escaneo no guardado');
+            return;
+        }
 
         await addDoc(collection(db, "scans"), {
             productName: product.name,
@@ -1229,10 +1256,11 @@ async function saveScanToDatabase(product) {
             recommendations: product.recommendations
         });
 
-        console.log('Escaneo guardado en base de datos');
+        console.log('✅ Escaneo guardado en base de datos');
 
     } catch (error) {
-        console.error('Error guardando escaneo:', error);
+        console.error('❌ Error guardando escaneo:', error);
+        // No mostrar notificación para evitar spam
     }
 }
 
