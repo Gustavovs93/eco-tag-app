@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- Agrega esto en el <head> de tu index.html -->
-
     <meta name="theme-color" content="#2ecc71">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -15,43 +13,56 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <!-- Reemplaza las dos versiones del SDK con esta única implementación -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { 
-    getAuth, 
-    createUserWithEmailAndPassword, 
-    signInWithEmailAndPassword, 
-    signOut,
-    onAuthStateChanged 
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { 
-    getFirestore, 
-    doc, 
-    setDoc, 
-    getDoc, 
-    addDoc, 
-    collection, 
-    serverTimestamp 
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    
+    <!-- SDK Firebase Modular -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signOut,
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc, 
+            getDoc, 
+            addDoc, 
+            collection, 
+            serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDpBbiM_ALSLLhfJBDXDWOd6H_Gh3THqSs",
-    authDomain: "ecotag-app-c53c2.firebaseapp.com",
-    projectId: "ecotag-app-c53c2",
-    storageBucket: "ecotag-app-c53c2.firebasestorage.app",
-    messagingSenderId: "1023701046944",
-    appId: "1:1023701046944:web:0fa7c98dbcae3551c0dbc5"
-  };
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpBbiM_ALSLLhfJBDXDWOd6H_Gh3THqSs",
+            authDomain: "ecotag-app-c53c2.firebaseapp.com",
+            projectId: "ecotag-app-c53c2",
+            storageBucket: "ecotag-app-c53c2.firebasestorage.app",
+            messagingSenderId: "1023701046944",
+            appId: "1:1023701046944:web:0fa7c98dbcae3551c0dbc5"
+        };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-  window.firebaseApp = { app, auth, db };
-  window.firebaseAuth = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged };
-  window.firebaseFirestore = { doc, setDoc, getDoc, addDoc, collection, serverTimestamp };
-</script>
+        window.firebaseApp = { app, auth, db };
+        window.firebaseAuth = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged };
+        window.firebaseFirestore = { doc, setDoc, getDoc, addDoc, collection, serverTimestamp };
+        
+        console.log('🔥 Firebase inicializado correctamente');
+        
+        // Verificar autenticación en tiempo real
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log('✅ Usuario autenticado:', user.email);
+                document.body.setAttribute('data-auth', 'true');
+            } else {
+                console.log('❌ Usuario no autenticado');
+                document.body.setAttribute('data-auth', 'false');
+            }
+        });
     </script>
     
     <style>
@@ -203,121 +214,121 @@
         body[data-auth="true"] .auth-buttons { display: none; }
         body[data-auth="true"] .user-menu { display: block; }
         .user-menu { display: none; }
+        
         /* Estilos para el escáner de cámara */
-.camera-view {
-    width: 100%;
-    max-width: 400px;
-    height: 300px;
-    background: #f1f1f1;
-    border-radius: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-    position: relative;
-    overflow: hidden;
-}
+        .camera-view {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            background: #f1f1f1;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
 
-.camera-frame {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+        .camera-frame {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-.scanning-frame {
-    text-align: center;
-    color: var(--gray);
-}
+        .scanning-frame {
+            text-align: center;
+            color: var(--gray);
+        }
 
-.scanning-frame i {
-    font-size: 3rem;
-    margin-bottom: 10px;
-    display: block;
-}
+        .scanning-frame i {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: block;
+        }
 
-.camera-controls {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
 
-#scanner-video, #scanner-canvas {
-    width: 100%;
-    max-width: 400px;
-    border-radius: 10px;
-    display: none;
-}
+        #scanner-video, #scanner-canvas {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+            display: none;
+        }
 
-#scanner-video.active, #scanner-canvas.active {
-    display: block;
-}
+        #scanner-video.active, #scanner-canvas.active {
+            display: block;
+        }
 
-.camera-view.hidden {
-    display: none;
-}
+        .camera-view.hidden {
+            display: none;
+        }
 
-.scanning-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: 2px solid #2ecc71;
-    border-radius: 10px;
-    animation: pulse 2s infinite;
-}
+        .scanning-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 2px solid #2ecc71;
+            border-radius: 10px;
+            animation: pulse 2s infinite;
+        }
 
-@keyframes pulse {
-    0% { opacity: 0.5; }
-    50% { opacity: 1; }
-    100% { opacity: 0.5; }
-}
-/* =============================== */
-/* 📱 MEJORAS PARA MÓVILES */
-/* =============================== */
-@media (max-width: 768px) {
-  .scanner-placeholder, .camera-view {
-    width: 250px;
-    height: 250px;
-  }
-  
-  .camera-controls {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .camera-controls .btn {
-    margin: 5px 0;
-    width: 200px;
-  }
-  
-  .scan-result {
-    padding: 20px;
-    margin: 20px 10px;
-  }
-}
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+        
+        /* Mejoras para móviles */
+        @media (max-width: 768px) {
+            .scanner-placeholder, .camera-view {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .camera-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .camera-controls .btn {
+                margin: 5px 0;
+                width: 200px;
+            }
+            
+            .scan-result {
+                padding: 20px;
+                margin: 20px 10px;
+            }
+        }
 
-/* Mejorar feedback táctil */
-.btn {
-  transition: all 0.2s ease;
-}
+        /* Mejorar feedback táctil */
+        .btn {
+            transition: all 0.2s ease;
+        }
 
-.btn:active {
-  transform: scale(0.95);
-}
+        .btn:active {
+            transform: scale(0.95);
+        }
 
-/* Mejorar accesibilidad */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
+        /* Mejorar accesibilidad */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -382,40 +393,35 @@
             </div>
             
             <div class="scanner-container">
-               <!-- ========================== -->
-            <!-- 🎥 NUEVO CÓDIGO DE CÁMARA -->
-            <!-- ========================== -->
-            <div class="scanner-wrapper">
-                <!-- Vista de cámara -->
-                <video id="scanner-video" autoplay playsinline hidden></video>
-                <canvas id="scanner-canvas" hidden></canvas>
-                
-                <!-- Vista de previsualización -->
-                <div id="camera-view" class="camera-view">
-                    <div class="camera-frame">
-                        <div class="scanning-frame">
-                            <i class="fas fa-camera"></i>
-                            <p>Enfoca el código de barras del producto</p>
+                <div class="scanner-wrapper">
+                    <!-- Vista de cámara -->
+                    <video id="scanner-video" autoplay playsinline hidden></video>
+                    <canvas id="scanner-canvas" hidden></canvas>
+                    
+                    <!-- Vista de previsualización -->
+                    <div id="camera-view" class="camera-view">
+                        <div class="camera-frame">
+                            <div class="scanning-frame">
+                                <i class="fas fa-camera"></i>
+                                <p>Enfoca el código de barras del producto</p>
+                            </div>
                         </div>
+                    </div>
+                    
+                    <!-- Controles de cámara -->
+                    <div class="camera-controls">
+                        <button id="start-camera" class="btn btn-primary">
+                            <i class="fas fa-camera"></i> Activar Cámara
+                        </button>
+                        <button id="capture-btn" class="btn btn-success" disabled>
+                            <i class="fas fa-camera"></i> Capturar
+                        </button>
+                        <button id="switch-camera" class="btn btn-outline" disabled>
+                            <i class="fas fa-sync-alt"></i> Cambiar Cámara
+                        </button>
                     </div>
                 </div>
                 
-                <!-- Controles de cámara -->
-                <div class="camera-controls">
-                    <button id="start-camera" class="btn btn-primary">
-                        <i class="fas fa-camera"></i> Activar Cámara
-                    </button>
-                    <button id="capture-btn" class="btn btn-success" disabled>
-                        <i class="fas fa-camera"></i> Capturar
-                    </button>
-                    <button id="switch-camera" class="btn btn-outline" disabled>
-                        <i class="fas fa-sync-alt"></i> Cambiar Cámara
-                    </button>
-                </div>
-            </div>
-            <!-- ========================== -->
-            <!-- FIN NUEVO CÓDIGO -->
-            <!-- ========================== -->
                 <!-- Resultados del escaneo -->
                 <div class="scan-result" id="scanResult">
                     <div class="product-info">
@@ -610,13 +616,27 @@
     </div>
 
     <!-- =============================== -->
-    <!-- 🔥 JAVASCRIPT ACTUALIZADO CON FIREBASE -->
+    <!-- 🔥 JAVASCRIPT COMPLETO CORREGIDO -->
     <!-- =============================== -->
     <script>
-        // Utilidades
+        // ===============================
+        // 🎯 VARIABLES GLOBALES
+        // ===============================
+        let stream = null;
+        let currentFacingMode = 'environment';
+        let scannerInterval = null;
+
+        // ===============================
+        // 🛠️ FUNCIONES DE UTILIDAD
+        // ===============================
         function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            if (!notification) return;
+            // Crear notificación si no existe
+            let notification = document.getElementById('notification');
+            if (!notification) {
+                notification = document.createElement('div');
+                notification.id = 'notification';
+                document.body.appendChild(notification);
+            }
             
             notification.textContent = message;
             notification.className = 'notification ' + type;
@@ -643,7 +663,31 @@
             }
         }
 
-        // Funciones de Firebase
+        // ===============================
+        // ⏳ FUNCIÓN PARA ESPERAR FIREBASE
+        // ===============================
+        function waitForFirebase(maxWait = 5000) {
+            return new Promise((resolve, reject) => {
+                const startTime = Date.now();
+                
+                function checkFirebase() {
+                    if (window.firebaseApp && window.firebaseApp.auth && window.firebaseFirestore) {
+                        console.log('✅ Firebase listo después de', Date.now() - startTime, 'ms');
+                        resolve();
+                    } else if (Date.now() - startTime > maxWait) {
+                        reject(new Error('Firebase no se cargó después de ' + maxWait + 'ms'));
+                    } else {
+                        setTimeout(checkFirebase, 100);
+                    }
+                }
+                
+                checkFirebase();
+            });
+        }
+
+        // ===============================
+        // 🔐 FUNCIONES DE FIREBASE
+        // ===============================
         async function handleRegister(e) {
             e.preventDefault();
             
@@ -673,6 +717,9 @@
             if (registerSubmit) registerSubmit.disabled = true;
 
             try {
+                // Esperar a que Firebase esté listo
+                await waitForFirebase();
+                
                 const { auth, createUserWithEmailAndPassword } = window.firebaseAuth;
                 const { db, doc, setDoc, serverTimestamp } = window.firebaseFirestore;
 
@@ -728,6 +775,9 @@
             if (loginSubmit) loginSubmit.disabled = true;
 
             try {
+                // Esperar a que Firebase esté listo
+                await waitForFirebase();
+                
                 const { auth, signInWithEmailAndPassword } = window.firebaseAuth;
                 const { db, doc, getDoc } = window.firebaseFirestore;
 
@@ -760,6 +810,7 @@
 
         async function handleLogout() {
             try {
+                await waitForFirebase();
                 const { auth, signOut } = window.firebaseAuth;
                 await signOut(auth);
                 showNotification('Sesión cerrada correctamente', 'success');
@@ -768,70 +819,306 @@
             }
         }
 
-        async function handleScan() {
-            const { auth } = window.firebaseAuth;
-            const user = auth.currentUser;
-            
-            if (!user) {
-                showNotification('Por favor inicia sesión para escanear productos', 'warning');
-                openModal('loginModal');
-                return;
-            }
-
-            const scanBtn = document.getElementById('scanBtn');
-            if (!scanBtn) return;
-
-            // Simular escaneo
-            scanBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Escaneando...';
-            scanBtn.disabled = true;
-
+        // ===============================
+        // 📸 FUNCIONES DE CÁMARA
+        // ===============================
+        async function startCamera() {
             try {
-                // Simular retardo de escaneo
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                // Mostrar resultados
-                const scanResult = document.getElementById('scanResult');
-                if (scanResult) {
-                    scanResult.classList.add('active');
-                    scanResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const video = document.getElementById('scanner-video');
+                const cameraView = document.getElementById('camera-view');
+                const startBtn = document.getElementById('start-camera');
+                const captureBtn = document.getElementById('capture-btn');
+                const switchBtn = document.getElementById('switch-camera');
+
+                // Detener cámara si ya está activa
+                if (stream) {
+                    stopCamera();
                 }
+
+                // Solicitar acceso a la cámara
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        facingMode: currentFacingMode,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                });
+
+                // Configurar el video
+                video.srcObject = stream;
+                video.hidden = false;
+                video.classList.add('active');
                 
-                showNotification('Escaneo completado correctamente', 'success');
+                // Ocultar vista de placeholder
+                cameraView.classList.add('hidden');
                 
+                // Habilitar controles
+                captureBtn.disabled = false;
+                switchBtn.disabled = false;
+                startBtn.disabled = true;
+                
+                // Esperar a que el video cargue
+                video.onloadedmetadata = () => {
+                    video.play();
+                    
+                    // Iniciar detección automática cada 2 segundos
+                    if (scannerInterval) {
+                        clearInterval(scannerInterval);
+                    }
+                    scannerInterval = setInterval(tryCapture, 2000);
+                };
+
             } catch (error) {
-                console.error('Error en escaneo:', error);
-                showNotification('Error al procesar el escaneo', 'error');
-            } finally {
-                scanBtn.innerHTML = 'Escanear Ahora';
-                scanBtn.disabled = false;
+                console.error('Error accediendo a la cámara:', error);
+                showNotification('No se pudo acceder a la cámara. Asegúrate de permitir el acceso.', 'error');
             }
         }
 
-        // Event Listeners
+        async function switchCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            
+            currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+            await startCamera();
+        }
+
+        function captureImage() {
+            const video = document.getElementById('scanner-video');
+            const canvas = document.getElementById('scanner-canvas');
+            const context = canvas.getContext('2d');
+
+            // Configurar canvas con las dimensiones del video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // Dibujar el frame actual en el canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Obtener la imagen como data URL
+            const imageData = canvas.toDataURL('image/jpeg');
+            
+            // Procesar la imagen
+            processImage(imageData);
+        }
+
+        function tryCapture() {
+            const video = document.getElementById('scanner-video');
+            if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
+                captureImage();
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            
+            if (scannerInterval) {
+                clearInterval(scannerInterval);
+                scannerInterval = null;
+            }
+            
+            const video = document.getElementById('scanner-video');
+            const cameraView = document.getElementById('camera-view');
+            const startBtn = document.getElementById('start-camera');
+            const captureBtn = document.getElementById('capture-btn');
+            const switchBtn = document.getElementById('switch-camera');
+
+            if (video) {
+                video.srcObject = null;
+                video.classList.remove('active');
+                video.hidden = true;
+            }
+            
+            if (cameraView) cameraView.classList.remove('hidden');
+            if (captureBtn) captureBtn.disabled = true;
+            if (switchBtn) switchBtn.disabled = true;
+            if (startBtn) startBtn.disabled = false;
+        }
+
         // ===============================
-// 🎯 EVENT LISTENERS PARA CÁMARA
-// ===============================
-const startBtn = document.getElementById('start-camera');
-const captureBtn = document.getElementById('capture-btn');
-const switchBtn = document.getElementById('switch-camera');
+        // 🤖 FUNCIONES DE RECONOCIMIENTO
+        // ===============================
+        async function processImage(imageData) {
+            showNotification('Procesando imagen...', 'warning');
+            
+            try {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                const mockProduct = await simulateProductRecognition(imageData);
+                
+                // Verificar Firebase antes de mostrar resultados
+                try {
+                    await waitForFirebase(2000);
+                    showScanResults(mockProduct);
+                } catch (error) {
+                    showScanResultsDemo(mockProduct);
+                }
+                
+            } catch (error) {
+                console.error('Error procesando imagen:', error);
+                showNotification('Error al procesar la imagen', 'error');
+            }
+        }
 
-if (startBtn) startBtn.addEventListener('click', startCamera);
-if (captureBtn) captureBtn.addEventListener('click', captureImage);
-if (switchBtn) switchBtn.addEventListener('click', switchCamera);
+        async function simulateProductRecognition(imageData) {
+            const productCategories = [
+                {
+                    name: "Botella de Agua Mineral",
+                    brand: "AguaPure",
+                    category: "Bebidas",
+                    sustainabilityScore: 65,
+                    barcode: "1234567890123",
+                    recommendations: [
+                        "Envase: Reducir plástico de un solo uso (Alto impacto)",
+                        "Cadena de suministro: Utilizar proveedores locales (Medio impacto)",
+                        "Energía: Implementar energías renovables (Alto impacto)"
+                    ]
+                },
+                {
+                    name: "Galletas Integrales",
+                    brand: "NatureFood",
+                    category: "Alimentos",
+                    sustainabilityScore: 78,
+                    barcode: "2345678901234",
+                    recommendations: [
+                        "Packaging: Usar materiales biodegradables (Alto impacto)",
+                        "Ingredientes: Sourcing orgánico certificado (Medio impacto)"
+                    ]
+                },
+                {
+                    name: "Detergente Líquido",
+                    brand: "EcoClean",
+                    category: "Limpieza",
+                    sustainabilityScore: 82,
+                    barcode: "3456789012345",
+                    recommendations: [
+                        "Formula: Reducir químicos agresivos (Alto impacto)",
+                        "Envase: Sistema de recarga disponible (Medio impacto)"
+                    ]
+                }
+            ];
+            
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            return productCategories[Math.floor(Math.random() * productCategories.length)];
+        }
 
-// Detener cámara cuando se cierra la página
-window.addEventListener('beforeunload', stopCamera);
-window.addEventListener('pagehide', stopCamera);
+        // ===============================
+        // 💾 FUNCIÓN CORREGIDA - saveScanToDatabase
+        // ===============================
+        async function saveScanToDatabase(product) {
+            try {
+                console.log('🔄 Intentando guardar escaneo en base de datos...');
+                
+                // ESPERAR a que Firebase esté completamente disponible
+                await waitForFirebase(3000);
+                
+                if (!window.firebaseApp || !window.firebaseApp.auth) {
+                    console.warn('❌ Firebase no disponible después de espera');
+                    return;
+                }
 
-// Detener cámara cuando se abre un modal
-document.querySelectorAll('.modal').forEach(modal => {
-  modal.addEventListener('click', function(e) {
-    if (e.target === this) {
-      stopCamera();
-    }
-  });
-});
+                const { auth } = window.firebaseApp;
+                const { db, collection, addDoc, serverTimestamp } = window.firebaseFirestore;
+
+                const user = auth.currentUser;
+                
+                if (!user) {
+                    console.log('👤 Usuario no autenticado, escaneo no guardado (modo demo)');
+                    return;
+                }
+
+                console.log('📝 Guardando escaneo para usuario:', user.email);
+                
+                await addDoc(collection(db, "scans"), {
+                    productName: product.name,
+                    productBrand: product.brand,
+                    productCategory: product.category,
+                    barcode: product.barcode,
+                    sustainabilityScore: product.sustainabilityScore,
+                    companyId: user.uid,
+                    userId: user.uid,
+                    timestamp: serverTimestamp(),
+                    recommendations: product.recommendations
+                });
+
+                console.log('✅ Escaneo guardado exitosamente en base de datos');
+
+            } catch (error) {
+                console.error('❌ Error guardando escaneo:', error);
+            }
+        }
+
+        // ===============================
+        // 📊 FUNCIONES DE VISUALIZACIÓN
+        // ===============================
+        function showScanResults(product) {
+            const scanResult = document.getElementById('scanResult');
+            const scoreFill = document.querySelector('.score-fill');
+            const productName = document.querySelector('.product-info h4');
+            const scoreValue = document.querySelector('.score-value');
+            const improvementList = document.querySelector('.improvement-list');
+
+            // Actualizar datos
+            productName.textContent = product.name;
+            scoreValue.textContent = `${product.sustainabilityScore}%`;
+            scoreFill.style.width = `${product.sustainabilityScore}%`;
+
+            // Actualizar recomendaciones
+            improvementList.innerHTML = '';
+            product.recommendations.forEach(rec => {
+                const li = document.createElement('li');
+                li.innerHTML = `<i class="fas fa-times-circle"></i> ${rec}`;
+                improvementList.appendChild(li);
+            });
+
+            // Mostrar resultados
+            scanResult.classList.add('active');
+            scanResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Intentar guardar en base de datos
+            saveScanToDatabase(product).catch(error => {
+                console.log('Escaneo mostrado en modo demo');
+            });
+
+            showNotification('Escaneo completado correctamente', 'success');
+        }
+
+        function showScanResultsDemo(product) {
+            const scanResult = document.getElementById('scanResult');
+            const scoreFill = document.querySelector('.score-fill');
+            const productName = document.querySelector('.product-info h4');
+            const scoreValue = document.querySelector('.score-value');
+            const improvementList = document.querySelector('.improvement-list');
+
+            // Actualizar datos
+            productName.textContent = product.name;
+            scoreValue.textContent = `${product.sustainabilityScore}%`;
+            scoreFill.style.width = `${product.sustainabilityScore}%`;
+
+            // Actualizar recomendaciones
+            improvementList.innerHTML = '';
+            product.recommendations.forEach(rec => {
+                const li = document.createElement('li');
+                li.innerHTML = `<i class="fas fa-times-circle"></i> ${rec}`;
+                improvementList.appendChild(li);
+            });
+
+            // Mostrar resultados
+            scanResult.classList.add('active');
+            scanResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            showNotification('Escaneo completado (modo demo)', 'success');
+        }
+
+        // ===============================
+        // 🎯 EVENT LISTENERS
+        // ===============================
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Inicializando Eco Tag...');
+
             // Ocultar loading
             setTimeout(() => {
                 const loadingOverlay = document.getElementById('loadingOverlay');
@@ -839,6 +1126,15 @@ document.querySelectorAll('.modal').forEach(modal => {
                     loadingOverlay.classList.add('hidden');
                 }
             }, 1000);
+
+            // Event listeners para cámara
+            const startBtn = document.getElementById('start-camera');
+            const captureBtn = document.getElementById('capture-btn');
+            const switchBtn = document.getElementById('switch-camera');
+
+            if (startBtn) startBtn.addEventListener('click', startCamera);
+            if (captureBtn) captureBtn.addEventListener('click', captureImage);
+            if (switchBtn) switchBtn.addEventListener('click', switchCamera);
 
             // Modales
             document.querySelectorAll('.close').forEach(button => {
@@ -862,12 +1158,10 @@ document.querySelectorAll('.modal').forEach(modal => {
             const loginBtn = document.getElementById('loginBtn');
             const registerBtn = document.getElementById('registerBtn');
             const logoutBtn = document.getElementById('logoutBtn');
-            const scanBtn = document.getElementById('scanBtn');
             
             if (loginBtn) loginBtn.addEventListener('click', () => openModal('loginModal'));
             if (registerBtn) registerBtn.addEventListener('click', () => openModal('registerModal'));
             if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
-            if (scanBtn) scanBtn.addEventListener('click', handleScan);
 
             // Navegación entre modales
             const goToRegister = document.getElementById('goToRegister');
@@ -899,419 +1193,33 @@ document.querySelectorAll('.modal').forEach(modal => {
                 });
             });
 
-            console.log('Eco Tag inicializado correctamente 🚀');
-        });
-        // Variables globales para la cámara
-let stream = null;
-let currentFacingMode = 'environment'; // cámara trasera
-let scannerInterval = null;
+            // Detener cámara cuando se cierra la página
+            window.addEventListener('beforeunload', stopCamera);
+            window.addEventListener('pagehide', stopCamera);
 
-// Función para activar la cámara
-// ===============================
-// 📸 FUNCIÓN CORREGIDA - startCamera
-// ===============================
-async function startCamera() {
-    try {
-        const video = document.getElementById('scanner-video');
-        const cameraView = document.getElementById('camera-view');
-        const startBtn = document.getElementById('start-camera');
-        const captureBtn = document.getElementById('capture-btn');
-        const switchBtn = document.getElementById('switch-camera');
-
-        // Detener cámara si ya está activa
-        if (stream) {
-            stopCamera();
-        }
-
-        // Solicitar acceso a la cámara
-        stream = await navigator.mediaDevices.getUserMedia({
-            video: { 
-                facingMode: currentFacingMode,
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            },
-            audio: false
+            console.log('✅ Eco Tag inicializado correctamente');
         });
 
-        // Configurar el video
-        video.srcObject = stream;
-        video.hidden = false;
-        video.classList.add('active');
-        
-        // Ocultar vista de placeholder
-        cameraView.classList.add('hidden');
-        
-        // Habilitar controles
-        captureBtn.disabled = false;
-        switchBtn.disabled = false;
-        startBtn.disabled = true;
-        
-        // Esperar a que el video cargue
-        video.onloadedmetadata = () => {
-            video.play();
-            
-            // Iniciar detección automática cada 2 segundos
-            if (scannerInterval) {
-                clearInterval(scannerInterval);
-            }
-            scannerInterval = setInterval(tryCapture, 2000);
-        };
-
-    } catch (error) {
-        console.error('Error accediendo a la cámara:', error);
-        showNotification('No se pudo acceder a la cámara. Asegúrate de permitir el acceso.', 'error');
-    }
-}
-
-
-// Función para cambiar entre cámaras
-async function switchCamera() {
-    if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-    }
-    
-    currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
-    await startCamera();
-}
-
-// Función para capturar imagen
-function captureImage() {
-    const video = document.getElementById('scanner-video');
-    const canvas = document.getElementById('scanner-canvas');
-    const context = canvas.getContext('2d');
-
-    // Configurar canvas con las dimensiones del video
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    // Dibujar el frame actual en el canvas
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    // Obtener la imagen como data URL
-    const imageData = canvas.toDataURL('image/jpeg');
-    
-    // Procesar la imagen
-    
-    processImage(imageData);
-}
-    
-
-
-    
-
-// ===============================
-// 🤖 FUNCIÓN PARA INTENTAR CAPTURA AUTOMÁTICA
-// ===============================
-function tryCapture() {
-    // VERIFICAR Firebase antes de capturar
-    if (!window.firebaseApp || !window.firebaseApp.auth) {
-        console.log('Firebase no disponible, deteniendo escaneo automático');
-        if (scannerInterval) {
-            clearInterval(scannerInterval);
-            scannerInterval = null;
-        }
-        return;
-    }
-
-    const video = document.getElementById('scanner-video');
-    if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
-        captureImage();
-    }
-}
-// ===============================
-// ⛔ FUNCIÓN PARA DETENER CÁMARA
-// ===============================
-function stopCamera() {
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
-    stream = null;
-  }
-  
-  if (scannerInterval) {
-    clearInterval(scannerInterval);
-    scannerInterval = null;
-  }
-  
-  const video = document.getElementById('scanner-video');
-  const cameraView = document.getElementById('camera-view');
-  const startBtn = document.getElementById('start-camera');
-  const captureBtn = document.getElementById('capture-btn');
-  const switchBtn = document.getElementById('switch-camera');
-
-  if (video) {
-    video.srcObject = null;
-    video.classList.remove('active');
-    video.hidden = true;
-  }
-  
-  if (cameraView) cameraView.classList.remove('hidden');
-  if (captureBtn) captureBtn.disabled = true;
-  if (switchBtn) switchBtn.disabled = true;
-  if (startBtn) startBtn.disabled = false;
-}
-
-// Función para procesar la imagen capturada
-async function processImage(imageData) {
-    showNotification('Procesando imagen...', 'warning');
-    
-    try {
-        //const recognitionResult = await recognizeWithGoogleVision(imageData);
-        // Aquí implementaremos el reconocimiento
-        // Por ahora, simulamos el procesamiento
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Simular resultados de escaneo
-        const mockProduct = await simulateProductRecognition(imageData);
-        
-        // Mostrar resultados
-         showScanResults(mockProduct);
-        
-    } catch (error) {
-        console.error('Error procesando imagen:', error);
-        showNotification('Error al procesar la imagen', 'error');
-    }
-}
-function classifyCategory(detections) {
-    const categories = {
-        'Alimentos': ['food', 'comida', 'fruta', 'verdura', 'snack', 'bread', 'fruit'],
-        'Bebidas': ['bottle', 'water', 'juice', 'soda', 'drink', 'beverage'],
-        'Limpieza': ['clean', 'detergent', 'soap', 'shampoo', 'cleaning', 'bottle'],
-        'Cosméticos': ['cosmetic', 'cream', 'lotion', 'makeup', 'beauty', 'bottle'],
-        'Electrónica': ['electronic', 'device', 'phone', 'computer', 'tech'],
-        'Ropa': ['clothing', 'shirt', 'dress', 'fashion', 'wear']
-    };
-
-    for (const [category, keywords] of Object.entries(categories)) {
-        if (detections.some(d => 
-            keywords.some(keyword => d.toLowerCase().includes(keyword))
-        )) {
-            return category;
-        }
-    }
-    
-    return 'Otros';
-}
-
-function calculateSustainabilityScore(detections) {
-    let score = 50;
-    const detectionStr = detections.join(' ').toLowerCase();
-
-    if (detectionStr.includes('organic')) score += 20;
-    if (detectionStr.includes('recycl')) score += 15;
-    if (detectionStr.includes('natural')) score += 10;
-    if (detectionStr.includes('eco')) score += 12;
-    
-    if (detectionStr.includes('plastic')) score -= 15;
-    if (detectionStr.includes('chemical')) score -= 10;
-    if (detectionStr.includes('packaging')) score -= 8;
-
-    return Math.max(0, Math.min(100, score));
-}
-
-function generateRecommendations(detections) {
-    const recommendations = [];
-    const detectionStr = detections.join(' ').toLowerCase();
-
-    if (detectionStr.includes('plastic')) {
-        recommendations.push('Reducir plástico de un solo uso en el packaging (Alto impacto)');
-    }
-    
-    if (detectionStr.includes('chemical')) {
-        recommendations.push('Utilizar ingredientes naturales en lugar de químicos sintéticos (Alto impacto)');
-    }
-    
-    if (detectionStr.includes('local') || detectionStr.includes('import')) {
-        recommendations.push('Implementar cadena de suministro local para reducir huella de carbono (Medio impacto)');
-    }
-    
-    if (recommendations.length === 0) {
-        recommendations.push('Considerar uso de materiales reciclados y biodegradables (Alto impacto)');
-        recommendations.push('Evaluar implementación de energías renovables en producción (Medio impacto)');
-    }
-
-    return recommendations.slice(0, 3); // Máximo 3 recomendaciones
-}
-
-function generateRandomBarcode() {
-    return '0' + Math.floor(100000000000 + Math.random() * 900000000000).toString();
-}
-// Función para simular reconocimiento de producto
-async function simulateProductRecognition(imageData) {
-    // En una implementación real, aquí enviarías la imagen a un API
-    // Por ahora, simulamos datos de producto
-    
-     const productCategories = [
-    {
-            name: "Botella de Agua Mineral",
-            brand: "AguaPure",
-            category: "Bebidas",
-            sustainabilityScore: 65,
-            barcode: "1234567890123",
-            recommendations: [
-                "Envase: Reducir plástico de un solo uso (Alto impacto)",
-                "Cadena de suministro: Utilizar proveedores locales (Medio impacto)",
-                "Energía: Implementar energías renovables (Alto impacto)"
-            ]
-        },
-        {
-            name: "Galletas Integrales",
-            brand: "NatureFood",
-            category: "Alimentos",
-            sustainabilityScore: 78,
-            barcode: "2345678901234",
-            recommendations: [
-                "Packaging: Usar materiales biodegradables (Alto impacto)",
-                "Ingredientes: Sourcing orgánico certificado (Medio impacto)"
-            ]
-        },
-        {
-            name: "Detergente Líquido",
-            brand: "EcoClean",
-            category: "Limpieza",
-            sustainabilityScore: 82,
-            barcode: "3456789012345",
-            recommendations: [
-                "Formula: Reducir químicos agresivos (Alto impacto)",
-                "Envase: Sistema de recarga disponible (Medio impacto)"
-            ]
-        }
-    ];
-           
-    
-  // Simular análisis de imagen
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  // Devolver un producto aleatorio
-  return productCategories[Math.floor(Math.random() * productCategories.length)];
-}
-    
-
-// Función para mostrar resultados
-function showScanResults(product) {
-    const scanResult = document.getElementById('scanResult');
-    const scoreFill = document.querySelector('.score-fill');
-    const productName = document.querySelector('.product-info h4');
-    const scoreValue = document.querySelector('.score-value');
-    const improvementList = document.querySelector('.improvement-list');
-
-    // Actualizar datos
-    productName.textContent = product.name;
-    scoreValue.textContent = `${product.sustainabilityScore}%`;
-    scoreFill.style.width = `${product.sustainabilityScore}%`;
-
-    // Actualizar recomendaciones
-    improvementList.innerHTML = '';
-    product.recommendations.forEach(rec => {
-        const li = document.createElement('li');
-        li.innerHTML = `<i class="fas fa-times-circle"></i> ${rec}`;
-        improvementList.appendChild(li);
-    });
-
-    // Mostrar resultados
-    scanResult.classList.add('active');
-    scanResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    // Guardar en base de datos
-    //saveScanToDatabase(product);
-
-    showNotification('Escaneo completado correctamente', 'success');
-}
-// VERIFICACIÓN DE FIREBASE
-console.log('🔥 Firebase App:', window.firebaseApp);
-console.log('🔥 Firebase Auth:', window.firebaseAuth);
-console.log('🔥 Firebase Firestore:', window.firebaseFirestore);
-
-// Verificar después de un tiempo (por la carga asíncrona)
-setTimeout(() => {
-    console.log('✅ Firebase cargado:', !!window.firebaseApp);
-    console.log('✅ Auth disponible:', !!window.firebaseApp?.auth);
-}, 2000);
-// FUNCIÓN CORREGIDA - saveScanToDatabase
-async function saveScanToDatabase(product) {
-    try {
-        // VERIFICAR que Firebase esté disponible
-        if (!window.firebaseApp || !window.firebaseApp.auth) {
-            console.warn('Firebase no está disponible - Modo demo');
-            return;
+        // ===============================
+        // 📱 SERVICE WORKER Y PWA
+        // ===============================
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('SW registrado:', registration);
+                })
+                .catch(error => {
+                    console.log('Error SW:', error);
+                });
         }
 
-        const { auth } = window.firebaseApp;
-        const { db, collection, addDoc, serverTimestamp } = window.firebaseFirestore;
-
-        const user = auth.currentUser;
-        
-        if (!user) {
-            console.log('Usuario no autenticado, escaneo no guardado');
-            return;
+        // Detectar si es móvil y sugerir instalar
+        if ('ontouchstart' in window && window.matchMedia('(display-mode: browser)').matches) {
+            setTimeout(() => {
+                showNotification('📱 Instala Eco Tag en tu pantalla principal', 'info');
+            }, 5000);
         }
-
-        await addDoc(collection(db, "scans"), {
-            productName: product.name,
-            productBrand: product.brand,
-            productCategory: product.category,
-            barcode: product.barcode,
-            sustainabilityScore: product.sustainabilityScore,
-            companyId: user.uid,
-            timestamp: serverTimestamp(),
-            recommendations: product.recommendations
-        });
-
-        console.log('✅ Escaneo guardado en base de datos');
-
-    } catch (error) {
-        console.error('❌ Error guardando escaneo:', error);
-        // No mostrar notificación para evitar spam
-    }
-}
-
-// Función para detener la cámara
-function stopCamera() {
-    if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-    }
-    
-    const video = document.getElementById('scanner-video');
-    const cameraView = document.getElementById('camera-view');
-    const startBtn = document.getElementById('start-camera');
-    const captureBtn = document.getElementById('capture-btn');
-    const switchBtn = document.getElementById('switch-camera');
-
-    video.classList.remove('active');
-    cameraView.classList.remove('hidden');
-    captureBtn.disabled = true;
-    switchBtn.disabled = true;
-    startBtn.disabled = false;
-}
-
-// Agregar event listeners para la cámara
-document.addEventListener('DOMContentLoaded', function() {
-    const startBtn = document.getElementById('start-camera');
-    const captureBtn = document.getElementById('capture-btn');
-    const switchBtn = document.getElementById('switch-camera');
-
-    if (startBtn) startBtn.addEventListener('click', startCamera);
-    if (captureBtn) captureBtn.addEventListener('click', captureImage);
-    if (switchBtn) switchBtn.addEventListener('click', switchCamera);
-
-    // Detener cámara cuando se cierra el modal o se cambia de página
-    window.addEventListener('beforeunload', stopCamera);
-});
-// Registrar Service Worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js')
-    .then(registration => {
-      console.log('SW registrado:', registration);
-    })
-    .catch(error => {
-      console.log('Error SW:', error);
-    });
-}
-
-// Detectar si es móvil y sugerir instalar
-if ('ontouchstart' in window && window.matchMedia('(display-mode: browser)').matches) {
-  showNotification('📱 Instala Eco Tag en tu pantalla principal', 'info');
-}
-
     </script>
 </body>
 </html>
+
