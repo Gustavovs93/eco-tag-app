@@ -64,7 +64,8 @@
             }
         });
     </script>
-    
+     <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
+     <script src="https://www.paypal.com/sdk/js?client-id=AQqNzMrTjsamx006fwvKVOfuwd4emeA963GYIQH2k5i7qqxI3S9VjlMRUMRYKXbrO84KUfFlIy3DPNhO&vault=true&intent=subscription"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         :root { --primary: #2ecc71; --primary-dark: #27ae60; --secondary: #3498db; --dark: #2c3e50; --light: #ecf0f1; --danger: #e74c3c; --warning: #f39c12; --gray: #95a5a6; --white: #ffffff; }
@@ -329,6 +330,33 @@
                 transition-duration: 0.01ms !important;
             }
         }
+        /* Estilos para PayPal */
+.paypal-button {
+    margin-top: 15px;
+    min-height: 40px;
+}
+
+.subscription-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.plan-option {
+    border: 2px solid #ddd;
+    padding: 15px;
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.plan-option:hover {
+    border-color: #2ecc71;
+}
+
+.plan-option.selected {
+    border-color: #2ecc71;
+    background-color: #f0f9f0;
+}
     </style>
 </head>
 <body>
@@ -449,6 +477,19 @@
             </div>
         </div>
     </section>
+   <!-- Agrega esta sección después del escáner -->
+<section class="dashboard" id="dashboard" style="display: none;">
+    <div class="container">
+        <h2>Mi Dashboard</h2>
+        <div class="stats-grid" id="statsContainer">
+            <!-- Se llenará dinámicamente -->
+        </div>
+        <div class="scan-history">
+            <h3>Historial de Escaneos</h3>
+            <div id="scanHistoryList"></div>
+        </div>
+    </div>
+</section>
     
     <!-- Pricing Section -->
     <section class="pricing" id="pricing">
@@ -459,47 +500,44 @@
             </div>
             
             <div class="pricing-plans">
-                <div class="pricing-plan">
-                    <h3>Básico</h3>
-                    <div class="price">$29<span>/mes</span></div>
-                    <p>Ideal para pequeñas empresas</p>
-                    <ul class="features">
-                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Hasta 50 escaneos/mes</li>
-                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> 5 productos en dashboard</li>
-                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Reportes básicos</li>
-                        <li><i class="fas fa-times" style="color: #e74c3c;"></i> Soporte prioritario</li>
-                        <li><i class="fas fa-times" style="color: #e74c3c;"></i> Certificados EcoTag</li>
-                    </ul>
-                    <button class="btn btn-outline payment-btn" data-plan="basico" data-amount="$29/mes">Seleccionar Plan</button>
-                </div>
-                
-                <div class="pricing-plan" style="border: 2px solid #2ecc71; transform: scale(1.05);">
-                    <h3>Profesional</h3>
-                    <div class="price">$79<span>/mes</span></div>
-                    <p>Para empresas en crecimiento</p>
-                    <ul class="features">
-                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Escaneos ilimitados</li>
-                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> 50 productos en dashboard</li>
-                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Reportes avanzados</li>
-                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Soporte prioritario</li>
-                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Certificados EcoTag</li>
-                    </ul>
-                    <button class="btn btn-primary payment-btn" data-plan="profesional" data-amount="$79/mes">Seleccionar Plan</button>
-                </div>
-                
-                <div class="pricing-plan">
-                    <h3>Empresarial</h3>
-                    <div class="price">$199<span>/mes</span></div>
-                    <p>Para grandes corporaciones</p>
-                    <ul class="features">
-                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Escaneos ilimitados</li>
-                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Productos ilimitados</li>
-                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Reportes personalizados</li>
-                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Soporte 24/7</li>
-                        <li><i class="fas fa-check" style="color: #2ecc71;"></i> Certificados premium</li>
-                    </ul>
-                    <button class="btn btn-outline payment-btn" data-plan="empresarial" data-amount="$199/mes">Seleccionar Plan</button>
-                </div>
+                 <!-- Plan Básico -->
+            <div class="pricing-plan">
+                <h3>Básico</h3>
+                <div class="price">$29<span>/mes</span></div>
+                <p>Ideal para pequeñas empresas</p>
+                <ul class="features">
+                    <li><i class="fas fa-check"></i> 50 escaneos/mes</li>
+                    <li><i class="fas fa-check"></i> 5 productos</li>
+                    <li><i class="fas fa-check"></i> Reportes básicos</li>
+                </ul>
+                <!-- Botón de PayPal -->
+                <div id="paypal-button-basico" class="paypal-button"></div>
+            </div>
+                <!-- Plan Profesional -->
+            <div class="pricing-plan" style="border: 2px solid #2ecc71;">
+                <h3>Profesional</h3>
+                <div class="price">$79<span>/mes</span></div>
+                <p>Para empresas en crecimiento</p>
+                <ul class="features">
+                    <li><i class="fas fa-check"></i> Escaneos ilimitados</li>
+                    <li><i class="fas fa-check"></i> 50 productos</li>
+                    <li><i class="fas fa-check"></i> Reportes avanzados</li>
+                </ul>
+                <div id="paypal-button-profesional" class="paypal-button"></div>
+            </div>
+            
+            <!-- Plan Empresarial -->
+            <div class="pricing-plan">
+                <h3>Empresarial</h3>
+                <div class="price">$199<span>/mes</span></div>
+                <p>Para grandes corporaciones</p>
+                <ul class="features">
+                    <li><i class="fas fa-check"></i> Escaneos ilimitados</li>
+                    <li><i class="fas fa-check"></i> Productos ilimitados</li>
+                    <li><i class="fas fa-check"></i> Reportes personalizados</li>
+                </ul>
+                <div id="paypal-button-empresarial" class="paypal-button"></div>
+            
             </div>
         </div>
     </section>
@@ -818,6 +856,101 @@
                 showNotification('Error cerrando sesión: ' + error.message, 'error');
             }
         }
+        // ===============================
+// 💳 SISTEMA DE PAGOS CON PAYPAL
+// ===============================
+
+// Inicializar PayPal
+function initPayPal() {
+    paypal.Buttons({
+        style: {
+            shape: 'rect',
+            color: 'gold',
+            layout: 'vertical',
+            label: 'paypal'
+        },
+        
+        createSubscription: function(data, actions) {
+            return actions.subscription.create({
+                'plan_id': 'P-3RX065706Z922000U5QZCBMA' // Reemplazar con tu Plan ID
+            });
+        },
+        
+        onApprove: function(data, actions) {
+            console.log('Suscripción aprobada:', data);
+            showNotification('¡Suscripción activada correctamente!', 'success');
+            
+            // Actualizar plan del usuario en Firebase
+            updateUserPlan(data.subscriptionID);
+        },
+        
+        onError: function(err) {
+            console.error('Error en PayPal:', err);
+            showNotification('Error en el pago: ' + err.message, 'error');
+        }
+    }).render('#paypal-button-container');
+}
+
+// Actualizar plan del usuario
+async function updateUserPlan(subscriptionId) {
+    try {
+        await waitForFirebase();
+        const { auth } = window.firebaseApp;
+        const { db, doc, updateDoc } = window.firebaseFirestore;
+
+        const user = auth.currentUser;
+        if (!user) return;
+
+        await updateDoc(doc(db, "companies", user.uid), {
+            plan: "premium",
+            subscriptionId: subscriptionId,
+            subscriptionActive: true,
+            updatedAt: new Date()
+        });
+
+        showNotification('Plan actualizado a Premium', 'success');
+    } catch (error) {
+        console.error('Error actualizando plan:', error);
+    }
+}
+
+// Función para crear botones de suscripción
+function createSubscriptionButtons() {
+    const plans = {
+        basico: {
+            name: "Básico",
+            price: "29",
+            planId: "P-7PH28266GF8890826NDJCVHY" // Reemplazar con Plan ID real
+        },
+        profesional: {
+            name: "Profesional", 
+            price: "79",
+            planId: "P-1TC147912B2007440NDJCUEY"
+        },
+        empresarial: {
+            name: "Empresarial",
+            price: "199", 
+            planId: "P-42J26630865841252NDJCWQY"
+        }
+    };
+
+    return `
+        <div class="subscription-options">
+            <div class="plan-option" data-plan="basico">
+                <h4>Básico - $29/mes</h4>
+                <div id="paypal-basico"></div>
+            </div>
+            <div class="plan-option" data-plan="profesional">
+                <h4>Profesional - $79/mes</h4>
+                <div id="paypal-profesional"></div>
+            </div>
+            <div class="plan-option" data-plan="empresarial">
+                <h4>Empresarial - $199/mes</h4>
+                <div id="paypal-empresarial"></div>
+            </div>
+        </div>
+    `;
+}
 
         // ===============================
         // 📸 FUNCIONES DE CÁMARA
@@ -938,6 +1071,104 @@
             if (switchBtn) switchBtn.disabled = true;
             if (startBtn) startBtn.disabled = false;
         }
+        // ===============================
+// 📷 FUNCIÓN DE ESCANEO DE CÓDIGO DE BARRAS
+// ===============================
+function initBarcodeScanner() {
+    Quagga.init({
+        inputStream: {
+            name: "Live",
+            type: "LiveStream",
+            target: document.querySelector('#scanner-video'),
+            constraints: {
+                width: 400,
+                height: 300,
+                facingMode: "environment"
+            }
+        },
+        decoder: {
+            readers: [
+                "ean_reader",
+                "ean_8_reader",
+                "code_128_reader",
+                "upc_reader",
+                "upc_e_reader"
+            ]
+        }
+    }, function(err) {
+        if (err) {
+            console.error('Error inicializando Quagga:', err);
+            return;
+        }
+        console.log('Quagga inicializado correctamente');
+        Quagga.start();
+    });
+
+    // Detectar código de barras
+    Quagga.onDetected(function(result) {
+        const code = result.codeResult.code;
+        console.log('Código de barras detectado:', code);
+        
+        // Detener el escáner
+        Quagga.stop();
+        
+        // Buscar producto en base de datos
+        searchProductByBarcode(code);
+    });
+}
+
+// Función para buscar producto por código de barras
+async function searchProductByBarcode(barcode) {
+    showNotification('Buscando producto...', 'warning');
+    
+    try {
+        // Aquí integrarías con una API de productos
+        const product = await lookupProductInDatabase(barcode);
+        
+        if (product) {
+            showScanResults(product);
+        } else {
+            // Si no se encuentra, usar reconocimiento por cámara
+            showNotification('Producto no encontrado, usando cámara...', 'info');
+            captureImage();
+        }
+    } catch (error) {
+        console.error('Error buscando producto:', error);
+        captureImage(); // Fallback a cámara
+    }
+}
+
+// Función simulada de búsqueda (reemplazar con API real)
+async function lookupProductInDatabase(barcode) {
+    // Simular búsqueda en base de datos
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const products = {
+        "1234567890123": {
+            name: "Botella de Agua Mineral",
+            brand: "AguaPure",
+            category: "Bebidas",
+            sustainabilityScore: 65,
+            barcode: "1234567890123",
+            recommendations: [
+                "Envase: Reducir plástico de un solo uso (Alto impacto)",
+                "Cadena de suministro: Utilizar proveedores locales (Medio impacto)"
+            ]
+        },
+        "2345678901234": {
+            name: "Galletas Integrales", 
+            brand: "NatureFood",
+            category: "Alimentos",
+            sustainabilityScore: 78,
+            barcode: "2345678901234",
+            recommendations: [
+                "Packaging: Usar materiales biodegradables (Alto impacto)"
+            ]
+        }
+    };
+    
+    return products[barcode] || null;
+}
 
         // ===============================
         // 🤖 FUNCIONES DE RECONOCIMIENTO
