@@ -1076,7 +1076,7 @@ function isValidBarcode(code) {
             });
 
             scanResult.classList.add('active');
-            scanResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+           
 
             saveScanToDatabase(product).catch(() => {
                 console.log('Modo demo - escaneo no guardado');
