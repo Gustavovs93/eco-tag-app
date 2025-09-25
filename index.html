@@ -317,7 +317,7 @@
                 <div class="scanner-wrapper">
                     <!-- Vista de cámara -->
                     <video id="scanner-video" autoplay playsinline></video>
-                    <canvas id="scanner-canvas"></canvas>
+                    <canvas id="scanner-canvas" willReadFrequently="true"></canvas>
                     
                     <!-- Vista de previsualización -->
                     <div id="camera-view" class="camera-view">
@@ -868,28 +868,23 @@
     }
     // ✅ Captura automática INTELIGENTE
     scannerInterval = setInterval(() => {
-        const scanResult = document.getElementById('scanResult');
-        const isResultActive = scanResult.classList.contains('active');
-        
-        // Solo capturar si:
-        // 1. No hay resultados activos Y
-        // 2. No se ha completado un escaneo Y  
-        // 3. La cámara está activa
-        if (!isResultActive && !scanCompleted && stream) {
-            console.log('Captura automática iniciada...');
-            tryCapture();
-        }
-    }, 20000); // 20 segundos entre intentos
-};
-
+    const scanResult = document.getElementById('scanResult');
+    const isResultActive = scanResult.classList.contains('active');
+    
+    // ✅ CORREGIDO: Solo capturar si no hay resultados activos y la cámara está activa
+    if (!isResultActive && stream) {
+        console.log('Captura automática iniciada...');
+        tryCapture();
+    }
+}, 20000);
                 video.onerror = () => {
                     showNotification('Error al cargar la cámara', 'error');
                     stopCamera();
                 };
-
+            }
             } catch (error) {
                 console.error('Error accediendo a la cámara:', error);
-                
+             
                 if (error.name === 'NotAllowedError') {
                     showNotification('Permiso de cámara requerido', 'error');
                 } else if (error.name === 'NotFoundError') {
@@ -1152,42 +1147,46 @@ async function searchProductByBarcode(barcode) {
         }
 
         // ===============================
-        // 💾 BASE DE DATOS
-        // ===============================
-        async function saveScanToDatabase(product) {
-            try {
-                await waitForFirebase(3000);
-                
-                if (!window.firebaseApp?.auth) {
-                    console.warn('Firebase no disponible');
-                    return;
-                }
-
-                const { auth } = window.firebaseApp;
-                const { db, collection, addDoc, serverTimestamp } = window.firebaseFirestore;
-
-                const user = auth.currentUser;
-                if (!user) return;
-
-                await addDoc(collection(db, "scans"), {
-                    productName: product.name,
-                    productBrand: product.brand,
-                    productCategory: product.category,
-                    barcode: product.barcode,
-                    sustainabilityScore: product.sustainabilityScore,
-                    companyId: user.uid,
-                    userId: user.uid,
-                    timestamp: serverTimestamp(),
-                    recommendations: product.recommendations
-                });
-
-                console.log('Escaneo guardado');
-
-            } catch (error) {
-                console.error('Error guardando escaneo:', error);
-            }
+// 💾 BASE DE DATOS - VERSIÓN CORREGIDA
+// ===============================
+async function saveScanToDatabase(product) {
+    try {
+        await waitForFirebase(3000);
+        
+        if (!window.firebaseApp?.auth) {
+            console.warn('Firebase no disponible');
+            return;
         }
 
+        const { auth } = window.firebaseApp;
+        const { db, collection, addDoc, serverTimestamp } = window.firebaseFirestore;
+
+        const user = auth.currentUser;
+        if (!user) {
+            console.log('Usuario no autenticado, no se guarda en DB');
+            return;
+        }
+
+        // ✅ CORRECCIÓN: Usar db para crear la referencia a la colección
+        await addDoc(collection(db, "scans"), {
+            productName: product.name,
+            productBrand: product.brand,
+            productCategory: product.category,
+            barcode: product.barcode,
+            sustainabilityScore: product.sustainabilityScore,
+            companyId: user.uid,
+            userId: user.uid,
+            timestamp: serverTimestamp(),
+            recommendations: product.recommendations
+        });
+
+        console.log('✅ Escaneo guardado en Firestore');
+
+    } catch (error) {
+        console.error('❌ Error guardando escaneo:', error);
+        // No mostrar notificación para evitar spam
+    }
+}
         // ===============================
         // 📊 VISUALIZACIÓN DE RESULTADOS
         // ===============================
