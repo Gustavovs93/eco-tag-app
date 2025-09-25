@@ -1146,27 +1146,45 @@ async function searchProductByBarcode(barcode) {
             return products[barcode] || null;
         }
 
-       // ===============================
-// 💾 BASE DE DATOS - VERSIÓN CORREGIDA
+      
+// ===============================
+// 💾 BASE DE DATOS - VERSIÓN CON DIAGNÓSTICO
 // ===============================
 async function saveScanToDatabase(product) {
     try {
         console.log('🔄 Intentando guardar escaneo en base de datos...');
         
-          // Esperar explícitamente a Firebase
+        // Esperar explícitamente a Firebase
         await waitForFirebase(5000);
+        
+        // ✅ VERIFICACIÓN EXTRA DIAGNÓSTICO
+        console.log('🔍 Estado de Firebase:', {
+            firebaseApp: !!window.firebaseApp,
+            firebaseFirestore: !!window.firebaseFirestore,
+            db: !!window.firebaseApp?.db,
+            auth: !!window.firebaseApp?.auth
+        });
         
         if (!window.firebaseApp || !window.firebaseApp.auth) {
             console.warn('❌ Firebase no disponible');
             return;
         }
-         // Verificar que los módulos de Firestore estén disponibles
+
+        // Verificar que los módulos de Firestore estén disponibles
         if (!window.firebaseFirestore) {
             console.warn('❌ Módulos de Firestore no disponibles');
             return;
         }
+
         const { auth } = window.firebaseApp;
         const { db, collection, addDoc, serverTimestamp } = window.firebaseFirestore;
+
+        // ✅ VERIFICAR QUE 'db' EXISTA
+        if (!db) {
+            console.error('❌ ERROR: db no está definido en firebaseFirestore');
+            console.log('firebaseFirestore contenido:', Object.keys(window.firebaseFirestore));
+            return;
+        }
 
         const user = auth.currentUser;
         if (!user) {
@@ -1174,7 +1192,7 @@ async function saveScanToDatabase(product) {
             return;
         }
 
-          console.log('✅ Usuario autenticado, guardando escaneo...');
+        console.log('✅ Usuario autenticado, guardando escaneo...');
         
         // ✅ CORRECCIÓN: Usar 'db' correctamente para la colección
         const scansRef = collection(db, 'scans');
@@ -1196,11 +1214,11 @@ async function saveScanToDatabase(product) {
     } catch (error) {
         console.error('❌ Error guardando escaneo:', error);
         console.error('📌 Detalles del error:', {
-     code: error.code,
-            message: error.message
+            code: error.code,
+            message: error.message,
+            stack: error.stack
         });
-        }
-
+    }
 }
         // ===============================
         // 📊 VISUALIZACIÓN DE RESULTADOS
