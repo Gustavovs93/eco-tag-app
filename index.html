@@ -1146,15 +1146,18 @@ async function searchProductByBarcode(barcode) {
             return products[barcode] || null;
         }
 
-        // ===============================
+       // ===============================
 // 💾 BASE DE DATOS - VERSIÓN CORREGIDA
 // ===============================
 async function saveScanToDatabase(product) {
     try {
+        console.log('🔄 Intentando guardar escaneo en base de datos...');
+        
+        // Esperar a que Firebase esté listo
         await waitForFirebase(3000);
         
         if (!window.firebaseApp?.auth) {
-            console.warn('Firebase no disponible');
+            console.warn('❌ Firebase no disponible');
             return;
         }
 
@@ -1163,12 +1166,16 @@ async function saveScanToDatabase(product) {
 
         const user = auth.currentUser;
         if (!user) {
-            console.log('Usuario no autenticado, no se guarda en DB');
+            console.log('👤 Usuario no autenticado, escaneo no guardado');
             return;
         }
 
-        // ✅ CORRECCIÓN: Usar db para crear la referencia a la colección
-        await addDoc(collection(db, "scans"), {
+        console.log('📝 Guardando escaneo para usuario:', user.email);
+        
+        // ✅ CORRECCIÓN: Usar 'db' correctamente para la colección
+        const scansCollection = collection(db, "scans");
+        
+        await addDoc(scansCollection, {
             productName: product.name,
             productBrand: product.brand,
             productCategory: product.category,
@@ -1180,7 +1187,7 @@ async function saveScanToDatabase(product) {
             recommendations: product.recommendations
         });
 
-        console.log('✅ Escaneo guardado en Firestore');
+        console.log('✅ Escaneo guardado exitosamente en Firestore');
 
     } catch (error) {
         console.error('❌ Error guardando escaneo:', error);
