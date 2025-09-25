@@ -1153,14 +1153,18 @@ async function saveScanToDatabase(product) {
     try {
         console.log('🔄 Intentando guardar escaneo en base de datos...');
         
-        // Esperar a que Firebase esté listo
-        await waitForFirebase(3000);
+          // Esperar explícitamente a Firebase
+        await waitForFirebase(5000);
         
-        if (!window.firebaseApp?.auth) {
+        if (!window.firebaseApp || !window.firebaseApp.auth) {
             console.warn('❌ Firebase no disponible');
             return;
         }
-
+         // Verificar que los módulos de Firestore estén disponibles
+        if (!window.firebaseFirestore) {
+            console.warn('❌ Módulos de Firestore no disponibles');
+            return;
+        }
         const { auth } = window.firebaseApp;
         const { db, collection, addDoc, serverTimestamp } = window.firebaseFirestore;
 
@@ -1170,29 +1174,33 @@ async function saveScanToDatabase(product) {
             return;
         }
 
-        console.log('📝 Guardando escaneo para usuario:', user.email);
+          console.log('✅ Usuario autenticado, guardando escaneo...');
         
         // ✅ CORRECCIÓN: Usar 'db' correctamente para la colección
-        const scansCollection = collection(db, "scans");
+        const scansRef = collection(db, 'scans');
         
-        await addDoc(scansCollection, {
-            productName: product.name,
-            productBrand: product.brand,
-            productCategory: product.category,
-            barcode: product.barcode,
-            sustainabilityScore: product.sustainabilityScore,
+        await addDoc(scansRef, {
+            productName: product.name || 'No name',
+            productBrand: product.brand || 'Unknown',
+            productCategory: product.category || 'General',
+            barcode: product.barcode || 'No barcode',
+            sustainabilityScore: product.sustainabilityScore || 0,
             companyId: user.uid,
             userId: user.uid,
             timestamp: serverTimestamp(),
-            recommendations: product.recommendations
+            recommendations: product.recommendations || []
         });
 
         console.log('✅ Escaneo guardado exitosamente en Firestore');
 
     } catch (error) {
         console.error('❌ Error guardando escaneo:', error);
-        // No mostrar notificación para evitar spam
-    }
+        console.error('📌 Detalles del error:', {
+     code: error.code,
+            message: error.message
+        });
+        }
+
 }
         // ===============================
         // 📊 VISUALIZACIÓN DE RESULTADOS
