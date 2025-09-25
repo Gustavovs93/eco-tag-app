@@ -15,54 +15,48 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     
     <!-- SDK Firebase Modular -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { 
-            getAuth, 
-            createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword, 
-            signOut,
-            onAuthStateChanged 
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { 
-            getFirestore, 
-            doc, 
-            setDoc, 
-            getDoc, 
-            addDoc, 
-            collection, 
-            serverTimestamp 
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+   <!-- En tu index.html, REEMPLAZA todo el script modular de Firebase con: -->
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDpBbiM_ALSLLhfJBDXDWOd6H_Gh3THqSs",
-            authDomain: "ecotag-app-c53c2.firebaseapp.com",
-            projectId: "ecotag-app-c53c2",
-            storageBucket: "ecotag-app-c53c2.firebasestorage.app",
-            messagingSenderId: "1023701046944",
-            appId: "1:1023701046944:web:0fa7c98dbcae3551c0dbc5"
-        };
+<script type="module">
+    import { firebaseConfig } from './firebase-config.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+        getAuth, 
+        createUserWithEmailAndPassword, 
+        signInWithEmailAndPassword, 
+        signOut,
+        onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { 
+        getFirestore, 
+        doc, 
+        setDoc, 
+        getDoc, 
+        addDoc, 
+        collection, 
+        serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-        window.firebaseApp = { app, auth, db };
-        window.firebaseAuth = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged };
-        window.firebaseFirestore = { doc, setDoc, getDoc, addDoc, collection, serverTimestamp };
-        
-        console.log('🔥 Firebase inicializado correctamente');
-        
-        // Verificar autenticación en tiempo real
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                console.log('✅ Usuario autenticado:', user.email);
-                document.body.setAttribute('data-auth', 'true');
-            } else {
-                console.log('❌ Usuario no autenticado');
-                document.body.setAttribute('data-auth', 'false');
-            }
-        });
+    window.firebaseApp = { app, auth, db };
+    window.firebaseAuth = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged };
+    window.firebaseFirestore = { doc, setDoc, getDoc, addDoc, collection, serverTimestamp };
+    
+    console.log('🔥 Firebase inicializado correctamente');
+    
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            console.log('✅ Usuario autenticado:', user.email);
+            document.body.setAttribute('data-auth', 'true');
+        } else {
+            console.log('❌ Usuario no autenticado');
+            document.body.setAttribute('data-auth', 'false');
+        }
+    });
+</script>
     </script>
      <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
      <script src="https://www.paypal.com/sdk/js?client-id=AQqNzMrTjsamx006fwvKVOfuwd4emeA963GYIQH2k5i7qqxI3S9VjlMRUMRYKXbrO84KUfFlIy3DPNhO&vault=true&intent=subscription"></script>
@@ -511,7 +505,7 @@
                     <li><i class="fas fa-check"></i> Reportes básicos</li>
                 </ul>
                 <!-- Botón de PayPal -->
-                <div id="paypal-button-basico" class="paypal-button"></div>
+               <div class="paypal-button-container" data-plan="basico"></div>
             </div>
                 <!-- Plan Profesional -->
             <div class="pricing-plan" style="border: 2px solid #2ecc71;">
@@ -523,7 +517,7 @@
                     <li><i class="fas fa-check"></i> 50 productos</li>
                     <li><i class="fas fa-check"></i> Reportes avanzados</li>
                 </ul>
-                <div id="paypal-button-profesional" class="paypal-button"></div>
+               <div class="paypal-button-container" data-plan="profesional"></div>
             </div>
             
             <!-- Plan Empresarial -->
@@ -536,7 +530,7 @@
                     <li><i class="fas fa-check"></i> Productos ilimitados</li>
                     <li><i class="fas fa-check"></i> Reportes personalizados</li>
                 </ul>
-                <div id="paypal-button-empresarial" class="paypal-button"></div>
+               <div class="paypal-button-container" data-plan="empresarial"></div>
             
             </div>
         </div>
@@ -857,100 +851,7 @@
             }
         }
         // ===============================
-// 💳 SISTEMA DE PAGOS CON PAYPAL
-// ===============================
 
-// Inicializar PayPal
-function initPayPal() {
-    paypal.Buttons({
-        style: {
-            shape: 'rect',
-            color: 'gold',
-            layout: 'vertical',
-            label: 'paypal'
-        },
-        
-        createSubscription: function(data, actions) {
-            return actions.subscription.create({
-                'plan_id': 'P-3RX065706Z922000U5QZCBMA' // Reemplazar con tu Plan ID
-            });
-        },
-        
-        onApprove: function(data, actions) {
-            console.log('Suscripción aprobada:', data);
-            showNotification('¡Suscripción activada correctamente!', 'success');
-            
-            // Actualizar plan del usuario en Firebase
-            updateUserPlan(data.subscriptionID);
-        },
-        
-        onError: function(err) {
-            console.error('Error en PayPal:', err);
-            showNotification('Error en el pago: ' + err.message, 'error');
-        }
-    }).render('#paypal-button-container');
-}
-
-// Actualizar plan del usuario
-async function updateUserPlan(subscriptionId) {
-    try {
-        await waitForFirebase();
-        const { auth } = window.firebaseApp;
-        const { db, doc, updateDoc } = window.firebaseFirestore;
-
-        const user = auth.currentUser;
-        if (!user) return;
-
-        await updateDoc(doc(db, "companies", user.uid), {
-            plan: "premium",
-            subscriptionId: subscriptionId,
-            subscriptionActive: true,
-            updatedAt: new Date()
-        });
-
-        showNotification('Plan actualizado a Premium', 'success');
-    } catch (error) {
-        console.error('Error actualizando plan:', error);
-    }
-}
-
-// Función para crear botones de suscripción
-function createSubscriptionButtons() {
-    const plans = {
-        basico: {
-            name: "Básico",
-            price: "29",
-            planId: "P-7PH28266GF8890826NDJCVHY" // Reemplazar con Plan ID real
-        },
-        profesional: {
-            name: "Profesional", 
-            price: "79",
-            planId: "P-1TC147912B2007440NDJCUEY"
-        },
-        empresarial: {
-            name: "Empresarial",
-            price: "199", 
-            planId: "P-42J26630865841252NDJCWQY"
-        }
-    };
-
-    return `
-        <div class="subscription-options">
-            <div class="plan-option" data-plan="basico">
-                <h4>Básico - $29/mes</h4>
-                <div id="paypal-basico"></div>
-            </div>
-            <div class="plan-option" data-plan="profesional">
-                <h4>Profesional - $79/mes</h4>
-                <div id="paypal-profesional"></div>
-            </div>
-            <div class="plan-option" data-plan="empresarial">
-                <h4>Empresarial - $199/mes</h4>
-                <div id="paypal-empresarial"></div>
-            </div>
-        </div>
-    `;
-}
 
         // ===============================
         // 📸 FUNCIONES DE CÁMARA
@@ -963,10 +864,20 @@ function createSubscriptionButtons() {
                 const captureBtn = document.getElementById('capture-btn');
                 const switchBtn = document.getElementById('switch-camera');
 
-                // Detener cámara si ya está activa
-                if (stream) {
-                    stopCamera();
-                }
+                 // 1. Verificar permisos primero
+        if (navigator.permissions) {
+            const permission = await navigator.permissions.query({ name: 'camera' });
+            if (permission.state === 'denied') {
+                showNotification('Permiso de cámara denegado. Por favor, habilítalo en configuración.', 'error');
+                return;
+            }
+        }
+
+                // 2. Detener cámara si ya está activa
+        if (stream) {
+            stopCamera();
+            await new Promise(resolve => setTimeout(resolve, 500)); // Pequeña pausa
+        }
 
                 // Solicitar acceso a la cámara
                 stream = await navigator.mediaDevices.getUserMedia({
@@ -985,6 +896,10 @@ function createSubscriptionButtons() {
                 
                 // Ocultar vista de placeholder
                 cameraView.classList.add('hidden');
+                captureBtn.disabled = false;
+                switchBtn.disabled = false;
+                startBtn.disabled = true;
+
                 
                 // Habilitar controles
                 captureBtn.disabled = false;
@@ -994,6 +909,9 @@ function createSubscriptionButtons() {
                 // Esperar a que el video cargue
                 video.onloadedmetadata = () => {
                     video.play();
+                     
+                    // Iniciar Quagga para código de barras
+            initBarcodeScanner();
                     
                     // Iniciar detección automática cada 2 segundos
                     if (scannerInterval) {
@@ -1001,12 +919,30 @@ function createSubscriptionButtons() {
                     }
                     scannerInterval = setInterval(tryCapture, 2000);
                 };
+                  video.onerror = () => {
+            showNotification('Error al cargar la cámara', 'error');
+            stopCamera();
+        };
 
             } catch (error) {
-                console.error('Error accediendo a la cámara:', error);
-                showNotification('No se pudo acceder a la cámara. Asegúrate de permitir el acceso.', 'error');
-            }
+        console.error('Error accediendo a la cámara:', error);
+        
+        if (error.name === 'NotAllowedError') {
+            showNotification('Permiso de cámara requerido. Por favor, permite el acceso.', 'error');
+        } else if (error.name === 'NotFoundError') {
+            showNotification('No se encontró cámara disponible', 'error');
+        } else if (error.name === 'NotSupportedError') {
+            showNotification('Navegador no compatible con cámara', 'error');
+        } else {
+            showNotification('Error al acceder a la cámara: ' + error.message, 'error');
         }
+        
+        stopCamera();
+    }
+}
+         
+    
+
 
         async function switchCamera() {
             if (stream) {
@@ -1071,10 +1007,21 @@ function createSubscriptionButtons() {
             if (switchBtn) switchBtn.disabled = true;
             if (startBtn) startBtn.disabled = false;
         }
-        // ===============================
-// 📷 FUNCIÓN DE ESCANEO DE CÓDIGO DE BARRAS
-// ===============================
+        // AGREGA esta función nueva
 function initBarcodeScanner() {
+    // Verificar si Quagga está cargado
+    if (typeof Quagga === 'undefined') {
+        console.warn('Quagga no está disponible');
+        return;
+    }
+
+    // Detener Quagga si ya está corriendo
+    try {
+        Quagga.stop();
+    } catch (e) {
+        // Quagga no estaba inicializado
+    }
+
     Quagga.init({
         inputStream: {
             name: "Live",
@@ -1083,18 +1030,24 @@ function initBarcodeScanner() {
             constraints: {
                 width: 400,
                 height: 300,
-                facingMode: "environment"
+                facingMode: currentFacingMode
             }
         },
+        locator: {
+            patchSize: "medium",
+            halfSample: true
+        },
+        numOfWorkers: 2,
         decoder: {
             readers: [
                 "ean_reader",
-                "ean_8_reader",
+                "ean_8_reader", 
                 "code_128_reader",
                 "upc_reader",
                 "upc_e_reader"
             ]
-        }
+        },
+        locate: true
     }, function(err) {
         if (err) {
             console.error('Error inicializando Quagga:', err);
@@ -1102,8 +1055,36 @@ function initBarcodeScanner() {
         }
         console.log('Quagga inicializado correctamente');
         Quagga.start();
+        
+        // Dibujar detección (opcional)
+        Quagga.onProcessed(function(result) {
+            const drawingCtx = Quagga.canvas.ctx.overlay;
+            const drawingCanvas = Quagga.canvas.dom.overlay;
+
+            if (result) {
+                drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+            }
+        });
     });
 
+    // Detectar código de barras
+    Quagga.onDetected(function(result) {
+        if (result.codeResult && result.codeResult.code) {
+            const code = result.codeResult.code;
+            console.log('✅ Código de barras detectado:', code);
+            
+            // Detener Quagga y cámara temporalmente
+            Quagga.stop();
+            stopCamera();
+            
+            // Buscar producto
+            searchProductByBarcode(code);
+        }
+    });
+}
+        
+
+       
     // Detectar código de barras
     Quagga.onDetected(function(result) {
         const code = result.codeResult.code;
@@ -1115,7 +1096,7 @@ function initBarcodeScanner() {
         // Buscar producto en base de datos
         searchProductByBarcode(code);
     });
-}
+
 
 // Función para buscar producto por código de barras
 async function searchProductByBarcode(barcode) {
@@ -1168,6 +1149,27 @@ async function lookupProductInDatabase(barcode) {
     };
     
     return products[barcode] || null;
+}
+// AGREGA esta función
+async function searchProductByBarcode(barcode) {
+    showNotification(`Buscando producto ${barcode}...`, 'warning');
+    
+    try {
+        // Simular búsqueda en base de datos (reemplazar con API real)
+        const product = await lookupProductInDatabase(barcode);
+        
+        if (product) {
+            showScanResults(product);
+        } else {
+            showNotification('Producto no encontrado en base de datos', 'info');
+            // Reactivar cámara para reconocimiento por IA
+            setTimeout(() => startCamera(), 2000);
+        }
+    } catch (error) {
+        console.error('Error buscando producto:', error);
+        showNotification('Error buscando producto', 'error');
+        setTimeout(() => startCamera(), 2000);
+    }
 }
 
         // ===============================
@@ -1343,6 +1345,93 @@ async function lookupProductInDatabase(barcode) {
 
             showNotification('Escaneo completado (modo demo)', 'success');
         }
+        // ===============================
+// 💳 SISTEMA DE PAGOS CON PAYPAL - NUEVO
+// ===============================
+
+function initPayPalButtons() {
+    if (typeof paypal === 'undefined') {
+        console.error('PayPal SDK no cargado');
+        setTimeout(initPayPalButtons, 1000);
+        return;
+    }
+
+    const planIds = {
+        'basico': 'P-3RX065706Z922000U5QZCBMA',
+        'profesional': 'P-1TC147912B2007440NDJCUEY', 
+        'empresarial': 'P-42J26630865841252NDJCWQY'
+    };
+
+    document.querySelectorAll('.paypal-button-container').forEach(container => {
+        const plan = container.getAttribute('data-plan');
+        const planId = planIds[plan];
+
+        if (!planId || !planId.startsWith('P-')) {
+            container.innerHTML = `<button class="btn btn-outline" onclick="showNotification('Plan temporalmente no disponible', 'warning')">Seleccionar Plan</button>`;
+            return;
+        }
+
+        paypal.Buttons({
+            style: {
+                shape: 'rect',
+                color: 'gold',
+                layout: 'vertical',
+                label: 'subscribe'
+            },
+            createSubscription: function(data, actions) {
+                return actions.subscription.create({
+                    plan_id: planId
+                });
+            },
+            onApprove: function(data, actions) {
+                console.log('Suscripción aprobada:', data);
+                showNotification(`¡Plan ${plan} activado correctamente!`, 'success');
+                updateUserPlan(plan, data.subscriptionID);
+            },
+            onError: function(err) {
+                console.error('Error PayPal:', err);
+                showNotification('Error en el proceso de pago', 'error');
+            }
+        }).render(container);
+    });
+}
+
+async function updateUserPlan(plan, subscriptionId) {
+    try {
+        await waitForFirebase();
+        const { auth } = window.firebaseApp;
+        const { db, doc, updateDoc } = window.firebaseFirestore;
+
+        const user = auth.currentUser;
+        if (!user) {
+            showNotification('Por favor inicia sesión para activar el plan', 'error');
+            return;
+        }
+
+        await updateDoc(doc(db, "companies", user.uid), {
+            plan: plan,
+            subscriptionId: subscriptionId,
+            subscriptionActive: true,
+            planActivatedAt: new Date(),
+            updatedAt: new Date()
+        });
+
+        showNotification(`Plan ${plan} activado con éxito`, 'success');
+    } catch (error) {
+        console.error('Error actualizando plan:', error);
+        showNotification('Error activando el plan', 'error');
+    }
+}
+
+// ===============================
+// 🎯 EVENT LISTENERS
+// ===============================
+document.addEventListener('DOMContentLoaded', function() {
+    // ... tu código actual ...
+    
+    // AGREGAR ESTA LÍNEA al final del event listener:
+    setTimeout(initPayPalButtons, 2000);
+});
 
         // ===============================
         // 🎯 EVENT LISTENERS
@@ -1430,19 +1519,34 @@ async function lookupProductInDatabase(barcode) {
 
             console.log('✅ Eco Tag inicializado correctamente');
         });
+         // Inicializar Quagga cuando se active la cámara
+    document.getElementById('start-camera').addEventListener('click', function() {
+        setTimeout(initBarcodeScanner, 1000);
+    });
+    
+    // Inicializar PayPal
+    if (typeof paypal !== 'undefined') {
+        initPayPal();
+    }
+      setTimeout(initPayPalButtons, 2000);
+
+
 
         // ===============================
-        // 📱 SERVICE WORKER Y PWA
+ // 📱 SERVICE WORKER Y PWA
         // ===============================
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then(registration => {
-                    console.log('SW registrado:', registration);
-                })
-                .catch(error => {
-                    console.log('Error SW:', error);
-                });
-        }
+        // En tu JavaScript, ACTUALIZA esta parte:
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+            .then(function(registration) {
+                console.log('SW registrado correctamente: ', registration.scope);
+            })
+            .catch(function(error) {
+                console.log('Error registrando SW: ', error);
+            });
+    });
+}
 
         // Detectar si es móvil y sugerir instalar
         if ('ontouchstart' in window && window.matchMedia('(display-mode: browser)').matches) {
@@ -1451,6 +1555,93 @@ async function lookupProductInDatabase(barcode) {
             }, 5000);
         }
     </script>
+    // AGREGA estas funciones al final de tu script actual
+
+function initPayPalButtons() {
+    if (typeof paypal === 'undefined') {
+        console.error('PayPal SDK no cargado');
+        return;
+    }
+
+    const planIds = {
+        'basico': 'P-3RX065706Z922000U5QZCBMA', // REEMPLAZA con tu Plan ID real
+        'profesional': 'P-1TC147912B2007440NDJCUEY', // REEMPLAZA
+        'empresarial': 'P-42J26630865841252NDJCWQY' // REEMPLAZA
+    };
+
+    document.querySelectorAll('.paypal-button-container').forEach(container => {
+        const plan = container.getAttribute('data-plan');
+        const planId = planIds[plan];
+
+        if (!planId || !planId.startsWith('P-')) {
+            container.innerHTML = `<button class="btn btn-outline" disabled>Configurar Plan ID</button>`;
+            console.warn(`Plan ID no configurado para: ${plan}`);
+            return;
+        }
+
+        paypal.Buttons({
+            style: {
+                shape: 'rect',
+                color: 'gold',
+                layout: 'vertical',
+                label: 'subscribe'
+            },
+            createSubscription: function(data, actions) {
+                return actions.subscription.create({
+                    plan_id: planId
+                });
+            },
+            onApprove: function(data, actions) {
+                console.log('Suscripción aprobada:', data);
+                showNotification(`¡Plan ${plan} activado correctamente!`, 'success');
+                updateUserPlan(plan, data.subscriptionID);
+            },
+            onError: function(err) {
+                console.error('Error PayPal:', err);
+                showNotification('Error en el proceso de pago', 'error');
+            },
+            onCancel: function(data) {
+                console.log('Pago cancelado:', data);
+                showNotification('Pago cancelado', 'warning');
+            }
+        }).render(container);
+    });
+}
+
+async function updateUserPlan(plan, subscriptionId) {
+    try {
+        await waitForFirebase();
+        const { auth } = window.firebaseApp;
+        const { db, doc, updateDoc } = window.firebaseFirestore;
+
+        const user = auth.currentUser;
+        if (!user) {
+            showNotification('Por favor inicia sesión para activar el plan', 'error');
+            return;
+        }
+
+        await updateDoc(doc(db, "companies", user.uid), {
+            plan: plan,
+            subscriptionId: subscriptionId,
+            subscriptionActive: true,
+            planActivatedAt: new Date(),
+            updatedAt: new Date()
+        });
+
+        showNotification(`Plan ${plan} activado con éxito`, 'success');
+    } catch (error) {
+        console.error('Error actualizando plan:', error);
+        showNotification('Error activando el plan', 'error');
+    }
+}
+
+// Inicializar PayPal cuando esté listo
+if (typeof paypal !== 'undefined') {
+    initPayPalButtons();
+} else {
+    // Esperar a que cargue PayPal
+    window.addEventListener('paypal-sdk-loaded', initPayPalButtons);
+}
 </body>
 </html>
 
