@@ -761,9 +761,26 @@
                     video.play();
                     initBarcodeScanner();
                     
-                    if (scannerInterval) clearInterval(scannerInterval);
-                    //scannerInterval = setInterval(tryCapture, 3000);
-                };
+                    // Limpiar intervalo anterior
+    if (scannerInterval) {
+        clearInterval(scannerInterval);
+        scannerInterval = null;
+    }
+    // ✅ Captura automática INTELIGENTE
+    scannerInterval = setInterval(() => {
+        const scanResult = document.getElementById('scanResult');
+        const isResultActive = scanResult.classList.contains('active');
+        
+        // Solo capturar si:
+        // 1. No hay resultados activos Y
+        // 2. No se ha completado un escaneo Y  
+        // 3. La cámara está activa
+        if (!isResultActive && !scanCompleted && stream) {
+            console.log('Captura automática iniciada...');
+            tryCapture();
+        }
+    }, 20000); // 20 segundos entre intentos
+};
 
                 video.onerror = () => {
                     showNotification('Error al cargar la cámara', 'error');

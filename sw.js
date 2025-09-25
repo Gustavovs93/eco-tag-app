@@ -7,7 +7,8 @@ const urlsToCache = [
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
     'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js',
     'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js',
-    'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js'
+    'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js',
+    'https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js'
 ];
 
 self.addEventListener('install', (event) => {
@@ -33,4 +34,15 @@ self.addEventListener('fetch', (event) => {
 
 self.addEventListener('activate', (event) => {
     console.log('Service Worker activado');
+     event.waitUntil(
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames.map((cacheName) => {
+                    if (cacheName !== CACHE_NAME) {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        })
+    );
 });
