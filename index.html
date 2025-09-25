@@ -16,56 +16,57 @@
     
     <!-- Firebase Config Modular -->
     <script type="module">
-        import { firebaseConfig } from './firebase-config.js';
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { 
-            getAuth, 
-            createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword, 
-            signOut,
-            onAuthStateChanged 
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { 
-            getFirestore, 
-            doc, 
-            setDoc, 
-            getDoc, 
-            addDoc, 
-            collection, 
-            serverTimestamp,
-            updateDoc 
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { firebaseConfig } from './firebase-config.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+        getAuth, 
+        createUserWithEmailAndPassword, 
+        signInWithEmailAndPassword, 
+        signOut,
+        onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { 
+        getFirestore, 
+        doc, 
+        setDoc, 
+        getDoc, 
+        addDoc, 
+        collection, 
+        serverTimestamp,
+        updateDoc 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-        window.firebaseApp = { app, auth, db };
-        window.firebaseAuth = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged };
-        window.firebaseFirestore = { doc, setDoc, getDoc, addDoc, collection, serverTimestamp, updateDoc };
-        
-        console.log('🔥 Firebase inicializado correctamente');
-        
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                console.log('✅ Usuario autenticado:', user.email);
-                document.body.setAttribute('data-auth', 'true');
-                
-                // Actualizar interfaz para usuario logueado
-                const userMenu = document.querySelector('.user-menu');
-                const authButtons = document.querySelector('.auth-buttons');
-                if (userMenu) userMenu.style.display = 'block';
-                if (authButtons) authButtons.style.display = 'none';
-            } else {
-                console.log('❌ Usuario no autenticado');
-                document.body.setAttribute('data-auth', 'false');
-                
-                const userMenu = document.querySelector('.user-menu');
-                const authButtons = document.querySelector('.auth-buttons');
-                if (userMenu) userMenu.style.display = 'none';
-                if (authButtons) authButtons.style.display = 'flex';
-            }
-        });
+    window.firebaseApp = { app, auth, db };
+    window.firebaseAuth = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged };
+    window.firebaseFirestore = { db, doc, setDoc, getDoc, addDoc, collection, serverTimestamp, updateDoc };
+    // ↑ CORRECCIÓN: Agregar 'db' aquí ↑
+    
+    console.log('🔥 Firebase inicializado correctamente');
+    
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            console.log('✅ Usuario autenticado:', user.email);
+            document.body.setAttribute('data-auth', 'true');
+            
+            const userMenu = document.querySelector('.user-menu');
+            const authButtons = document.querySelector('.auth-buttons');
+            if (userMenu) userMenu.style.display = 'block';
+            if (authButtons) authButtons.style.display = 'none';
+        } else {
+            console.log('❌ Usuario no autenticado');
+            document.body.setAttribute('data-auth', 'false');
+            
+            const userMenu = document.querySelector('.user-menu');
+            const authButtons = document.querySelector('.auth-buttons');
+            if (userMenu) userMenu.style.display = 'none';
+            if (authButtons) authButtons.style.display = 'flex';
+        }
+    });
+</script>
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
