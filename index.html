@@ -1180,7 +1180,7 @@ async function saveScanToDatabase(product) {
         }
 
         const { auth } = window.firebaseApp;
-        const { db, collection, addDoc, serverTimestamp } = window.firebaseFirestore;
+        const { collection, addDoc, serverTimestamp } = window.firebaseFirestore;
 
         // ✅ VERIFICAR QUE 'db' EXISTA
         if (!db) {
