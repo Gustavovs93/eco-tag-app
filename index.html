@@ -808,17 +808,67 @@ async function handleLogin(e) {
     }
 }
 
+
+   // ===============================
+// 🔐 CERRAR SESIÓN - VERSIÓN CORREGIDA
+// ===============================
 async function handleLogout() {
     try {
-        await waitForFirebase();
-        const { auth, signOut } = window.firebaseAuth;
-        await signOut(auth);
+        console.log('🚪 Intentando cerrar sesión...');
+        
+        // Mostrar confirmación
+        if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+            return;
+        }
+
+        // Verificar que Firebase esté cargado
+        if (!window.firebaseApp || !window.firebaseApp.auth) {
+            throw new Error('Firebase no está disponible');
+        }
+
+        const { auth } = window.firebaseApp;
+        
+        // Verificar que hay un usuario autenticado
+        if (!auth.currentUser) {
+            showNotification('No hay ninguna sesión activa', 'info');
+            return;
+        }
+
+        console.log('👤 Cerrando sesión de:', auth.currentUser.email);
+        
+        // Cerrar sesión
+        await auth.signOut();
+        
+        console.log('✅ Sesión cerrada correctamente');
         showNotification('Sesión cerrada correctamente', 'success');
+        
+        // Actualizar interfaz
+        document.body.setAttribute('data-auth', 'false');
+        
+        const userMenu = document.querySelector('.user-menu');
+        const authButtons = document.querySelector('.auth-buttons');
+        
+        if (userMenu) userMenu.style.display = 'none';
+        if (authButtons) authButtons.style.display = 'flex';
+        
+        // Recargar para limpiar el estado (opcional)
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+        
     } catch (error) {
-        showNotification('Error cerrando sesión: ' + error.message, 'error');
+        console.error('❌ Error cerrando sesión:', error);
+        
+        let errorMessage = 'Error al cerrar sesión';
+        if (error.message.includes('Firebase no está disponible')) {
+            errorMessage = 'Error: Firebase no se cargó correctamente';
+        } else {
+            errorMessage = error.message || 'Error desconocido';
+        }
+        
+        showNotification(errorMessage, 'error');
     }
 }
-
 // ===============================
 // 📸 SISTEMA DE CÁMARA
 // ===============================
