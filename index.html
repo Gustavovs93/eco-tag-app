@@ -1158,14 +1158,15 @@ async function saveScanToDatabase(product) {
         // Esperar explícitamente a Firebase
         await waitForFirebase(5000);
         
-        // ✅ VERIFICACIÓN EXTRA DIAGNÓSTICO
-        console.log('🔍 Estado de Firebase:', {
-            firebaseApp: !!window.firebaseApp,
-            firebaseFirestore: !!window.firebaseFirestore,
-            db: !!window.firebaseApp?.db,
-            auth: !!window.firebaseApp?.auth
-        });
-        
+         // ✅ DIAGNÓSTICO COMPLETO
+        console.log('=== DIAGNÓSTICO FIREBASE ===');
+        console.log('firebaseApp existe:', !!window.firebaseApp);
+        console.log('firebaseFirestore existe:', !!window.firebaseFirestore);
+        console.log('firebaseApp.db:', window.firebaseApp?.db);
+        console.log('firebaseFirestore.db:', window.firebaseFirestore?.db);
+        console.log('Tipo de firebaseApp.db:', typeof window.firebaseApp?.db);
+        console.log('Tipo de firebaseFirestore.db:', typeof window.firebaseFirestore?.db);
+        console.log('Keys de firebaseFirestore:', Object.keys(window.firebaseFirestore || {}));
         if (!window.firebaseApp || !window.firebaseApp.auth) {
             console.warn('❌ Firebase no disponible');
             return;
