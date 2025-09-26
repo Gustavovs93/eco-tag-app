@@ -14,68 +14,92 @@
     <link rel="icon" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     
-    <!-- Firebase Config Modular -->
-    <script type="module">
-        import { firebaseConfig } from './firebase-config.js';
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { 
-            getAuth, 
+    <!-- Firebase Config Modular - VERSIÓN CORREGIDA -->
+<script type="module">
+    import { firebaseConfig } from './firebase-config.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+        getAuth, 
+        createUserWithEmailAndPassword, 
+        signInWithEmailAndPassword, 
+        signOut,
+        onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { 
+        getFirestore, 
+        doc, 
+        setDoc, 
+        getDoc, 
+        addDoc, 
+        collection, 
+        serverTimestamp,
+        updateDoc 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    try {
+        console.log('🔥 Inicializando Firebase...');
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // ✅ ASIGNAR A window CORRECTAMENTE
+        window.firebaseApp = { app, auth, db };
+        window.firebaseAuth = { 
             createUserWithEmailAndPassword, 
             signInWithEmailAndPassword, 
-            signOut,
-            onAuthStateChanged 
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { 
-            getFirestore, 
+            signOut, 
+            onAuthStateChanged,
+            auth // ← agregar auth también
+        };
+        window.firebaseFirestore = { 
+            db, // ← agregar db aquí también
             doc, 
             setDoc, 
             getDoc, 
             addDoc, 
             collection, 
-            serverTimestamp,
+            serverTimestamp, 
             updateDoc 
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        };
+        
+        console.log('✅ Firebase inicializado correctamente');
+        console.log('📊 firebaseApp:', window.firebaseApp);
+        console.log('🔐 firebaseAuth:', window.firebaseAuth);
+        console.log('🗄️ firebaseFirestore:', window.firebaseFirestore);
 
-        try {
-            console.log('🔥 Inicializando Firebase...');
-            
-            const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-            const db = getFirestore(app);
+        // Estado de autenticación
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log('✅ Usuario autenticado:', user.email);
+                document.body.setAttribute('data-auth', 'true');
+                
+                const userMenu = document.querySelector('.user-menu');
+                const authButtons = document.querySelector('.auth-buttons');
+                if (userMenu) userMenu.style.display = 'block';
+                if (authButtons) authButtons.style.display = 'none';
+            } else {
+                console.log('❌ Usuario no autenticado');
+                document.body.setAttribute('data-auth', 'false');
+                
+                const userMenu = document.querySelector('.user-menu');
+                const authButtons = document.querySelector('.auth-buttons');
+                if (userMenu) userMenu.style.display = 'none';
+                if (authButtons) authButtons.style.display = 'flex';
+            }
+        });
 
-            // Asignar globalmente
-            window.firebaseApp = { app, auth, db };
-            window.firebaseAuth = { 
-                createUserWithEmailAndPassword, 
-                signInWithEmailAndPassword, 
-                signOut, 
-                onAuthStateChanged,
-                getAuth: () => auth
-            };
-            window.firebaseFirestore = { 
-                doc, setDoc, getDoc, addDoc, collection, serverTimestamp, updateDoc 
-            };
-            
-            console.log('✅ Firebase inicializado correctamente');
-
-            // Manejar estado de autenticación
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    console.log('✅ Usuario autenticado:', user.email);
-                    document.body.setAttribute('data-auth', 'true');
-                    document.querySelector('.user-menu').style.display = 'block';
-                    document.querySelector('.auth-buttons').style.display = 'none';
-                } else {
-                    console.log('❌ Usuario no autenticado');
-                    document.body.setAttribute('data-auth', 'false');
-                    document.querySelector('.user-menu').style.display = 'none';
-                    document.querySelector('.auth-buttons').style.display = 'flex';
-                }
-            });
-
-        } catch (error) {
-            console.error('❌ Error inicializando Firebase:', error);
-        }
+    } catch (error) {
+        console.error('❌ Error inicializando Firebase:', error);
+        // Mostrar error al usuario
+        setTimeout(() => {
+            const notification = document.createElement('div');
+            notification.innerHTML = '❌ Error cargando Firebase. Recarga la página.';
+            notification.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#e74c3c; color:white; padding:15px; border-radius:5px; z-index:10000;';
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }, 1000);
+    }
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
