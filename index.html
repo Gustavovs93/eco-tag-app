@@ -46,7 +46,7 @@
     // ↑ CORRECCIÓN: Agregar 'db' aquí ↑
     
     console.log('🔥 Firebase inicializado correctamente');
-    
+    console.log('db disponible:', !!db);
     onAuthStateChanged(auth, (user) => {
         if (user) {
             console.log('✅ Usuario autenticado:', user.email);
@@ -1167,8 +1167,9 @@ async function saveScanToDatabase(product) {
         console.log('Tipo de firebaseApp.db:', typeof window.firebaseApp?.db);
         console.log('Tipo de firebaseFirestore.db:', typeof window.firebaseFirestore?.db);
         console.log('Keys de firebaseFirestore:', Object.keys(window.firebaseFirestore || {}));
-        if (!window.firebaseApp || !window.firebaseApp.auth) {
-            console.warn('❌ Firebase no disponible');
+         // Verificar que todo esté disponible
+        if (!window.firebaseApp || !window.firebaseApp.auth || !window.firebaseApp.db) {
+            console.warn('❌ Firebase no está listo');
             return;
         }
 
