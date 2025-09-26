@@ -535,13 +535,13 @@
     <!-- =============================== -->
     <script>
         // ===============================
+// ===============================
 // 🎯 VARIABLES GLOBALES
 // ===============================
 let stream = null;
 let currentFacingMode = 'environment';
 let scannerInterval = null;
 let scanCompleted = false;
-
 
 // ===============================
 // 🛠️ FUNCIONES DE UTILIDAD
@@ -584,22 +584,14 @@ function waitForFirebase(maxWait = 10000) {
         console.log('⏳ Verificando estado de Firebase...');
         
         function checkFirebase() {
-            // ✅ VERIFICACIÓN MEJORADA - Incluye la variable db global
             if (window.firebaseApp && 
                 window.firebaseApp.auth && 
-                window.firebaseApp.db &&
-                window.firebaseFirestore &&
-                window.firebaseAuth &&
-                window.firebaseAuth.createUserWithEmailAndPassword &&
-                window.firebaseAuth.signInWithEmailAndPassword) {
+                window.firebaseApp.db) {
                 
-                // ✅ ASIGNAR db A VARIABLE GLOBAL
-                db = window.firebaseApp.db;
-                console.log('✅ Todos los módulos de Firebase están listos');
-                console.log('✅ db asignada correctamente:', !!db);
+                console.log('✅ Firebase está listo');
                 resolve();
             } else if (Date.now() - startTime > maxWait) {
-                const errorMsg = 'Firebase no se cargó correctamente después de ' + maxWait + 'ms';
+                const errorMsg = 'Firebase no se cargó correctamente';
                 console.error('❌', errorMsg);
                 reject(new Error(errorMsg));
             } else {
@@ -625,7 +617,6 @@ async function handleRegister(e) {
     const confirmPassword = document.getElementById('register-confirmPassword').value;
     const plan = document.getElementById('register-plan').value;
 
-    // Validaciones mejoradas
     if (!company || !email || !password || !confirmPassword || !plan) {
         showNotification('Por favor completa todos los campos', 'error');
         return;
@@ -645,30 +636,24 @@ async function handleRegister(e) {
     const registerSpinner = document.getElementById('registerSpinner');
     const registerSubmit = document.getElementById('registerSubmit');
     
-    // Estado de carga
     registerText.style.display = 'none';
     registerSpinner.style.display = 'inline-block';
     registerSubmit.disabled = true;
 
     try {
         console.log('⏳ Esperando a que Firebase esté listo...');
-        
-        // Esperar explícitamente a Firebase
         await waitForFirebase(10000);
-        console.log('✅ Firebase listo');
         
         const { auth, createUserWithEmailAndPassword } = window.firebaseAuth;
+        const { db } = window.firebaseApp;
         const { doc, setDoc, serverTimestamp } = window.firebaseFirestore;
 
         console.log('📝 Creando usuario en Authentication...');
-        
-        // 1. Crear usuario en Auth
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         
         console.log('✅ Usuario creado en Auth:', user.uid);
 
-        // 2. Crear documento de la empresa en Firestore
         await setDoc(doc(db, "companies", user.uid), {
             name: company,
             email: email,
@@ -677,9 +662,6 @@ async function handleRegister(e) {
             updatedAt: serverTimestamp()
         });
 
-        console.log('✅ Documento de empresa creado');
-
-        // 3. Crear perfil de usuario
         await setDoc(doc(db, "users", user.uid), {
             email: email,
             companyId: user.uid,
@@ -688,10 +670,8 @@ async function handleRegister(e) {
         });
 
         console.log('✅ Perfil de usuario creado');
-        
         showNotification('¡Cuenta creada exitosamente! Bienvenido a Eco Tag', 'success');
         
-        // Cerrar modal después de éxito
         setTimeout(() => {
             closeModal('registerModal');
             document.getElementById('registerForm').reset();
@@ -700,7 +680,6 @@ async function handleRegister(e) {
     } catch (error) {
         console.error('❌ Error en el registro:', error);
         
-        // Manejo específico de errores
         let errorMessage = 'Error en el registro';
         if (error.code === 'auth/email-already-in-use') {
             errorMessage = 'Este email ya está registrado';
@@ -708,15 +687,12 @@ async function handleRegister(e) {
             errorMessage = 'La contraseña es muy débil';
         } else if (error.code === 'auth/invalid-email') {
             errorMessage = 'Email inválido';
-        } else if (error.code === 'auth/operation-not-allowed') {
-            errorMessage = 'Operación no permitida';
         } else {
             errorMessage = error.message || 'Error desconocido';
         }
         
         showNotification(errorMessage, 'error');
     } finally {
-        // Restaurar estado del botón
         registerText.style.display = 'inline-block';
         registerSpinner.style.display = 'none';
         registerSubmit.disabled = false;
@@ -731,7 +707,6 @@ async function handleLogin(e) {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
 
-    // Validaciones básicas
     if (!email || !password) {
         showNotification('Por favor completa todos los campos', 'error');
         return;
@@ -746,22 +721,18 @@ async function handleLogin(e) {
     loginSubmit.disabled = true;
 
     try {
-        console.log('⏳ Esperando a que Firebase esté listo...');
-        
         await waitForFirebase(10000);
-        console.log('✅ Firebase listo');
         
         const { auth, signInWithEmailAndPassword } = window.firebaseAuth;
+        const { db } = window.firebaseApp;
         const { doc, getDoc } = window.firebaseFirestore;
 
         console.log('📝 Iniciando sesión...');
-        
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         
         console.log('✅ Login exitoso:', user.email);
         
-        // Obtener datos de la empresa
         const companyDoc = await getDoc(doc(db, "companies", user.uid));
         
         if (!companyDoc.exists()) {
@@ -773,7 +744,6 @@ async function handleLogin(e) {
         
         showNotification(`¡Bienvenido de vuelta ${companyData.name}!`, 'success');
         
-        // Cerrar modal después de éxito
         setTimeout(() => {
             closeModal('loginModal');
             document.getElementById('loginForm').reset();
@@ -782,7 +752,6 @@ async function handleLogin(e) {
     } catch (error) {
         console.error('❌ Error en el login:', error);
         
-        // Manejo específico de errores
         let errorMessage = 'Error en el login';
         if (error.code === 'auth/user-not-found') {
             errorMessage = 'Usuario no encontrado';
@@ -790,8 +759,6 @@ async function handleLogin(e) {
             errorMessage = 'Contraseña incorrecta';
         } else if (error.code === 'auth/invalid-email') {
             errorMessage = 'Email inválido';
-        } else if (error.code === 'auth/too-many-requests') {
-            errorMessage = 'Demasiados intentos. Intenta más tarde';
         } else {
             errorMessage = error.message || 'Error desconocido';
         }
@@ -826,7 +793,6 @@ async function startCamera() {
         const captureBtn = document.getElementById('capture-btn');
         const switchBtn = document.getElementById('switch-camera');
 
-        // Verificar permisos
         if (navigator.permissions) {
             const permission = await navigator.permissions.query({ name: 'camera' });
             if (permission.state === 'denied') {
@@ -835,13 +801,11 @@ async function startCamera() {
             }
         }
 
-        // Detener cámara anterior
         if (stream) {
             stopCamera();
             await new Promise(resolve => setTimeout(resolve, 500));
         }
 
-        // Solicitar cámara
         stream = await navigator.mediaDevices.getUserMedia({
             video: { 
                 facingMode: currentFacingMode,
@@ -851,35 +815,29 @@ async function startCamera() {
             audio: false
         });
 
-        // Configurar video
         video.srcObject = stream;
         video.hidden = false;
         video.classList.add('active');
         
-        // Actualizar interfaz
         cameraView.classList.add('hidden');
         captureBtn.disabled = false;
         switchBtn.disabled = false;
         startBtn.disabled = true;
         startBtn.innerHTML = '<i class="fas fa-sync"></i> Reiniciar Cámara';
         
-        // Cuando el video esté listo
         video.onloadedmetadata = () => {
             video.play();
             initBarcodeScanner();
             
-            // Limpiar intervalo anterior
             if (scannerInterval) {
                 clearInterval(scannerInterval);
                 scannerInterval = null;
             }
             
-            // ✅ Captura automática INTELIGENTE
             scannerInterval = setInterval(() => {
                 const scanResult = document.getElementById('scanResult');
                 const isResultActive = scanResult.classList.contains('active');
                 
-                // ✅ CORREGIDO: Solo capturar si no hay resultados activos y la cámara está activa
                 if (!isResultActive && stream) {
                     console.log('Captura automática iniciada...');
                     tryCapture();
@@ -972,7 +930,6 @@ function initBarcodeScanner() {
 
     try { Quagga.stop(); } catch (e) {}
 
-    // 🔧 CONFIGURACIÓN MEJORADA - MENOS SENSIBLE
     Quagga.init({
         inputStream: {
             name: "Live",
@@ -1009,7 +966,6 @@ function initBarcodeScanner() {
         Quagga.start();
     });
 
-    // 🔧 DETECCIÓN MEJORADA - CON DEBOUNCE
     let lastDetectionTime = 0;
     const DETECTION_COOLDOWN = 3000;
 
@@ -1038,7 +994,6 @@ function initBarcodeScanner() {
     });
 }
 
-// 🔧 FUNCIÓN PARA VALIDAR CÓDIGOS DE BARRAS
 function isValidBarcode(code) {
     if (!code || code.length < 8) return false;
     
@@ -1053,7 +1008,6 @@ function isValidBarcode(code) {
     return false;
 }
 
-// 🔧 FUNCIÓN FALTANTE - BUSCAR PRODUCTO POR CÓDIGO DE BARRAS
 async function searchProductByBarcode(barcode) {
     showNotification(`Buscando producto ${barcode}...`, 'warning');
     
@@ -1155,43 +1109,40 @@ async function lookupProductInDatabase(barcode) {
 }
 
 // ===============================
-// 💾 BASE DE DATOS - VERSIÓN CORREGIDA
+// 💾 BASE DE DATOS
 // ===============================
 async function saveScanToDatabase(product) {
     try {
         console.log('🔄 Intentando guardar escaneo en base de datos...');
         
-        // Esperar explícitamente a Firebase
         await waitForFirebase(5000);
         
-        // ✅ DIAGNÓSTICO COMPLETO
-        console.log('=== DIAGNÓSTICO FIREBASE ===');
-        console.log('firebaseApp existe:', !!window.firebaseApp);
-        console.log('firebaseFirestore existe:', !!window.firebaseFirestore);
-        console.log('db global:', !!db);
-        console.log('Tipo de db:', typeof db);
-        
-        // Verificar que todo esté disponible
-        if (!db) {
-            console.error('❌ ERROR: db no está definida');
-            return;
-        }
-
+        const db = window.firebaseApp.db;
         const { auth } = window.firebaseApp;
         const { collection, addDoc, serverTimestamp } = window.firebaseFirestore;
 
-        const user = auth.currentUser;
-        if (!user) {
-            console.log('👤 Usuario no autenticado, escaneo no guardado');
+        console.log('=== VERIFICACIÓN ===');
+        console.log('db:', db);
+        console.log('auth:', auth);
+        console.log('usuario actual:', auth.currentUser);
+
+        if (!db) {
+            console.error('❌ ERROR: db no disponible');
             return;
         }
 
-        console.log('✅ Usuario autenticado, guardando escaneo...');
+        const user = auth.currentUser;
+        if (!user) {
+            console.log('👤 Usuario no autenticado, escaneo no guardado (modo demo)');
+            return;
+        }
+
+        console.log('✅ Usuario autenticado:', user.email);
+        console.log('📝 Guardando escaneo...');
         
-        // ✅ USAR db CORRECTAMENTE
         const scansRef = collection(db, 'scans');
         
-        await addDoc(scansRef, {
+        const scanData = {
             productName: product.name || 'No name',
             productBrand: product.brand || 'Unknown',
             productCategory: product.category || 'General',
@@ -1200,18 +1151,25 @@ async function saveScanToDatabase(product) {
             companyId: user.uid,
             userId: user.uid,
             timestamp: serverTimestamp(),
-            recommendations: product.recommendations || []
-        });
+            recommendations: product.recommendations || [],
+            scannedAt: new Date().toISOString()
+        };
 
-        console.log('✅ Escaneo guardado exitosamente en Firestore');
+        console.log('📊 Datos a guardar:', scanData);
+        
+        const result = await addDoc(scansRef, scanData);
+        
+        console.log('✅ Escaneo guardado exitosamente. ID:', result.id);
+        showNotification('Escaneo guardado en la base de datos', 'success');
 
     } catch (error) {
         console.error('❌ Error guardando escaneo:', error);
-        console.error('📌 Detalles del error:', {
-            code: error.code,
-            message: error.message,
-            stack: error.stack
-        });
+        
+        if (error.code === 'permission-denied') {
+            showNotification('Error: No tienes permisos para guardar escaneos', 'error');
+        } else {
+            showNotification('Error al guardar el escaneo: ' + error.message, 'error');
+        }
     }
 }
 
@@ -1301,6 +1259,7 @@ async function updateUserPlan(plan, subscriptionId) {
     try {
         await waitForFirebase();
         const { auth } = window.firebaseApp;
+        const { db } = window.firebaseApp;
         const { doc, updateDoc } = window.firebaseFirestore;
 
         const user = auth.currentUser;
@@ -1324,22 +1283,51 @@ async function updateUserPlan(plan, subscriptionId) {
     }
 }
 
+
+// ===============================
+// 🧪 FUNCIÓN DE PRUEBA FIREBASE (GLOBAL)
+// ===============================
+window.testFirebaseConnection = async function() {
+    try {
+        console.log('🧪 Probando conexión a Firebase...');
+        
+        await waitForFirebase();
+        
+        const db = window.firebaseApp.db;
+        const { collection, addDoc } = window.firebaseFirestore;
+        const { auth } = window.firebaseApp;
+        
+        console.log('🔐 Estado de autenticación:', auth.currentUser ? 'Autenticado' : 'No autenticado');
+        
+        const testRef = collection(db, 'test_connection');
+        const testData = {
+            test: true,
+            timestamp: new Date().toISOString(),
+            message: 'Prueba de conexión exitosa',
+            userId: auth.currentUser ? auth.currentUser.uid : 'anonymous'
+        };
+        
+        console.log('📝 Intentando guardar documento de prueba...');
+        const testDoc = await addDoc(testRef, testData);
+        
+        console.log('✅ Conexión exitosa. Documento ID:', testDoc.id);
+        showNotification('✅ Conexión a Firebase verificada', 'success');
+        
+        return testDoc.id;
+        
+    } catch (error) {
+        console.error('❌ Error en la conexión:', error);
+        showNotification('Error de conexión: ' + error.message, 'error');
+        throw error;
+    }
+}
+
 // ===============================
 // 🎯 CONFIGURACIÓN INICIAL
 // ===============================
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Inicializando Eco Tag...');
     
-    // ✅ DEBUG: Verificar estado de Firebase cada 3 segundos
-    setInterval(() => {
-        console.log('🔍 Estado de Firebase:', {
-            firebaseApp: !!window.firebaseApp,
-            firebaseAuth: !!window.firebaseAuth,
-            firebaseFirestore: !!window.firebaseFirestore,
-            dbGlobal: !!db
-        });
-    }, 3000);
-
     // Ocultar loading
     setTimeout(() => {
         const loadingOverlay = document.getElementById('loadingOverlay');
