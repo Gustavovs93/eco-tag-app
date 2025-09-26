@@ -535,62 +535,68 @@
     <!-- =============================== -->
     <script>
         // ===============================
-        // 🎯 VARIABLES GLOBALES
-        // ===============================
-        let stream = null;
-        let currentFacingMode = 'environment';
-        let scannerInterval = null;
-        let scanCompleted = false;
-        // ===============================
-        // 🛠️ FUNCIONES DE UTILIDAD
-        // ===============================
-        function showNotification(message, type = 'success') {
-            let notification = document.getElementById('notification');
-            if (!notification) {
-                notification = document.createElement('div');
-                notification.id = 'notification';
-                document.body.appendChild(notification);
-            }
-            
-            notification.textContent = message;
-            notification.className = `notification ${type}`;
-            notification.classList.add('show');
-            
-            setTimeout(() => notification.classList.remove('show'), 4000);
-        }
+// 🎯 VARIABLES GLOBALES
+// ===============================
+let stream = null;
+let currentFacingMode = 'environment';
+let scannerInterval = null;
+let scanCompleted = false;
 
-        function openModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            }
-        }
 
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.remove('active');
-                document.body.style.overflow = 'auto';
-            }
-        }
+// ===============================
+// 🛠️ FUNCIONES DE UTILIDAD
+// ===============================
+function showNotification(message, type = 'success') {
+    let notification = document.getElementById('notification');
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'notification';
+        document.body.appendChild(notification);
+    }
+    
+    notification.textContent = message;
+    notification.className = `notification ${type}`;
+    notification.classList.add('show');
+    
+    setTimeout(() => notification.classList.remove('show'), 4000);
+}
 
-        
-            function waitForFirebase(maxWait = 10000) {
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+function waitForFirebase(maxWait = 10000) {
     return new Promise((resolve, reject) => {
         const startTime = Date.now();
         
         console.log('⏳ Verificando estado de Firebase...');
         
         function checkFirebase() {
-            // Verificación más completa de todos los módulos necesarios
+            // ✅ VERIFICACIÓN MEJORADA - Incluye la variable db global
             if (window.firebaseApp && 
                 window.firebaseApp.auth && 
+                window.firebaseApp.db &&
                 window.firebaseFirestore &&
                 window.firebaseAuth &&
                 window.firebaseAuth.createUserWithEmailAndPassword &&
                 window.firebaseAuth.signInWithEmailAndPassword) {
+                
+                // ✅ ASIGNAR db A VARIABLE GLOBAL
+                db = window.firebaseApp.db;
                 console.log('✅ Todos los módulos de Firebase están listos');
+                console.log('✅ db asignada correctamente:', !!db);
                 resolve();
             } else if (Date.now() - startTime > maxWait) {
                 const errorMsg = 'Firebase no se cargó correctamente después de ' + maxWait + 'ms';
@@ -605,10 +611,10 @@
     });
 }
 
-        // ===============================
-        // 🔐 AUTENTICACIÓN
-        // ===============================
-        async function handleRegister(e) {
+// ===============================
+// 🔐 AUTENTICACIÓN
+// ===============================
+async function handleRegister(e) {
     e.preventDefault();
     
     console.log('🔐 Iniciando proceso de registro...');
@@ -652,7 +658,7 @@
         console.log('✅ Firebase listo');
         
         const { auth, createUserWithEmailAndPassword } = window.firebaseAuth;
-        const { db, doc, setDoc, serverTimestamp } = window.firebaseFirestore;
+        const { doc, setDoc, serverTimestamp } = window.firebaseFirestore;
 
         console.log('📝 Creando usuario en Authentication...');
         
@@ -717,7 +723,7 @@
     }
 }
 
-        async function handleLogin(e) {
+async function handleLogin(e) {
     e.preventDefault();
     
     console.log('🔐 Iniciando proceso de login...');
@@ -746,7 +752,7 @@
         console.log('✅ Firebase listo');
         
         const { auth, signInWithEmailAndPassword } = window.firebaseAuth;
-        const { db, doc, getDoc } = window.firebaseFirestore;
+        const { doc, getDoc } = window.firebaseFirestore;
 
         console.log('📝 Iniciando sesión...');
         
@@ -798,164 +804,167 @@
     }
 }
 
-        async function handleLogout() {
-            try {
-                await waitForFirebase();
-                const { auth, signOut } = window.firebaseAuth;
-                await signOut(auth);
-                showNotification('Sesión cerrada correctamente', 'success');
-            } catch (error) {
-                showNotification('Error cerrando sesión: ' + error.message, 'error');
-            }
-        }
-
-        // ===============================
-        // 📸 SISTEMA DE CÁMARA
-        // ===============================
-        async function startCamera() {
-            try {
-                const video = document.getElementById('scanner-video');
-                const cameraView = document.getElementById('camera-view');
-                const startBtn = document.getElementById('start-camera');
-                const captureBtn = document.getElementById('capture-btn');
-                const switchBtn = document.getElementById('switch-camera');
-
-                // Verificar permisos
-                if (navigator.permissions) {
-                    const permission = await navigator.permissions.query({ name: 'camera' });
-                    if (permission.state === 'denied') {
-                        showNotification('Permiso de cámara denegado', 'error');
-                        return;
-                    }
-                }
-
-                // Detener cámara anterior
-                if (stream) {
-                    stopCamera();
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                }
-
-                // Solicitar cámara
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: { 
-                        facingMode: currentFacingMode,
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
-                    audio: false
-                });
-
-                // Configurar video
-                video.srcObject = stream;
-                video.hidden = false;
-                video.classList.add('active');
-                
-                // Actualizar interfaz
-                cameraView.classList.add('hidden');
-                captureBtn.disabled = false;
-                switchBtn.disabled = false;
-                startBtn.disabled = true;
-                startBtn.innerHTML = '<i class="fas fa-sync"></i> Reiniciar Cámara';
-                
-                // Cuando el video esté listo
-                video.onloadedmetadata = () => {
-                    video.play();
-                    initBarcodeScanner();
-                    
-                    // Limpiar intervalo anterior
-    if (scannerInterval) {
-        clearInterval(scannerInterval);
-        scannerInterval = null;
+async function handleLogout() {
+    try {
+        await waitForFirebase();
+        const { auth, signOut } = window.firebaseAuth;
+        await signOut(auth);
+        showNotification('Sesión cerrada correctamente', 'success');
+    } catch (error) {
+        showNotification('Error cerrando sesión: ' + error.message, 'error');
     }
-    // ✅ Captura automática INTELIGENTE
-    scannerInterval = setInterval(() => {
-    const scanResult = document.getElementById('scanResult');
-    const isResultActive = scanResult.classList.contains('active');
-    
-    // ✅ CORREGIDO: Solo capturar si no hay resultados activos y la cámara está activa
-    if (!isResultActive && stream) {
-        console.log('Captura automática iniciada...');
-        tryCapture();
-    }
-}, 20000);
-                video.onerror = () => {
-                    showNotification('Error al cargar la cámara', 'error');
-                    stopCamera();
-                };
-            }
-            } catch (error) {
-                console.error('Error accediendo a la cámara:', error);
-             
-                if (error.name === 'NotAllowedError') {
-                    showNotification('Permiso de cámara requerido', 'error');
-                } else if (error.name === 'NotFoundError') {
-                    showNotification('No se encontró cámara', 'error');
-                } else {
-                    showNotification('Error: ' + error.message, 'error');
-                }
-                stopCamera();
+}
+
+// ===============================
+// 📸 SISTEMA DE CÁMARA
+// ===============================
+async function startCamera() {
+    try {
+        const video = document.getElementById('scanner-video');
+        const cameraView = document.getElementById('camera-view');
+        const startBtn = document.getElementById('start-camera');
+        const captureBtn = document.getElementById('capture-btn');
+        const switchBtn = document.getElementById('switch-camera');
+
+        // Verificar permisos
+        if (navigator.permissions) {
+            const permission = await navigator.permissions.query({ name: 'camera' });
+            if (permission.state === 'denied') {
+                showNotification('Permiso de cámara denegado', 'error');
+                return;
             }
         }
 
-        async function switchCamera() {
-            if (stream) stream.getTracks().forEach(track => track.stop());
-            currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
-            await startCamera();
+        // Detener cámara anterior
+        if (stream) {
+            stopCamera();
+            await new Promise(resolve => setTimeout(resolve, 500));
         }
 
-        function stopCamera() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
+        // Solicitar cámara
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { 
+                facingMode: currentFacingMode,
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
+            audio: false
+        });
+
+        // Configurar video
+        video.srcObject = stream;
+        video.hidden = false;
+        video.classList.add('active');
+        
+        // Actualizar interfaz
+        cameraView.classList.add('hidden');
+        captureBtn.disabled = false;
+        switchBtn.disabled = false;
+        startBtn.disabled = true;
+        startBtn.innerHTML = '<i class="fas fa-sync"></i> Reiniciar Cámara';
+        
+        // Cuando el video esté listo
+        video.onloadedmetadata = () => {
+            video.play();
+            initBarcodeScanner();
             
+            // Limpiar intervalo anterior
             if (scannerInterval) {
                 clearInterval(scannerInterval);
                 scannerInterval = null;
             }
             
-            const video = document.getElementById('scanner-video');
-            const cameraView = document.getElementById('camera-view');
-            const startBtn = document.getElementById('start-camera');
-            const captureBtn = document.getElementById('capture-btn');
-            const switchBtn = document.getElementById('switch-camera');
-
-            if (video) {
-                video.srcObject = null;
-                video.classList.remove('active');
-                video.hidden = true;
-            }
+            // ✅ Captura automática INTELIGENTE
+            scannerInterval = setInterval(() => {
+                const scanResult = document.getElementById('scanResult');
+                const isResultActive = scanResult.classList.contains('active');
+                
+                // ✅ CORREGIDO: Solo capturar si no hay resultados activos y la cámara está activa
+                if (!isResultActive && stream) {
+                    console.log('Captura automática iniciada...');
+                    tryCapture();
+                }
+            }, 20000);
+        };
+        
+        video.onerror = () => {
+            showNotification('Error al cargar la cámara', 'error');
+            stopCamera();
+        };
             
-            cameraView.classList.remove('hidden');
-            captureBtn.disabled = true;
-            switchBtn.disabled = true;
-            startBtn.disabled = false;
-            startBtn.innerHTML = '<i class="fas fa-camera"></i> Activar Cámara';
+    } catch (error) {
+        console.error('Error accediendo a la cámara:', error);
+     
+        if (error.name === 'NotAllowedError') {
+            showNotification('Permiso de cámara requerido', 'error');
+        } else if (error.name === 'NotFoundError') {
+            showNotification('No se encontró cámara', 'error');
+        } else {
+            showNotification('Error: ' + error.message, 'error');
         }
+        stopCamera();
+    }
+}
 
-        function captureImage() {
-            const video = document.getElementById('scanner-video');
-            const canvas = document.getElementById('scanner-canvas');
-            const context = canvas.getContext('2d');
+async function switchCamera() {
+    if (stream) stream.getTracks().forEach(track => track.stop());
+    currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+    await startCamera();
+}
 
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+function stopCamera() {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+    }
+    
+    if (scannerInterval) {
+        clearInterval(scannerInterval);
+        scannerInterval = null;
+    }
+    
+    const video = document.getElementById('scanner-video');
+    const cameraView = document.getElementById('camera-view');
+    const startBtn = document.getElementById('start-camera');
+    const captureBtn = document.getElementById('capture-btn');
+    const switchBtn = document.getElementById('switch-camera');
 
-            processImage(canvas.toDataURL('image/jpeg'));
-        }
+    if (video) {
+        video.srcObject = null;
+        video.classList.remove('active');
+        video.hidden = true;
+    }
+    
+    cameraView.classList.remove('hidden');
+    captureBtn.disabled = true;
+    switchBtn.disabled = true;
+    startBtn.disabled = false;
+    startBtn.innerHTML = '<i class="fas fa-camera"></i> Activar Cámara';
+}
 
-        function tryCapture() {
-            const video = document.getElementById('scanner-video');
-            if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
-                captureImage();
-            }
-        }
+function captureImage() {
+    const video = document.getElementById('scanner-video');
+    const canvas = document.getElementById('scanner-canvas');
+    const context = canvas.getContext('2d');
 
-        // ===============================
-        // 📷 ESCÁNER DE CÓDIGO DE BARRAS
-        // ===============================
-       function initBarcodeScanner() {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    processImage(canvas.toDataURL('image/jpeg'));
+}
+
+function tryCapture() {
+    const video = document.getElementById('scanner-video');
+    if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
+        captureImage();
+    }
+}
+
+// ===============================
+// 📷 ESCÁNER DE CÓDIGO DE BARRAS
+// ===============================
+function initBarcodeScanner() {
     if (typeof Quagga === 'undefined') {
         console.warn('Quagga no está disponible');
         return;
@@ -976,21 +985,21 @@
             }
         },
         locator: {
-            patchSize: "large",  // 👈 Cambiado de "medium" a "large"
-            halfSample: false    // 👈 Desactivar para menos sensibilidad
+            patchSize: "large",
+            halfSample: false
         },
-        numOfWorkers: 1,         // 👈 Reducir workers
-        frequency: 10,           // 👈 Escanear cada 10 frames (no todos)
+        numOfWorkers: 1,
+        frequency: 10,
         decoder: {
             readers: [
                 "ean_reader",
                 "ean_8_reader", 
                 "code_128_reader"
             ],
-            multiple: false      // 👈 Solo un código a la vez
+            multiple: false
         },
         locate: true,
-        debug: false             // 👈 Desactivar debug
+        debug: false
     }, function(err) {
         if (err) {
             console.error('Error inicializando Quagga:', err);
@@ -1002,12 +1011,11 @@
 
     // 🔧 DETECCIÓN MEJORADA - CON DEBOUNCE
     let lastDetectionTime = 0;
-    const DETECTION_COOLDOWN = 3000; // 3 segundos entre detecciones
+    const DETECTION_COOLDOWN = 3000;
 
     Quagga.onDetected(function(result) {
         const now = Date.now();
         
-        // 👇 Prevenir detecciones demasiado seguidas
         if (now - lastDetectionTime < DETECTION_COOLDOWN) {
             console.log('Detección ignorada (en cooldown)');
             return;
@@ -1016,7 +1024,6 @@
         if (result.codeResult && result.codeResult.code) {
             const code = result.codeResult.code;
             
-            // 👇 Validar que el código sea real
             if (isValidBarcode(code)) {
                 console.log('✅ Código válido detectado:', code);
                 lastDetectionTime = now;
@@ -1033,19 +1040,20 @@
 
 // 🔧 FUNCIÓN PARA VALIDAR CÓDIGOS DE BARRAS
 function isValidBarcode(code) {
-    if (!code || code.length < 8) return false; 
-    // Validar EAN-13 (13 dígitos)
+    if (!code || code.length < 8) return false;
+    
     if (code.length === 13) {
-        return /^\d+$/.test(code); // Solo números
+        return /^\d+$/.test(code);
     }
     
-    // Validar CODE-128 (mínimo 8 caracteres)
     if (code.length >= 8) {
-        return true; // CODE-128 puede tener letras y números
+        return true;
     }
     
     return false;
-    // 🔧 FUNCIÓN FALTANTE - BUSCAR PRODUCTO POR CÓDIGO DE BARRAS
+}
+
+// 🔧 FUNCIÓN FALTANTE - BUSCAR PRODUCTO POR CÓDIGO DE BARRAS
 async function searchProductByBarcode(barcode) {
     showNotification(`Buscando producto ${barcode}...`, 'warning');
     
@@ -1063,93 +1071,91 @@ async function searchProductByBarcode(barcode) {
         setTimeout(() => startCamera(), 2000);
     }
 }
+
+// ===============================
+// 🤖 RECONOCIMIENTO POR IMAGEN
+// ===============================
+async function processImage(imageData) {
+    showNotification('Analizando imagen...', 'warning');
+    
+    try {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        const mockProduct = await simulateProductRecognition(imageData);
+        
+        try {
+            await waitForFirebase(2000);
+            showScanResults(mockProduct);
+        } catch (error) {
+            showScanResultsDemo(mockProduct);
+        }
+        
+    } catch (error) {
+        console.error('Error procesando imagen:', error);
+        showNotification('Error al procesar imagen', 'error');
+    }
 }
 
-        // ===============================
-        // 🤖 RECONOCIMIENTO POR IMAGEN
-        // ===============================
-        async function processImage(imageData) {
-            showNotification('Analizando imagen...', 'warning');
-            
-            try {
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                const mockProduct = await simulateProductRecognition(imageData);
-                
-                try {
-                    await waitForFirebase(2000);
-                    showScanResults(mockProduct);
-                } catch (error) {
-                    showScanResultsDemo(mockProduct);
-                }
-                
-            } catch (error) {
-                console.error('Error procesando imagen:', error);
-                showNotification('Error al procesar imagen', 'error');
-            }
+async function simulateProductRecognition() {
+    const products = [
+        {
+            name: "Botella de Agua Mineral",
+            brand: "AguaPure",
+            category: "Bebidas",
+            sustainabilityScore: 65,
+            barcode: "1234567890123",
+            recommendations: [
+                "Envase: Reducir plástico de un solo uso (Alto impacto)",
+                "Cadena de suministro: Utilizar proveedores locales (Medio impacto)"
+            ]
+        },
+        {
+            name: "Galletas Integrales", 
+            brand: "NatureFood",
+            category: "Alimentos",
+            sustainabilityScore: 78,
+            barcode: "2345678901234",
+            recommendations: [
+                "Packaging: Usar materiales biodegradables (Alto impacto)"
+            ]
         }
+    ];
+    
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    return products[Math.floor(Math.random() * products.length)];
+}
 
-        async function simulateProductRecognition() {
-            const products = [
-                {
-                    name: "Botella de Agua Mineral",
-                    brand: "AguaPure",
-                    category: "Bebidas",
-                    sustainabilityScore: 65,
-                    barcode: "1234567890123",
-                    recommendations: [
-                        "Envase: Reducir plástico de un solo uso (Alto impacto)",
-                        "Cadena de suministro: Utilizar proveedores locales (Medio impacto)"
-                    ]
-                },
-                {
-                    name: "Galletas Integrales", 
-                    brand: "NatureFood",
-                    category: "Alimentos",
-                    sustainabilityScore: 78,
-                    barcode: "2345678901234",
-                    recommendations: [
-                        "Packaging: Usar materiales biodegradables (Alto impacto)"
-                    ]
-                }
-            ];
-            
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            return products[Math.floor(Math.random() * products.length)];
+async function lookupProductInDatabase(barcode) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const products = {
+        "1234567890123": {
+            name: "Botella de Agua Mineral",
+            brand: "AguaPure",
+            category: "Bebidas",
+            sustainabilityScore: 65,
+            barcode: "1234567890123",
+            recommendations: [
+                "Envase: Reducir plástico de un solo uso (Alto impacto)",
+                "Cadena de suministro: Utilizar proveedores locales (Medio impacto)"
+            ]
+        },
+        "2345678901234": {
+            name: "Galletas Integrales", 
+            brand: "NatureFood",
+            category: "Alimentos",
+            sustainabilityScore: 78,
+            barcode: "2345678901234",
+            recommendations: [
+                "Packaging: Usar materiales biodegradables (Alto impacto)"
+            ]
         }
+    };
+    
+    return products[barcode] || null;
+}
 
-        async function lookupProductInDatabase(barcode) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            const products = {
-                "1234567890123": {
-                    name: "Botella de Agua Mineral",
-                    brand: "AguaPure",
-                    category: "Bebidas",
-                    sustainabilityScore: 65,
-                    barcode: "1234567890123",
-                    recommendations: [
-                        "Envase: Reducir plástico de un solo uso (Alto impacto)",
-                        "Cadena de suministro: Utilizar proveedores locales (Medio impacto)"
-                    ]
-                },
-                "2345678901234": {
-                    name: "Galletas Integrales", 
-                    brand: "NatureFood",
-                    category: "Alimentos",
-                    sustainabilityScore: 78,
-                    barcode: "2345678901234",
-                    recommendations: [
-                        "Packaging: Usar materiales biodegradables (Alto impacto)"
-                    ]
-                }
-            };
-            
-            return products[barcode] || null;
-        }
-
-      
 // ===============================
-// 💾 BASE DE DATOS - VERSIÓN CON DIAGNÓSTICO
+// 💾 BASE DE DATOS - VERSIÓN CORREGIDA
 // ===============================
 async function saveScanToDatabase(product) {
     try {
@@ -1158,36 +1164,21 @@ async function saveScanToDatabase(product) {
         // Esperar explícitamente a Firebase
         await waitForFirebase(5000);
         
-         // ✅ DIAGNÓSTICO COMPLETO
+        // ✅ DIAGNÓSTICO COMPLETO
         console.log('=== DIAGNÓSTICO FIREBASE ===');
         console.log('firebaseApp existe:', !!window.firebaseApp);
         console.log('firebaseFirestore existe:', !!window.firebaseFirestore);
-        console.log('firebaseApp.db:', window.firebaseApp?.db);
-        console.log('firebaseFirestore.db:', window.firebaseFirestore?.db);
-        console.log('Tipo de firebaseApp.db:', typeof window.firebaseApp?.db);
-        console.log('Tipo de firebaseFirestore.db:', typeof window.firebaseFirestore?.db);
-        console.log('Keys de firebaseFirestore:', Object.keys(window.firebaseFirestore || {}));
-         // Verificar que todo esté disponible
-        if (!window.firebaseApp || !window.firebaseApp.auth || !window.firebaseApp.db) {
-            console.warn('❌ Firebase no está listo');
-            return;
-        }
-
-        // Verificar que los módulos de Firestore estén disponibles
-        if (!window.firebaseFirestore) {
-            console.warn('❌ Módulos de Firestore no disponibles');
+        console.log('db global:', !!db);
+        console.log('Tipo de db:', typeof db);
+        
+        // Verificar que todo esté disponible
+        if (!db) {
+            console.error('❌ ERROR: db no está definida');
             return;
         }
 
         const { auth } = window.firebaseApp;
         const { collection, addDoc, serverTimestamp } = window.firebaseFirestore;
-
-        // ✅ VERIFICAR QUE 'db' EXISTA
-        if (!db) {
-            console.error('❌ ERROR: db no está definido en firebaseFirestore');
-            console.log('firebaseFirestore contenido:', Object.keys(window.firebaseFirestore));
-            return;
-        }
 
         const user = auth.currentUser;
         if (!user) {
@@ -1197,7 +1188,7 @@ async function saveScanToDatabase(product) {
 
         console.log('✅ Usuario autenticado, guardando escaneo...');
         
-        // ✅ CORRECCIÓN: Usar 'db' correctamente para la colección
+        // ✅ USAR db CORRECTAMENTE
         const scansRef = collection(db, 'scans');
         
         await addDoc(scansRef, {
@@ -1223,195 +1214,196 @@ async function saveScanToDatabase(product) {
         });
     }
 }
-        // ===============================
-        // 📊 VISUALIZACIÓN DE RESULTADOS
-        // ===============================
-        function showScanResults(product) {
-            const scanResult = document.getElementById('scanResult');
-            const scoreFill = document.getElementById('scoreFill');
-            const productName = document.querySelector('.product-info h4');
-            const scoreValue = document.getElementById('scoreValue');
-            const improvementList = document.getElementById('improvementList');
 
-            productName.textContent = product.name;
-            scoreValue.textContent = `${product.sustainabilityScore}%`;
-            scoreFill.style.width = `${product.sustainabilityScore}%`;
+// ===============================
+// 📊 VISUALIZACIÓN DE RESULTADOS
+// ===============================
+function showScanResults(product) {
+    const scanResult = document.getElementById('scanResult');
+    const scoreFill = document.getElementById('scoreFill');
+    const productName = document.querySelector('.product-info h4');
+    const scoreValue = document.getElementById('scoreValue');
+    const improvementList = document.getElementById('improvementList');
 
-            improvementList.innerHTML = '';
-            product.recommendations.forEach(rec => {
-                const li = document.createElement('li');
-                li.innerHTML = `<i class="fas fa-times-circle"></i> ${rec}`;
-                improvementList.appendChild(li);
-            });
+    productName.textContent = product.name;
+    scoreValue.textContent = `${product.sustainabilityScore}%`;
+    scoreFill.style.width = `${product.sustainabilityScore}%`;
 
-            scanResult.classList.add('active');
-           
+    improvementList.innerHTML = '';
+    product.recommendations.forEach(rec => {
+        const li = document.createElement('li');
+        li.innerHTML = `<i class="fas fa-times-circle"></i> ${rec}`;
+        improvementList.appendChild(li);
+    });
 
-            saveScanToDatabase(product).catch(() => {
-                console.log('Modo demo - escaneo no guardado');
-            });
+    scanResult.classList.add('active');
 
-            showNotification('Escaneo completado', 'success');
+    saveScanToDatabase(product).catch(() => {
+        console.log('Modo demo - escaneo no guardado');
+    });
+
+    showNotification('Escaneo completado', 'success');
+}
+
+function showScanResultsDemo(product) {
+    showScanResults(product);
+    showNotification('Escaneo completado (modo demo)', 'info');
+}
+
+// ===============================
+// 💳 SISTEMA DE PAGOS PAYPAL
+// ===============================
+function initPayPalButtons() {
+    if (typeof paypal === 'undefined') {
+        setTimeout(initPayPalButtons, 1000);
+        return;
+    }
+
+    const planIds = {
+        'basico': 'P-3RX065706Z922000U5QZCBMA',
+        'profesional': 'P-1TC147912B2007440NDJCUEY',
+        'empresarial': 'P-42J26630865841252NDJCWQY'
+    };
+
+    document.querySelectorAll('.paypal-button-container').forEach(container => {
+        const plan = container.getAttribute('data-plan');
+        const planId = planIds[plan];
+
+        if (!planId?.startsWith('P-')) {
+            container.innerHTML = `<button class="btn btn-outline" disabled>Configurar Plan</button>`;
+            return;
         }
 
-        function showScanResultsDemo(product) {
-            showScanResults(product);
-            showNotification('Escaneo completado (modo demo)', 'info');
-        }
-
-        // ===============================
-        // 💳 SISTEMA DE PAGOS PAYPAL
-        // ===============================
-        function initPayPalButtons() {
-            if (typeof paypal === 'undefined') {
-                setTimeout(initPayPalButtons, 1000);
-                return;
+        paypal.Buttons({
+            style: {
+                shape: 'rect',
+                color: 'gold',
+                layout: 'vertical',
+                label: 'subscribe'
+            },
+            createSubscription: (data, actions) => {
+                return actions.subscription.create({ plan_id: planId });
+            },
+            onApprove: (data, actions) => {
+                console.log('Suscripción aprobada:', data);
+                showNotification(`¡Plan ${plan} activado!`, 'success');
+                updateUserPlan(plan, data.subscriptionID);
+            },
+            onError: (err) => {
+                console.error('Error PayPal:', err);
+                showNotification('Error en el pago', 'error');
             }
+        }).render(container);
+    });
+}
 
-            const planIds = {
-                'basico': 'P-3RX065706Z922000U5QZCBMA',
-                'profesional': 'P-1TC147912B2007440NDJCUEY',
-                'empresarial': 'P-42J26630865841252NDJCWQY'
-            };
+async function updateUserPlan(plan, subscriptionId) {
+    try {
+        await waitForFirebase();
+        const { auth } = window.firebaseApp;
+        const { doc, updateDoc } = window.firebaseFirestore;
 
-            document.querySelectorAll('.paypal-button-container').forEach(container => {
-                const plan = container.getAttribute('data-plan');
-                const planId = planIds[plan];
-
-                if (!planId?.startsWith('P-')) {
-                    container.innerHTML = `<button class="btn btn-outline" disabled>Configurar Plan</button>`;
-                    return;
-                }
-
-                paypal.Buttons({
-                    style: {
-                        shape: 'rect',
-                        color: 'gold',
-                        layout: 'vertical',
-                        label: 'subscribe'
-                    },
-                    createSubscription: (data, actions) => {
-                        return actions.subscription.create({ plan_id: planId });
-                    },
-                    onApprove: (data, actions) => {
-                        console.log('Suscripción aprobada:', data);
-                        showNotification(`¡Plan ${plan} activado!`, 'success');
-                        updateUserPlan(plan, data.subscriptionID);
-                    },
-                    onError: (err) => {
-                        console.error('Error PayPal:', err);
-                        showNotification('Error en el pago', 'error');
-                    }
-                }).render(container);
-            });
+        const user = auth.currentUser;
+        if (!user) {
+            showNotification('Inicia sesión para activar el plan', 'error');
+            return;
         }
 
-        async function updateUserPlan(plan, subscriptionId) {
-            try {
-                await waitForFirebase();
-                const { auth } = window.firebaseApp;
-                const { db, doc, updateDoc } = window.firebaseFirestore;
+        await updateDoc(doc(db, "companies", user.uid), {
+            plan: plan,
+            subscriptionId: subscriptionId,
+            subscriptionActive: true,
+            planActivatedAt: new Date(),
+            updatedAt: new Date()
+        });
 
-                const user = auth.currentUser;
-                if (!user) {
-                    showNotification('Inicia sesión para activar el plan', 'error');
-                    return;
-                }
+        showNotification(`Plan ${plan} activado con éxito`, 'success');
+    } catch (error) {
+        console.error('Error actualizando plan:', error);
+        showNotification('Error activando plan', 'error');
+    }
+}
 
-                await updateDoc(doc(db, "companies", user.uid), {
-                    plan: plan,
-                    subscriptionId: subscriptionId,
-                    subscriptionActive: true,
-                    planActivatedAt: new Date(),
-                    updatedAt: new Date()
-                });
-
-                showNotification(`Plan ${plan} activado con éxito`, 'success');
-            } catch (error) {
-                console.error('Error actualizando plan:', error);
-                showNotification('Error activando plan', 'error');
-            }
-        }
-
-        // ===============================
-        // 🎯 CONFIGURACIÓN INICIAL
-        // ===============================
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Inicializando Eco Tag...');
-             // ✅ DEBUG: Verificar estado de Firebase cada 3 segundos
+// ===============================
+// 🎯 CONFIGURACIÓN INICIAL
+// ===============================
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Inicializando Eco Tag...');
+    
+    // ✅ DEBUG: Verificar estado de Firebase cada 3 segundos
     setInterval(() => {
         console.log('🔍 Estado de Firebase:', {
             firebaseApp: !!window.firebaseApp,
             firebaseAuth: !!window.firebaseAuth,
             firebaseFirestore: !!window.firebaseFirestore,
-            authModule: !!(window.firebaseAuth && window.firebaseAuth.createUserWithEmailAndPassword)
+            dbGlobal: !!db
         });
     }, 3000);
 
-            // Ocultar loading
-            setTimeout(() => {
-                const loadingOverlay = document.getElementById('loadingOverlay');
-                if (loadingOverlay) loadingOverlay.classList.add('hidden');
-            }, 1000);
+    // Ocultar loading
+    setTimeout(() => {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+    }, 1000);
 
-            // Event listeners
-            document.getElementById('start-camera').addEventListener('click', startCamera);
-            document.getElementById('capture-btn').addEventListener('click', captureImage);
-            document.getElementById('switch-camera').addEventListener('click', switchCamera);
-            document.getElementById('loginBtn').addEventListener('click', () => openModal('loginModal'));
-            document.getElementById('registerBtn').addEventListener('click', () => openModal('registerModal'));
-            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-            document.getElementById('loginForm').addEventListener('submit', handleLogin);
-            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+    // Event listeners
+    document.getElementById('start-camera').addEventListener('click', startCamera);
+    document.getElementById('capture-btn').addEventListener('click', captureImage);
+    document.getElementById('switch-camera').addEventListener('click', switchCamera);
+    document.getElementById('loginBtn').addEventListener('click', () => openModal('loginModal'));
+    document.getElementById('registerBtn').addEventListener('click', () => openModal('registerModal'));
+    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+    document.getElementById('loginForm').addEventListener('submit', handleLogin);
+    document.getElementById('registerForm').addEventListener('submit', handleRegister);
 
-            // Navegación entre modales
-            document.getElementById('goToRegister').addEventListener('click', (e) => {
-                e.preventDefault();
-                closeModal('loginModal');
-                openModal('registerModal');
-            });
+    // Navegación entre modales
+    document.getElementById('goToRegister').addEventListener('click', (e) => {
+        e.preventDefault();
+        closeModal('loginModal');
+        openModal('registerModal');
+    });
 
-            document.getElementById('goToLogin').addEventListener('click', (e) => {
-                e.preventDefault();
-                closeModal('registerModal');
-                openModal('loginModal');
-            });
+    document.getElementById('goToLogin').addEventListener('click', (e) => {
+        e.preventDefault();
+        closeModal('registerModal');
+        openModal('loginModal');
+    });
 
-            // Cerrar modales
-            document.querySelectorAll('.close').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const modal = this.closest('.modal');
-                    if (modal) {
-                        modal.classList.remove('active');
-                        document.body.style.overflow = 'auto';
-                    }
-                });
-            });
-
-            document.querySelectorAll('.modal').forEach(modal => {
-                modal.addEventListener('click', function(e) {
-                    if (e.target === this) {
-                        this.classList.remove('active');
-                        document.body.style.overflow = 'auto';
-                    }
-                });
-            });
-
-            // Inicializar PayPal
-            setTimeout(initPayPalButtons, 2000);
-
-            // Service Worker
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('SW registrado:', reg.scope))
-                    .catch(err => console.log('Error SW:', err));
+    // Cerrar modales
+    document.querySelectorAll('.close').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const modal = this.closest('.modal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
             }
-
-            console.log('✅ Eco Tag inicializado');
         });
+    });
 
-        // Limpiar al cerrar
-        window.addEventListener('beforeunload', stopCamera);
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+    });
+
+    // Inicializar PayPal
+    setTimeout(initPayPalButtons, 2000);
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('SW registrado:', reg.scope))
+            .catch(err => console.log('Error SW:', err));
+    }
+
+    console.log('✅ Eco Tag inicializado');
+});
+
+// Limpiar al cerrar
+window.addEventListener('beforeunload', stopCamera);
     </script>
 </body>
 </html>
