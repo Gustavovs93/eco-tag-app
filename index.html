@@ -1390,6 +1390,59 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Limpiar al cerrar
 window.addEventListener('beforeunload', stopCamera);
+// ===============================
+// 🧪 HACER FUNCIÓN GLOBAL (al final del script)
+// ===============================
+window.testFirebaseConnection = async function() {
+    try {
+        console.log('🧪 Probando conexión a Firebase...');
+        
+        await waitForFirebase();
+        
+        const db = window.firebaseApp.db;
+        const { collection, addDoc } = window.firebaseFirestore;
+        const { auth } = window.firebaseApp;
+        
+        console.log('🔐 Estado de autenticación:', auth.currentUser ? 'Autenticado' : 'No autenticado');
+        
+        const testRef = collection(db, 'test_connection');
+        const testData = {
+            test: true,
+            timestamp: new Date().toISOString(),
+            message: 'Prueba de conexión exitosa',
+            userId: auth.currentUser ? auth.currentUser.uid : 'anonymous'
+        };
+        
+        console.log('📝 Intentando guardar documento de prueba...');
+        const testDoc = await addDoc(testRef, testData);
+        
+        console.log('✅ Conexión exitosa. Documento ID:', testDoc.id);
+        
+        // Usar tu función de notificación existente
+        if (typeof showNotification === 'function') {
+            showNotification('✅ Conexión a Firebase verificada', 'success');
+        }
+        
+        return testDoc.id;
+        
+    } catch (error) {
+        console.error('❌ Error en la conexión:', error);
+        if (typeof showNotification === 'function') {
+            showNotification('Error de conexión: ' + error.message, 'error');
+        }
+        throw error;
+    }
+};
+
+// También hacer global la función de verificación
+window.checkFirebase = function() {
+    console.log('🔥 Estado de Firebase:', {
+        firebaseApp: !!window.firebaseApp,
+        firebaseAuth: !!window.firebaseAuth,
+        firebaseFirestore: !!window.firebaseFirestore,
+        db: !!window.firebaseApp?.db
+    });
+};
     </script>
 </body>
 </html>
