@@ -14,31 +14,28 @@
     <link rel="icon" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     
-    <!-- Firebase Config Modular - VERSIÓN CORREGIDA -->
-<!-- Firebase Config Modular - VERSIÓN CORREGIDA -->
-<script type="module">
-    import { firebaseConfig } from './firebase-config.js';
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { 
-        getAuth, 
-        createUserWithEmailAndPassword, 
-        signInWithEmailAndPassword, 
-        signOut,
-        onAuthStateChanged 
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { 
-        getFirestore, 
-        doc, 
-        setDoc, 
-        getDoc, 
-        addDoc, 
-        collection, 
-        serverTimestamp,
-        updateDoc 
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    <!-- Firebase Config Modular CORREGIDO -->
+    <script type="module">
+        import { firebaseConfig } from './firebase-config.js';
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signOut,
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc, 
+            getDoc, 
+            addDoc, 
+            collection, 
+            serverTimestamp,
+            updateDoc 
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // Función para inicializar Firebase
-    async function initializeFirebase() {
         try {
             console.log('🔥 Inicializando Firebase...');
             
@@ -46,69 +43,42 @@
             const auth = getAuth(app);
             const db = getFirestore(app);
 
-            // ✅ ASIGNAR CORRECTAMENTE A WINDOW
-            window.firebaseApp = { 
-                app: app,
-                auth: auth, 
-                db: db 
-            };
-            
+            // ✅ ASIGNACIÓN CORRECTA
+            window.firebaseApp = { app, auth, db };
             window.firebaseAuth = { 
-                auth: auth,
-                createUserWithEmailAndPassword: createUserWithEmailAndPassword,
-                signInWithEmailAndPassword: signInWithEmailAndPassword,
-                signOut: signOut,
-                onAuthStateChanged: onAuthStateChanged
+                createUserWithEmailAndPassword, 
+                signInWithEmailAndPassword, 
+                signOut, 
+                onAuthStateChanged 
             };
-            
-            window.firebaseFirestore = {
-                db: db,
-                doc: doc,
-                setDoc: setDoc,
-                getDoc: getDoc,
-                addDoc: addDoc,
-                collection: collection,
-                serverTimestamp: serverTimestamp,
-                updateDoc: updateDoc
+            window.firebaseFirestore = { 
+                doc, setDoc, getDoc, addDoc, collection, serverTimestamp, updateDoc 
             };
             
             console.log('✅ Firebase inicializado correctamente');
-            console.log('firebaseApp:', window.firebaseApp);
-            console.log('firebaseAuth:', window.firebaseAuth);
-            console.log('firebaseFirestore:', window.firebaseFirestore);
+
+            // ✅ MARCAR COMO LISTO INMEDIATAMENTE
+            window.firebaseReady = true;
+            console.log('🔥 Firebase marcado como listo');
 
             // Estado de autenticación
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     console.log('✅ Usuario autenticado:', user.email);
                     document.body.setAttribute('data-auth', 'true');
-                    
-                    const userMenu = document.querySelector('.user-menu');
-                    const authButtons = document.querySelector('.auth-buttons');
-                    if (userMenu) userMenu.style.display = 'block';
-                    if (authButtons) authButtons.style.display = 'none';
+                    document.querySelector('.user-menu').style.display = 'block';
+                    document.querySelector('.auth-buttons').style.display = 'none';
                 } else {
                     console.log('❌ Usuario no autenticado');
                     document.body.setAttribute('data-auth', 'false');
-                    
-                    const userMenu = document.querySelector('.user-menu');
-                    const authButtons = document.querySelector('.auth-buttons');
-                    if (userMenu) userMenu.style.display = 'none';
-                    if (authButtons) authButtons.style.display = 'flex';
+                    document.querySelector('.user-menu').style.display = 'none';
+                    document.querySelector('.auth-buttons').style.display = 'flex';
                 }
-                
-                // Marcar que Firebase está listo
-                window.firebaseReady = true;
             });
 
         } catch (error) {
             console.error('❌ Error inicializando Firebase:', error);
-            window.firebaseError = error;
         }
-    }
-
-    // Inicializar inmediatamente
-    initializeFirebase();
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
@@ -568,7 +538,7 @@
     </div>
 
     <!-- =============================== -->
-    <!-- 🔥 JAVASCRIPT COMPLETO PRODUCCIÓN -->
+    <!-- 🔥 JAVASCRIPT COMPLETO CORREGIDO -->
     <!-- =============================== -->
     <script>
         // ===============================
@@ -604,240 +574,171 @@
             document.body.style.overflow = 'auto';
         }
 
-        function waitForFirebase() {
-            return new Promise((resolve) => {
-                const check = () => {
-                    if (window.firebaseApp && window.firebaseApp.auth) {
-                        resolve();
-                    } else {
-                        setTimeout(check, 100);
-                    }
-                };
-                check();
-            });
-        }
-
         // ===============================
-// 🔐 AUTENTICACIÓN - VERSIÓN CORREGIDA
-// ===============================
-async function waitForFirebaseReady(maxWait = 10000) {
-    return new Promise((resolve, reject) => {
-        const startTime = Date.now();
-        
-        function check() {
-            if (window.firebaseReady) {
-                resolve();
-            } else if (window.firebaseError) {
-                reject(new Error('Firebase failed to load'));
-            } else if (Date.now() - startTime > maxWait) {
-                reject(new Error('Firebase timeout'));
-            } else {
-                setTimeout(check, 100);
+        // 🔐 AUTENTICACIÓN - VERSIÓN SIMPLIFICADA Y FUNCIONAL
+        // ===============================
+        async function handleRegister(e) {
+            e.preventDefault();
+            
+            console.log('🔐 Iniciando registro...');
+            
+            // ✅ VERIFICACIÓN INMEDIATA Y SEGURA
+            if (!window.firebaseApp || !window.firebaseApp.auth) {
+                showNotification('⚠️ Firebase no está listo. Intenta de nuevo.', 'warning');
+                return;
+            }
+
+            const company = document.getElementById('register-company').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirmPassword').value;
+            const plan = document.getElementById('register-plan').value;
+
+            if (password !== confirmPassword) {
+                showNotification('Las contraseñas no coinciden', 'error');
+                return;
+            }
+
+            const registerText = document.getElementById('registerText');
+            const registerSpinner = document.getElementById('registerSpinner');
+            const registerSubmit = document.getElementById('registerSubmit');
+            
+            registerText.style.display = 'none';
+            registerSpinner.style.display = 'inline-block';
+            registerSubmit.disabled = true;
+
+            try {
+                console.log('📝 Usando Firebase directamente...');
+                
+                // ✅ USAR MÓDULOS DIRECTAMENTE (SIN COMPLICACIONES)
+                const auth = window.firebaseApp.auth;
+                const db = window.firebaseApp.db;
+                const createUser = window.firebaseAuth.createUserWithEmailAndPassword;
+                const setDoc = window.firebaseFirestore.setDoc;
+                const doc = window.firebaseFirestore.doc;
+                const serverTimestamp = window.firebaseFirestore.serverTimestamp;
+
+                // 1. Crear usuario
+                const userCredential = await createUser(auth, email, password);
+                console.log('✅ Usuario creado:', userCredential.user.uid);
+
+                // 2. Crear empresa
+                await setDoc(doc(db, "companies", userCredential.user.uid), {
+                    name: company,
+                    email: email,
+                    plan: plan,
+                    createdAt: serverTimestamp()
+                });
+
+                // 3. Crear perfil
+                await setDoc(doc(db, "users", userCredential.user.uid), {
+                    email: email,
+                    companyId: userCredential.user.uid,
+                    role: 'admin',
+                    createdAt: serverTimestamp()
+                });
+
+                showNotification('¡Cuenta creada exitosamente! 🎉', 'success');
+                
+                setTimeout(() => {
+                    closeModal('registerModal');
+                    document.getElementById('registerForm').reset();
+                    window.location.reload();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('❌ Error en registro:', error);
+                let errorMessage = 'Error en el registro';
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = 'Este email ya está registrado';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = 'La contraseña debe tener al menos 6 caracteres';
+                }
+                showNotification(errorMessage, 'error');
+            } finally {
+                registerText.style.display = 'inline-block';
+                registerSpinner.style.display = 'none';
+                registerSubmit.disabled = false;
             }
         }
-        
-        check();
-    });
-}
 
-async function handleRegister(e) {
-    e.preventDefault();
-    
-    console.log('🔐 Iniciando proceso de registro...');
-    
-    const company = document.getElementById('register-company').value;
-    const email = document.getElementById('register-email').value;
-    const password = document.getElementById('register-password').value;
-    const confirmPassword = document.getElementById('register-confirmPassword').value;
-    const plan = document.getElementById('register-plan').value;
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            console.log('🔐 Iniciando login...');
+            
+            // ✅ VERIFICACIÓN INMEDIATA Y SEGURA
+            if (!window.firebaseApp || !window.firebaseApp.auth) {
+                showNotification('⚠️ Firebase no está listo. Intenta de nuevo.', 'warning');
+                return;
+            }
 
-    // Validaciones
-    if (password !== confirmPassword) {
-        showNotification('Las contraseñas no coinciden', 'error');
-        return;
-    }
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
 
-    const registerText = document.getElementById('registerText');
-    const registerSpinner = document.getElementById('registerSpinner');
-    const registerSubmit = document.getElementById('registerSubmit');
-    
-    registerText.style.display = 'none';
-    registerSpinner.style.display = 'inline-block';
-    registerSubmit.disabled = true;
+            const loginText = document.getElementById('loginText');
+            const loginSpinner = document.getElementById('loginSpinner');
+            const loginSubmit = document.getElementById('loginSubmit');
+            
+            loginText.style.display = 'none';
+            loginSpinner.style.display = 'inline-block';
+            loginSubmit.disabled = true;
 
-    try {
-        console.log('⏳ Esperando a que Firebase esté listo...');
-        await waitForFirebaseReady(15000);
-        
-        console.log('✅ Firebase listo, procediendo con registro...');
-        console.log('firebaseApp disponible:', !!window.firebaseApp);
-        console.log('firebaseAuth disponible:', !!window.firebaseAuth);
-        
-        // ✅ USAR LAS REFERENCIAS CORRECTAS
-        const auth = window.firebaseApp.auth;
-        const db = window.firebaseApp.db;
-        const createUser = window.firebaseAuth.createUserWithEmailAndPassword;
-        const setDoc = window.firebaseFirestore.setDoc;
-        const doc = window.firebaseFirestore.doc;
-        const serverTimestamp = window.firebaseFirestore.serverTimestamp;
+            try {
+                console.log('📝 Usando Firebase directamente...');
+                
+                // ✅ USAR MÓDULOS DIRECTAMENTE
+                const auth = window.firebaseApp.auth;
+                const db = window.firebaseApp.db;
+                const signIn = window.firebaseAuth.signInWithEmailAndPassword;
+                const getDoc = window.firebaseFirestore.getDoc;
+                const doc = window.firebaseFirestore.doc;
 
-        if (!auth || !createUser) {
-            throw new Error('Módulos de Firebase no disponibles');
+                const userCredential = await signIn(auth, email, password);
+                const user = userCredential.user;
+                
+                const companyDoc = await getDoc(doc(db, "companies", user.uid));
+                const companyData = companyDoc.data();
+                
+                showNotification(`¡Bienvenido ${companyData.name}! 👋`, 'success');
+                
+                setTimeout(() => {
+                    closeModal('loginModal');
+                    document.getElementById('loginForm').reset();
+                    window.location.reload();
+                }, 1500);
+                
+            } catch (error) {
+                console.error('❌ Error en login:', error);
+                let errorMessage = 'Error en el login';
+                if (error.code === 'auth/user-not-found') {
+                    errorMessage = 'Usuario no encontrado';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMessage = 'Contraseña incorrecta';
+                }
+                showNotification(errorMessage, 'error');
+            } finally {
+                loginText.style.display = 'inline-block';
+                loginSpinner.style.display = 'none';
+                loginSubmit.disabled = false;
+            }
         }
 
-        console.log('📝 Creando usuario en Authentication...');
-        
-        // 1. Crear usuario en Auth
-        const userCredential = await createUser(auth, email, password);
-        const user = userCredential.user;
-        
-        console.log('✅ Usuario creado en Auth:', user.uid);
-
-        // 2. Crear documento de la empresa en Firestore
-        await setDoc(doc(db, "companies", user.uid), {
-            name: company,
-            email: email,
-            plan: plan,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-        });
-
-        console.log('✅ Documento de empresa creado');
-
-        // 3. Crear perfil de usuario
-        await setDoc(doc(db, "users", user.uid), {
-            email: email,
-            companyId: user.uid,
-            role: 'admin',
-            createdAt: serverTimestamp()
-        });
-
-        console.log('✅ Perfil de usuario creado');
-        
-        showNotification('¡Cuenta creada exitosamente! Bienvenido a Eco Tag', 'success');
-        
-        setTimeout(() => {
-            closeModal('registerModal');
-            document.getElementById('registerForm').reset();
-        }, 2000);
-        
-    } catch (error) {
-        console.error('❌ Error en el registro:', error);
-        
-        let errorMessage = 'Error en el registro';
-        if (error.code === 'auth/email-already-in-use') {
-            errorMessage = 'Este email ya está registrado';
-        } else if (error.code === 'auth/weak-password') {
-            errorMessage = 'La contraseña debe tener al menos 6 caracteres';
-        } else if (error.code === 'auth/invalid-email') {
-            errorMessage = 'Email inválido';
-        } else if (error.message.includes('Firebase')) {
-            errorMessage = 'Error de conexión con Firebase. Recarga la página.';
-        } else {
-            errorMessage = error.message || 'Error desconocido';
+        async function handleLogout() {
+            if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) return;
+            
+            try {
+                const auth = window.firebaseApp.auth;
+                await auth.signOut();
+                showNotification('Sesión cerrada correctamente', 'success');
+                setTimeout(() => window.location.reload(), 1000);
+            } catch (error) {
+                showNotification('Error cerrando sesión', 'error');
+            }
         }
-        
-        showNotification(errorMessage, 'error');
-    } finally {
-        registerText.style.display = 'inline-block';
-        registerSpinner.style.display = 'none';
-        registerSubmit.disabled = false;
-    }
-}
-
-async function handleLogin(e) {
-    e.preventDefault();
-    
-    console.log('🔐 Iniciando proceso de login...');
-    
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-
-    const loginText = document.getElementById('loginText');
-    const loginSpinner = document.getElementById('loginSpinner');
-    const loginSubmit = document.getElementById('loginSubmit');
-    
-    loginText.style.display = 'none';
-    loginSpinner.style.display = 'inline-block';
-    loginSubmit.disabled = true;
-
-    try {
-        await waitForFirebaseReady(15000);
-        
-        console.log('✅ Firebase listo, procediendo con login...');
-        
-        // ✅ USAR LAS REFERENCIAS CORRECTAS
-        const auth = window.firebaseApp.auth;
-        const db = window.firebaseApp.db;
-        const signIn = window.firebaseAuth.signInWithEmailAndPassword;
-        const getDoc = window.firebaseFirestore.getDoc;
-        const doc = window.firebaseFirestore.doc;
-
-        if (!auth || !signIn) {
-            throw new Error('Módulos de Firebase no disponibles');
-        }
-
-        console.log('📝 Iniciando sesión...');
-        const userCredential = await signIn(auth, email, password);
-        const user = userCredential.user;
-        
-        console.log('✅ Login exitoso:', user.email);
-        
-        // Obtener datos de la empresa
-        const companyDoc = await getDoc(doc(db, "companies", user.uid));
-        
-        if (!companyDoc.exists()) {
-            throw new Error('No se encontraron datos de la empresa');
-        }
-        
-        const companyData = companyDoc.data();
-        console.log('✅ Datos de empresa obtenidos:', companyData.name);
-        
-        showNotification(`¡Bienvenido de vuelta ${companyData.name}!`, 'success');
-        
-        setTimeout(() => {
-            closeModal('loginModal');
-            document.getElementById('loginForm').reset();
-        }, 1500);
-        
-    } catch (error) {
-        console.error('❌ Error en el login:', error);
-        
-        let errorMessage = 'Error en el login';
-        if (error.code === 'auth/user-not-found') {
-            errorMessage = 'Usuario no encontrado';
-        } else if (error.code === 'auth/wrong-password') {
-            errorMessage = 'Contraseña incorrecta';
-        } else if (error.code === 'auth/invalid-email') {
-            errorMessage = 'Email inválido';
-        } else if (error.message.includes('Firebase')) {
-            errorMessage = 'Error de conexión con Firebase. Recarga la página.';
-        } else {
-            errorMessage = error.message || 'Error desconocido';
-        }
-        
-        showNotification(errorMessage, 'error');
-    } finally {
-        loginText.style.display = 'inline-block';
-        loginSpinner.style.display = 'none';
-        loginSubmit.disabled = false;
-    }
-}
-
-async function handleLogout() {
-    try {
-        await waitForFirebaseReady();
-        const auth = window.firebaseApp.auth;
-        await auth.signOut();
-        showNotification('Sesión cerrada correctamente', 'success');
-        setTimeout(() => window.location.reload(), 1000);
-    } catch (error) {
-        showNotification('Error cerrando sesión: ' + error.message, 'error');
-    }
-}
 
         // ===============================
-        // 📸 SISTEMA DE CÁMARA
+        // 📸 SISTEMA DE CÁMARA (igual que antes)
         // ===============================
         async function startCamera() {
             try {
@@ -917,7 +818,7 @@ async function handleLogout() {
         }
 
         // ===============================
-        // 📷 ESCÁNER DE CÓDIGO DE BARRAS
+        // 📷 ESCÁNER DE CÓDIGO DE BARRAS (igual que antes)
         // ===============================
         function initBarcodeScanner() {
             if (typeof Quagga === 'undefined') return;
@@ -979,7 +880,7 @@ async function handleLogout() {
         }
 
         // ===============================
-        // 🤖 RECONOCIMIENTO POR IMAGEN
+        // 🤖 RECONOCIMIENTO POR IMAGEN (igual que antes)
         // ===============================
         async function processImage(imageData) {
             showNotification('Analizando imagen...', 'warning');
@@ -1053,7 +954,6 @@ async function handleLogout() {
         // ===============================
         async function saveScanToDatabase(product) {
             try {
-                await waitForFirebase();
                 const { auth } = window.firebaseApp;
                 const { db } = window.firebaseApp;
                 const { collection, addDoc, serverTimestamp } = window.firebaseFirestore;
@@ -1143,7 +1043,6 @@ async function handleLogout() {
 
         async function updateUserPlan(plan, subscriptionId) {
             try {
-                await waitForFirebase();
                 const { auth } = window.firebaseApp;
                 const { db } = window.firebaseApp;
                 const { doc, updateDoc } = window.firebaseFirestore;
@@ -1220,27 +1119,29 @@ async function handleLogout() {
                     .then(reg => console.log('SW registrado'))
                     .catch(err => console.log('Error SW'));
             }
-             console.log('✅ Eco Tag inicializado');
-        });
-        // Función de diagnóstico - ejecutar en consola para verificar
-window.checkFirebaseStatus = function() {
-    console.log('🔍 DIAGNÓSTICO FIREBASE:');
-    console.log('1. firebaseApp:', window.firebaseApp ? '✅ DISPONIBLE' : '❌ NO DISPONIBLE');
-    console.log('2. firebaseAuth:', window.firebaseAuth ? '✅ DISPONIBLE' : '❌ NO DISPONIBLE');
-    console.log('3. firebaseFirestore:', window.firebaseFirestore ? '✅ DISPONIBLE' : '❌ NO DISPONIBLE');
-    console.log('4. firebaseReady:', window.firebaseReady ? '✅ LISTO' : '❌ NO LISTO');
-    console.log('5. Usuario actual:', window.firebaseApp?.auth?.currentUser?.email || 'No autenticado');
-    
-    if (window.firebaseApp) {
-        console.log('6. auth module:', window.firebaseApp.auth ? '✅ OK' : '❌ FALLO');
-        console.log('7. db module:', window.firebaseApp.db ? '✅ OK' : '❌ FALLO');
-    }
-};
 
-// Ejecutar diagnóstico automáticamente después de 3 segundos
-setTimeout(() => {
-    window.checkFirebaseStatus();
-}, 3000);
+            console.log('✅ Eco Tag completamente inicializado');
+        });
+
+        // ===============================
+        // 🧪 DIAGNÓSTICO FIREBASE (FUERA del DOMContentLoaded)
+        // ===============================
+        window.checkFirebaseStatus = function() {
+            console.log('🔍 DIAGNÓSTICO FIREBASE:');
+            console.log('1. firebaseApp:', window.firebaseApp ? '✅ DISPONIBLE' : '❌ NO DISPONIBLE');
+            console.log('2. firebaseAuth:', window.firebaseAuth ? '✅ DISPONIBLE' : '❌ NO DISPONIBLE');
+            console.log('3. firebaseFirestore:', window.firebaseFirestore ? '✅ DISPONIBLE' : '❌ NO DISPONIBLE');
+            console.log('4. firebaseReady:', window.firebaseReady ? '✅ LISTO' : '❌ NO LISTO');
+            console.log('5. Usuario actual:', window.firebaseApp?.auth?.currentUser?.email || 'No autenticado');
+        };
+
+        // Diagnóstico automático después de 5 segundos
+        setTimeout(() => {
+            console.log('🕒 Diagnóstico automático de Firebase...');
+            if (window.checkFirebaseStatus) {
+                window.checkFirebaseStatus();
+            }
+        }, 5000);
 
         // Limpiar al cerrar
         window.addEventListener('beforeunload', stopCamera);
