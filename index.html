@@ -724,18 +724,65 @@
             }
         }
 
-        async function handleLogout() {
-            if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) return;
-            
-            try {
-                const auth = window.firebaseApp.auth;
-                await auth.signOut();
-                showNotification('Sesión cerrada correctamente', 'success');
-                setTimeout(() => window.location.reload(), 1000);
-            } catch (error) {
-                showNotification('Error cerrando sesión', 'error');
-            }
+       async function handleLogout() {
+    if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) return;
+    
+    try {
+        console.log('🚪 Intentando cerrar sesión...');
+        
+        // ✅ MÚLTIPLES MÉTODOS PARA CERRAR SESIÓN
+        let logoutSuccessful = false;
+        
+        // Método 1: Usar signOut directo de auth
+        if (window.firebaseApp?.auth?.signOut) {
+            console.log('🔐 Usando auth.signOut() directo');
+            await window.firebaseApp.auth.signOut();
+            logoutSuccessful = true;
         }
+        // Método 2: Usar firebaseAuth.signOut
+        else if (window.firebaseAuth?.signOut && window.firebaseApp?.auth) {
+            console.log('🔐 Usando firebaseAuth.signOut()');
+            await window.firebaseAuth.signOut(window.firebaseApp.auth);
+            logoutSuccessful = true;
+        }
+        // Método 3: Usar el auth de firebaseAuth
+        else if (window.firebaseAuth?.auth?.signOut) {
+            console.log('🔐 Usando firebaseAuth.auth.signOut()');
+            await window.firebaseAuth.auth.signOut();
+            logoutSuccessful = true;
+        }
+        
+        if (!logoutSuccessful) {
+            throw new Error('No se pudo encontrar el método para cerrar sesión');
+        }
+        
+        console.log('✅ Sesión cerrada correctamente');
+        showNotification('Sesión cerrada correctamente 👋', 'success');
+        
+        // Actualizar interfaz inmediatamente
+        document.body.setAttribute('data-auth', 'false');
+        document.querySelector('.user-menu').style.display = 'none';
+        document.querySelector('.auth-buttons').style.display = 'flex';
+        
+        // Recargar después de 2 segundos para limpiar estado
+        setTimeout(() => {
+            window.location.reload();
+        }, 2000);
+        
+    } catch (error) {
+        console.error('❌ Error cerrando sesión:', error);
+        
+        // Mostrar error específico
+        let errorMessage = 'Error al cerrar sesión';
+        if (error.message.includes('método')) {
+            errorMessage = 'Error: No se pudo encontrar la función para cerrar sesión';
+        } else {
+            errorMessage = 'Error: ' + error.message;
+        }
+        
+        showNotification(errorMessage, 'error');
+    }
+}
 
         // ===============================
         // 📸 SISTEMA DE CÁMARA (igual que antes)
