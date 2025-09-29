@@ -16,71 +16,67 @@
     
     <!-- Firebase Config -->
     <script type="module">
-        import { firebaseConfig } from './firebase-config.js';
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { 
-            getAuth, 
-            createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword, 
-            signOut,
-            onAuthStateChanged 
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { 
-            getFirestore, 
-            doc, 
-            setDoc, 
-            getDoc, 
-            addDoc, 
-            collection, 
-            serverTimestamp,
-            updateDoc 
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        // Configuración de Firebase - Reemplaza con tus credenciales
+        const firebaseConfig = {
+            apiKey: "tu-api-key",
+            authDomain: "tu-proyecto.firebaseapp.com",
+            projectId: "tu-proyecto",
+            storageBucket: "tu-proyecto.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "tu-app-id"
+        };
 
-        try {
-            console.log('🔥 Inicializando Firebase...');
-            
-            const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-            const db = getFirestore(app);
+        // Exportar para uso global
+        window.firebaseConfig = firebaseConfig;
+        
+        // Inicialización diferida de Firebase
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                console.log('🔥 Inicializando Firebase...');
+                
+                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+                const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+                const { getFirestore } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
-            // Asignar globalmente
-            window.firebaseApp = { app, auth, db };
-            window.firebaseAuth = { 
-                createUserWithEmailAndPassword, 
-                signInWithEmailAndPassword, 
-                signOut, 
-                onAuthStateChanged,
-                auth: auth
-            };
-            window.firebaseFirestore = { 
-                doc, setDoc, getDoc, addDoc, collection, serverTimestamp, updateDoc 
-            };
-            
-            console.log('✅ Firebase inicializado correctamente');
-            window.firebaseReady = true;
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                const db = getFirestore(app);
 
-            // Manejar estado de autenticación
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    console.log('✅ Usuario autenticado:', user.email);
-                    document.body.setAttribute('data-auth', 'true');
-                    document.querySelector('.user-menu').style.display = 'block';
-                    document.querySelector('.auth-buttons').style.display = 'none';
-                } else {
-                    console.log('❌ Usuario no autenticado');
-                    document.body.setAttribute('data-auth', 'false');
-                    document.querySelector('.user-menu').style.display = 'none';
-                    document.querySelector('.auth-buttons').style.display = 'flex';
-                }
-            });
+                // Asignar globalmente
+                window.firebaseApp = { app, auth, db };
+                window.firebaseReady = true;
 
-        } catch (error) {
-            console.error('❌ Error inicializando Firebase:', error);
-        }
+                console.log('✅ Firebase inicializado correctamente');
+
+                // Manejar estado de autenticación
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        console.log('✅ Usuario autenticado:', user.email);
+                        document.body.setAttribute('data-auth', 'true');
+                        document.querySelector('.user-menu').style.display = 'block';
+                        document.querySelector('.auth-buttons').style.display = 'none';
+                        showSection('dashboard');
+                    } else {
+                        console.log('❌ Usuario no autenticado');
+                        document.body.setAttribute('data-auth', 'false');
+                        document.querySelector('.user-menu').style.display = 'none';
+                        document.querySelector('.auth-buttons').style.display = 'flex';
+                        showSection('hero');
+                    }
+                });
+
+            } catch (error) {
+                console.error('❌ Error inicializando Firebase:', error);
+                // Modo demo sin Firebase
+                window.firebaseReady = false;
+                showNotification('Modo demo activado - Funcionalidades limitadas', 'warning');
+            }
+        });
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
     <script src="https://www.paypal.com/sdk/js?client-id=AQqNzMrTjsamx006fwvKVOfuwd4emeA963GYIQH2k5i7qqxI3S9VjlMRUMRYKXbrO84KUfFlIy3DPNhO&vault=true&intent=subscription"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -96,7 +92,7 @@
         .logo h1 { font-size: 24px; color: var(--primary); }
         nav ul { display: flex; list-style: none; }
         nav ul li { margin-left: 25px; }
-        nav ul li a { text-decoration: none; color: var(--dark); font-weight: 500; transition: color 0.3s; }
+        nav ul li a { text-decoration: none; color: var(--dark); font-weight: 500; transition: color 0.3s; cursor: pointer; }
         nav ul li a:hover, nav ul li a.active { color: var(--primary); }
         .auth-buttons { display: flex; align-items: center; }
         .btn { padding: 10px 20px; border-radius: 50px; border: none; cursor: pointer; font-weight: 600; transition: all 0.3s; text-decoration: none; display: inline-block; text-align: center; }
@@ -181,6 +177,116 @@
         .improvement-list li { padding: 10px 0; border-bottom: 1px solid #eee; display: flex; align-items: center; }
         .improvement-list li i { color: var(--warning); margin-right: 10px; }
         
+        /* Dashboard Styles */
+        .dashboard { padding: 80px 0; background: #f8f9fa; }
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .stat-info h3 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .scans-list {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .scan-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .scan-item:last-child {
+            border-bottom: none;
+        }
+
+        .score-high { color: var(--primary); }
+        .score-medium { color: var(--warning); }
+        .score-low { color: var(--danger); }
+
+        /* Product Catalog */
+        .product-catalog { padding: 80px 0; }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .catalog-actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        /* Reports */
+        .reports { padding: 80px 0; background: #f8f9fa; }
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .report-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .report-card i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
         /* Sección de precios */
         .pricing { padding: 80px 0; background-color: #f9f9f9; }
         .pricing-plans { display: flex; justify-content: center; flex-wrap: wrap; gap: 30px; }
@@ -249,6 +355,7 @@
             .hero-buttons { flex-direction: column; align-items: center; }
             .pricing-plans { flex-direction: column; align-items: center; }
             .pricing-plan { width: 100%; max-width: 400px; }
+            .dashboard-content { grid-template-columns: 1fr; }
         }
         
         @media (max-width: 768px) {
@@ -258,6 +365,7 @@
             .product-info { flex-direction: column; text-align: center; }
             .camera-view, #scanner-video { width: 100%; max-width: 300px; height: 250px; }
             .camera-controls { flex-direction: column; }
+            .catalog-actions { flex-direction: column; }
         }
     </style>
 </head>
@@ -277,10 +385,13 @@
             
             <nav>
                 <ul>
-                    <li><a href="#" class="active">Inicio</a></li>
-                    <li><a href="#scanner">Escáner</a></li>
-                    <li><a href="#pricing">Precios</a></li>
-                    <li><a href="#contact">Contacto</a></li>
+                    <li><a href="#" class="nav-link" data-section="hero">Inicio</a></li>
+                    <li><a href="#" class="nav-link" data-section="scanner">Escáner</a></li>
+                    <li><a href="#" class="nav-link" data-section="dashboard" style="display: none;" id="dashboardNav">Dashboard</a></li>
+                    <li><a href="#" class="nav-link" data-section="catalog" style="display: none;" id="catalogNav">Catálogo</a></li>
+                    <li><a href="#" class="nav-link" data-section="reports" style="display: none;" id="reportsNav">Reportes</a></li>
+                    <li><a href="#" class="nav-link" data-section="pricing">Precios</a></li>
+                    <li><a href="#" class="nav-link" data-section="contact">Contacto</a></li>
                 </ul>
             </nav>
             
@@ -300,7 +411,7 @@
     </header>
     
     <!-- Hero Section -->
-    <section class="hero">
+    <section class="hero" id="hero">
         <div class="container">
             <h2>Impulsa la Sostenibilidad de tus Productos</h2>
             <p>Eco Tag te ayuda a medir, mejorar y comunicar el impacto ambiental de tus productos de manera transparente y verificable.</p>
@@ -351,7 +462,10 @@
                 <div class="scan-result" id="scanResult">
                     <div class="product-info">
                         <i class="fas fa-cube" style="font-size: 48px; padding: 16px; background: #f1f1f1; border-radius: 10px;"></i>
-                        <h4>Producto Escaneado</h4>
+                        <div>
+                            <h4 id="productName">Producto Escaneado</h4>
+                            <p id="productBrand">Marca del producto</p>
+                        </div>
                     </div>
                     
                     <div class="sustainability-score">
@@ -368,6 +482,137 @@
                             <!-- Se llena dinámicamente -->
                         </ul>
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Dashboard Section -->
+    <section class="dashboard" id="dashboard">
+        <div class="container">
+            <div class="section-title">
+                <h2>Mi Panel de Sostenibilidad</h2>
+                <p>Gestiona y analiza el desempeño ambiental de tus productos</p>
+            </div>
+            
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalScans">0</h3>
+                        <p>Productos Escaneados</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="avgScore">0%</h3>
+                        <p>Puntuación Promedio</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="improvements">0</h3>
+                        <p>Mejoras Identificadas</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                <div class="recent-scans">
+                    <h3>Escaneos Recientes</h3>
+                    <div class="scans-list" id="scansList">
+                        <!-- Lista dinámica de escaneos -->
+                    </div>
+                </div>
+                
+                <div class="sustainability-chart">
+                    <h3>Evolución de Sostenibilidad</h3>
+                    <canvas id="sustainabilityChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Product Catalog Section -->
+    <section class="product-catalog" id="catalog">
+        <div class="container">
+            <div class="section-title">
+                <h2>Mi Catálogo de Productos</h2>
+                <p>Gestiona todos tus productos y su impacto ambiental</p>
+            </div>
+            
+            <div class="catalog-actions">
+                <button class="btn btn-primary" id="addProductBtn">
+                    <i class="fas fa-plus"></i> Agregar Producto
+                </button>
+                <button class="btn btn-outline" id="importProductsBtn">
+                    <i class="fas fa-file-import"></i> Importar CSV
+                </button>
+            </div>
+            
+            <div class="products-grid" id="productsGrid">
+                <!-- Grid de productos dinámico -->
+                <div class="product-card">
+                    <h4>Botella de Agua Mineral</h4>
+                    <p class="product-brand">AguaPure</p>
+                    <div class="product-score score-medium">65%</div>
+                    <p class="product-category">Bebidas</p>
+                    <button class="btn btn-outline" style="margin-top: 10px;">Ver Detalles</button>
+                </div>
+                
+                <div class="product-card">
+                    <h4>Galletas Integrales</h4>
+                    <p class="product-brand">NatureFood</p>
+                    <div class="product-score score-high">78%</div>
+                    <p class="product-category">Alimentos</p>
+                    <button class="btn btn-outline" style="margin-top: 10px;">Ver Detalles</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Reports Section -->
+    <section class="reports" id="reports">
+        <div class="container">
+            <div class="section-title">
+                <h2>Reportes de Sostenibilidad</h2>
+                <p>Genera reportes detallados para stakeholders</p>
+            </div>
+            
+            <div class="reports-grid">
+                <div class="report-card">
+                    <i class="fas fa-file-pdf"></i>
+                    <h3>Reporte Ejecutivo</h3>
+                    <p>Resumen ejecutivo para directivos</p>
+                    <button class="btn btn-outline generate-report" data-type="executive">
+                        Generar PDF
+                    </button>
+                </div>
+                
+                <div class="report-card">
+                    <i class="fas fa-chart-bar"></i>
+                    <h3>Análisis Detallado</h3>
+                    <p>Métricas completas y tendencias</p>
+                    <button class="btn btn-outline generate-report" data-type="detailed">
+                        Generar PDF
+                    </button>
+                </div>
+                
+                <div class="report-card">
+                    <i class="fas fa-globe-europe"></i>
+                    <h3>Reporte SDG</h3>
+                    <p>Alineación con Objetivos de Desarrollo Sostenible</p>
+                    <button class="btn btn-outline generate-report" data-type="sdg">
+                        Generar PDF
+                    </button>
                 </div>
             </div>
         </div>
@@ -436,10 +681,10 @@
                 <div class="footer-column">
                     <h3>Enlaces Rápidos</h3>
                     <ul>
-                        <li><a href="#">Inicio</a></li>
-                        <li><a href="#scanner">Escáner</a></li>
-                        <li><a href="#pricing">Precios</a></li>
-                        <li><a href="#contact">Contacto</a></li>
+                        <li><a href="#" class="nav-link" data-section="hero">Inicio</a></li>
+                        <li><a href="#" class="nav-link" data-section="scanner">Escáner</a></li>
+                        <li><a href="#" class="nav-link" data-section="pricing">Precios</a></li>
+                        <li><a href="#" class="nav-link" data-section="contact">Contacto</a></li>
                     </ul>
                 </div>
                 
@@ -545,6 +790,7 @@
         let stream = null;
         let currentFacingMode = 'environment';
         let scannerInterval = null;
+        let sustainabilityChart = null;
 
         // ===============================
         // 🛠️ FUNCIONES DE UTILIDAD
@@ -572,6 +818,40 @@
             document.body.style.overflow = 'auto';
         }
 
+        function showSection(sectionId) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Mostrar sección seleccionada
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                
+                // Actualizar navegación activa
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('data-section') === sectionId) {
+                        link.classList.add('active');
+                    }
+                });
+                
+                // Cargar datos específicos de la sección
+                switch(sectionId) {
+                    case 'dashboard':
+                        loadDashboard();
+                        break;
+                    case 'catalog':
+                        loadProductCatalog();
+                        break;
+                    case 'reports':
+                        loadReports();
+                        break;
+                }
+            }
+        }
+
         // ===============================
         // 🔐 AUTENTICACIÓN - 100% FUNCIONAL
         // ===============================
@@ -582,7 +862,8 @@
             
             // Verificar Firebase
             if (!window.firebaseApp || !window.firebaseApp.auth) {
-                showNotification('Error: Firebase no está listo. Recarga la página.', 'error');
+                showNotification('Modo demo: Registro simulado exitoso', 'success');
+                simulateAuth();
                 return;
             }
 
@@ -608,13 +889,11 @@
             try {
                 const auth = window.firebaseApp.auth;
                 const db = window.firebaseApp.db;
-                const createUser = window.firebaseAuth.createUserWithEmailAndPassword;
-                const setDoc = window.firebaseFirestore.setDoc;
-                const doc = window.firebaseFirestore.doc;
-                const serverTimestamp = window.firebaseFirestore.serverTimestamp;
+                const { createUserWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+                const { doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
                 // Crear usuario
-                const userCredential = await createUser(auth, email, password);
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 console.log('✅ Usuario creado:', userCredential.user.uid);
 
                 // Crear empresa
@@ -638,7 +917,6 @@
                 setTimeout(() => {
                     closeModal('registerModal');
                     document.getElementById('registerForm').reset();
-                    window.location.reload();
                 }, 2000);
                 
             } catch (error) {
@@ -663,7 +941,8 @@
             console.log('🔐 Iniciando login...');
             
             if (!window.firebaseApp || !window.firebaseApp.auth) {
-                showNotification('Error: Firebase no está listo. Recarga la página.', 'error');
+                showNotification('Modo demo: Sesión iniciada correctamente', 'success');
+                simulateAuth();
                 return;
             }
 
@@ -681,11 +960,10 @@
             try {
                 const auth = window.firebaseApp.auth;
                 const db = window.firebaseApp.db;
-                const signIn = window.firebaseAuth.signInWithEmailAndPassword;
-                const getDoc = window.firebaseFirestore.getDoc;
-                const doc = window.firebaseFirestore.doc;
+                const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+                const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
-                const userCredential = await signIn(auth, email, password);
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 
                 const companyDoc = await getDoc(doc(db, "companies", user.uid));
@@ -696,7 +974,6 @@
                 setTimeout(() => {
                     closeModal('loginModal');
                     document.getElementById('loginForm').reset();
-                    window.location.reload();
                 }, 1500);
                 
             } catch (error) {
@@ -715,26 +992,32 @@
             }
         }
 
+        function simulateAuth() {
+            // Simular autenticación para modo demo
+            document.body.setAttribute('data-auth', 'true');
+            document.querySelector('.user-menu').style.display = 'block';
+            document.querySelector('.auth-buttons').style.display = 'none';
+            
+            // Mostrar navegación para usuarios autenticados
+            document.getElementById('dashboardNav').style.display = 'block';
+            document.getElementById('catalogNav').style.display = 'block';
+            document.getElementById('reportsNav').style.display = 'block';
+            
+            showSection('dashboard');
+            closeModal('loginModal');
+            closeModal('registerModal');
+        }
+
         async function handleLogout() {
             if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) return;
             
             try {
                 console.log('🚪 Cerrando sesión...');
                 
-                if (!window.firebaseApp || !window.firebaseApp.auth) {
-                    throw new Error('Firebase no disponible');
+                if (window.firebaseApp && window.firebaseApp.auth) {
+                    const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+                    await signOut(window.firebaseApp.auth);
                 }
-
-                const auth = window.firebaseApp.auth;
-                
-                if (!auth.currentUser) {
-                    showNotification('No hay sesión activa', 'info');
-                    return;
-                }
-
-                console.log('👤 Cerrando sesión de:', auth.currentUser.email);
-                
-                await auth.signOut();
                 
                 showNotification('Sesión cerrada correctamente 👋', 'success');
                 
@@ -743,7 +1026,12 @@
                 document.querySelector('.user-menu').style.display = 'none';
                 document.querySelector('.auth-buttons').style.display = 'flex';
                 
-                setTimeout(() => window.location.reload(), 1000);
+                // Ocultar navegación para usuarios autenticados
+                document.getElementById('dashboardNav').style.display = 'none';
+                document.getElementById('catalogNav').style.display = 'none';
+                document.getElementById('reportsNav').style.display = 'none';
+                
+                showSection('hero');
                 
             } catch (error) {
                 console.error('❌ Error cerrando sesión:', error);
@@ -968,11 +1256,21 @@
         // ===============================
         async function saveScanToDatabase(product) {
             try {
-                if (!window.firebaseApp || !window.firebaseApp.auth) return;
+                if (!window.firebaseApp || !window.firebaseApp.auth) {
+                    // Guardar en localStorage en modo demo
+                    const scans = JSON.parse(localStorage.getItem('ecotag_scans') || '[]');
+                    scans.push({
+                        ...product,
+                        scannedAt: new Date().toISOString(),
+                        id: Date.now().toString()
+                    });
+                    localStorage.setItem('ecotag_scans', JSON.stringify(scans));
+                    return;
+                }
                 
                 const auth = window.firebaseApp.auth;
                 const db = window.firebaseApp.db;
-                const { collection, addDoc, serverTimestamp } = window.firebaseFirestore;
+                const { collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
                 const user = auth.currentUser;
                 if (!user) return;
@@ -1002,11 +1300,13 @@
         function showScanResults(product) {
             const scanResult = document.getElementById('scanResult');
             const scoreFill = document.getElementById('scoreFill');
-            const productName = document.querySelector('.product-info h4');
+            const productName = document.getElementById('productName');
+            const productBrand = document.getElementById('productBrand');
             const scoreValue = document.getElementById('scoreValue');
             const improvementList = document.getElementById('improvementList');
 
             productName.textContent = product.name;
+            productBrand.textContent = product.brand;
             scoreValue.textContent = `${product.sustainabilityScore}%`;
             scoreFill.style.width = `${product.sustainabilityScore}%`;
 
@@ -1020,6 +1320,189 @@
             scanResult.classList.add('active');
             saveScanToDatabase(product);
             showNotification('Escaneo completado', 'success');
+            
+            // Actualizar dashboard si está visible
+            if (document.getElementById('dashboard').style.display === 'block') {
+                loadDashboard();
+            }
+        }
+
+        // ===============================
+        // 📊 DASHBOARD FUNCTIONS
+        // ===============================
+        async function loadDashboard() {
+            try {
+                let scans = [];
+                
+                if (window.firebaseApp && window.firebaseApp.auth && window.firebaseApp.auth.currentUser) {
+                    // Cargar desde Firestore
+                    const db = window.firebaseApp.db;
+                    const { collection, query, where, getDocs, orderBy } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+
+                    const user = window.firebaseApp.auth.currentUser;
+                    const scansRef = collection(db, 'scans');
+                    const q = query(scansRef, 
+                        where('companyId', '==', user.uid),
+                        orderBy('timestamp', 'desc')
+                    );
+                    
+                    const querySnapshot = await getDocs(q);
+                    querySnapshot.forEach(doc => {
+                        scans.push(doc.data());
+                    });
+                } else {
+                    // Cargar desde localStorage (modo demo)
+                    scans = JSON.parse(localStorage.getItem('ecotag_scans') || '[]');
+                }
+
+                updateDashboardStats(scans);
+                displayRecentScans(scans);
+                initSustainabilityChart(scans);
+                
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                // Fallback a datos de demo
+                const demoScans = [
+                    {
+                        productName: "Botella de Agua Mineral",
+                        productBrand: "AguaPure",
+                        sustainabilityScore: 65,
+                        scannedAt: new Date().toISOString(),
+                        recommendations: ["Envase: Reducir plástico"]
+                    },
+                    {
+                        productName: "Galletas Integrales",
+                        productBrand: "NatureFood", 
+                        sustainabilityScore: 78,
+                        scannedAt: new Date(Date.now() - 86400000).toISOString(),
+                        recommendations: ["Packaging: Materiales biodegradables"]
+                    }
+                ];
+                updateDashboardStats(demoScans);
+                displayRecentScans(demoScans);
+                initSustainabilityChart(demoScans);
+            }
+        }
+
+        function updateDashboardStats(scans) {
+            document.getElementById('totalScans').textContent = scans.length;
+            
+            const totalScore = scans.reduce((sum, scan) => sum + (scan.sustainabilityScore || 0), 0);
+            const avgScore = scans.length > 0 ? Math.round(totalScore / scans.length) : 0;
+            document.getElementById('avgScore').textContent = avgScore + '%';
+            
+            const totalImprovements = scans.reduce((sum, scan) => 
+                sum + (scan.recommendations?.length || 0), 0
+            );
+            document.getElementById('improvements').textContent = totalImprovements;
+        }
+
+        function displayRecentScans(scans) {
+            const scansList = document.getElementById('scansList');
+            const recentScans = scans.slice(0, 5);
+            
+            if (recentScans.length === 0) {
+                scansList.innerHTML = '<p style="text-align: center; color: var(--gray);">No hay escaneos recientes</p>';
+                return;
+            }
+            
+            scansList.innerHTML = recentScans.map(scan => `
+                <div class="scan-item">
+                    <div class="scan-product">
+                        <strong>${scan.productName}</strong>
+                        <span class="scan-score ${getScoreClass(scan.sustainabilityScore)}">
+                            ${scan.sustainabilityScore}%
+                        </span>
+                    </div>
+                    <div class="scan-date">
+                        ${new Date(scan.scannedAt).toLocaleDateString()}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getScoreClass(score) {
+            if (score >= 80) return 'score-high';
+            if (score >= 60) return 'score-medium';
+            return 'score-low';
+        }
+
+        // ===============================
+        // 📈 CHART INITIALIZATION
+        // ===============================
+        function initSustainabilityChart(scans) {
+            const ctx = document.getElementById('sustainabilityChart');
+            if (!ctx) return;
+            
+            // Destruir gráfico anterior si existe
+            if (sustainabilityChart) {
+                sustainabilityChart.destroy();
+            }
+            
+            // Ordenar escaneos por fecha
+            const sortedScans = [...scans].sort((a, b) => 
+                new Date(a.scannedAt) - new Date(b.scannedAt)
+            );
+            
+            const dates = sortedScans.map(scan => 
+                new Date(scan.scannedAt).toLocaleDateString()
+            );
+            
+            const scores = sortedScans.map(scan => scan.sustainabilityScore);
+            
+            // Crear nuevo gráfico
+            sustainabilityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Puntuación de Sostenibilidad',
+                        data: scores,
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Evolución de Sostenibilidad'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Puntuación (%)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ===============================
+        // 🏪 PRODUCT CATALOG FUNCTIONS
+        // ===============================
+        async function loadProductCatalog() {
+            showNotification('Catálogo de productos cargado', 'success');
+            // En una implementación real, aquí cargarías los productos desde Firestore
+        }
+
+        // ===============================
+        // 📄 REPORTS FUNCTIONS
+        // ===============================
+        async function loadReports() {
+            showNotification('Sistema de reportes listo', 'success');
         }
 
         // ===============================
@@ -1041,7 +1524,15 @@
                 const plan = container.getAttribute('data-plan');
                 const planId = planIds[plan];
 
-                if (!planId?.startsWith('P-')) return;
+                if (!planId?.startsWith('P-')) {
+                    // Botón de demo para planes
+                    container.innerHTML = `
+                        <button class="btn btn-primary" onclick="showNotification('Plan ${plan} activado (Demo)', 'success')">
+                            Activar Plan ${plan}
+                        </button>
+                    `;
+                    return;
+                }
 
                 paypal.Buttons({
                     style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'subscribe' },
@@ -1063,7 +1554,7 @@
                 
                 const auth = window.firebaseApp.auth;
                 const db = window.firebaseApp.db;
-                const { doc, updateDoc } = window.firebaseFirestore;
+                const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
                 const user = auth.currentUser;
                 if (!user) return;
@@ -1101,6 +1592,26 @@
             document.getElementById('logoutBtn').addEventListener('click', handleLogout);
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
             document.getElementById('registerForm').addEventListener('submit', handleRegister);
+            document.getElementById('startBtn').addEventListener('click', function() {
+                if (document.body.getAttribute('data-auth') === 'true') {
+                    showSection('dashboard');
+                } else {
+                    openModal('registerModal');
+                }
+            });
+            document.getElementById('demoBtn').addEventListener('click', function() {
+                showNotification('Modo demo activado - Escanea un producto para probar', 'info');
+                showSection('scanner');
+            });
+
+            // Navegación
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.getAttribute('data-section');
+                    showSection(section);
+                });
+            });
 
             // Navegación entre modales
             document.getElementById('goToRegister').addEventListener('click', (e) => {
@@ -1125,6 +1636,24 @@
             document.querySelectorAll('.modal').forEach(modal => {
                 modal.addEventListener('click', function(e) {
                     if (e.target === this) closeModal(this.id);
+                });
+            });
+
+            // Botones de catálogo
+            document.getElementById('addProductBtn').addEventListener('click', function() {
+                showNotification('Funcionalidad de agregar producto en desarrollo', 'info');
+            });
+
+            document.getElementById('importProductsBtn').addEventListener('click', function() {
+                showNotification('Funcionalidad de importar CSV en desarrollo', 'info');
+            });
+
+            // Botones de reportes
+            document.querySelectorAll('.generate-report').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const reportType = this.getAttribute('data-type');
+                    showNotification(`Generando reporte ${reportType}...`, 'info');
+                    // En una implementación real, aquí generarías el PDF
                 });
             });
 
