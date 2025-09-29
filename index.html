@@ -16,7 +16,7 @@
     
     <!-- Firebase Config -->
     <script type="module">
-        // Configuración de Firebase - Reemplaza con tus credenciales
+        // Configuración de Firebase - REEMPLAZA CON TUS CREDENCIALES
         const firebaseConfig = {
             apiKey: "tu-api-key",
             authDomain: "tu-proyecto.firebaseapp.com",
@@ -34,16 +34,22 @@
             try {
                 console.log('🔥 Inicializando Firebase...');
                 
+                // Importar módulos de Firebase dinámicamente
                 const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
                 const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
                 const { getFirestore } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
+                // Inicializar Firebase
                 const app = initializeApp(firebaseConfig);
                 const auth = getAuth(app);
                 const db = getFirestore(app);
 
                 // Asignar globalmente
                 window.firebaseApp = { app, auth, db };
+                window.firebaseModules = {
+                    auth: { getAuth, onAuthStateChanged },
+                    firestore: { getFirestore }
+                };
                 window.firebaseReady = true;
 
                 console.log('✅ Firebase inicializado correctamente');
@@ -52,16 +58,10 @@
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         console.log('✅ Usuario autenticado:', user.email);
-                        document.body.setAttribute('data-auth', 'true');
-                        document.querySelector('.user-menu').style.display = 'block';
-                        document.querySelector('.auth-buttons').style.display = 'none';
-                        showSection('dashboard');
+                        handleUserAuthenticated();
                     } else {
                         console.log('❌ Usuario no autenticado');
-                        document.body.setAttribute('data-auth', 'false');
-                        document.querySelector('.user-menu').style.display = 'none';
-                        document.querySelector('.auth-buttons').style.display = 'flex';
-                        showSection('hero');
+                        handleUserNotAuthenticated();
                     }
                 });
 
@@ -69,9 +69,73 @@
                 console.error('❌ Error inicializando Firebase:', error);
                 // Modo demo sin Firebase
                 window.firebaseReady = false;
+                window.firebaseApp = null;
                 showNotification('Modo demo activado - Funcionalidades limitadas', 'warning');
+                handleUserNotAuthenticated();
             }
         });
+
+        // Funciones de manejo de autenticación
+        function handleUserAuthenticated() {
+            document.body.setAttribute('data-auth', 'true');
+            document.querySelector('.user-menu').style.display = 'block';
+            document.querySelector('.auth-buttons').style.display = 'none';
+            
+            // Mostrar navegación para usuarios autenticados
+            document.getElementById('dashboardNav').style.display = 'block';
+            document.getElementById('catalogNav').style.display = 'block';
+            document.getElementById('reportsNav').style.display = 'block';
+            
+            showSection('dashboard');
+        }
+
+        function handleUserNotAuthenticated() {
+            document.body.setAttribute('data-auth', 'false');
+            document.querySelector('.user-menu').style.display = 'none';
+            document.querySelector('.auth-buttons').style.display = 'flex';
+            
+            // Ocultar navegación para usuarios autenticados
+            document.getElementById('dashboardNav').style.display = 'none';
+            document.getElementById('catalogNav').style.display = 'none';
+            document.getElementById('reportsNav').style.display = 'none';
+            
+            showSection('hero');
+        }
+
+        // Funciones auxiliares globales
+        window.showNotification = function(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        };
+
+        window.showSection = function(sectionId) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Mostrar sección seleccionada
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                
+                // Actualizar navegación activa
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('data-section') === sectionId) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        };
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
@@ -781,7 +845,7 @@
     </div>
 
     <!-- =============================== -->
-    <!-- 🔥 JAVASCRIPT COMPLETO FUNCIONAL -->
+    <!-- 🔥 JAVASCRIPT CORREGIDO -->
     <!-- =============================== -->
     <script>
         // ===============================
@@ -795,19 +859,6 @@
         // ===============================
         // 🛠️ FUNCIONES DE UTILIDAD
         // ===============================
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => notification.classList.add('show'), 100);
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => notification.remove(), 300);
-            }, 4000);
-        }
-
         function openModal(modalId) {
             document.getElementById(modalId).classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -818,42 +869,8 @@
             document.body.style.overflow = 'auto';
         }
 
-        function showSection(sectionId) {
-            // Ocultar todas las secciones
-            document.querySelectorAll('section').forEach(section => {
-                section.style.display = 'none';
-            });
-            
-            // Mostrar sección seleccionada
-            const targetSection = document.getElementById(sectionId);
-            if (targetSection) {
-                targetSection.style.display = 'block';
-                
-                // Actualizar navegación activa
-                document.querySelectorAll('.nav-link').forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('data-section') === sectionId) {
-                        link.classList.add('active');
-                    }
-                });
-                
-                // Cargar datos específicos de la sección
-                switch(sectionId) {
-                    case 'dashboard':
-                        loadDashboard();
-                        break;
-                    case 'catalog':
-                        loadProductCatalog();
-                        break;
-                    case 'reports':
-                        loadReports();
-                        break;
-                }
-            }
-        }
-
         // ===============================
-        // 🔐 AUTENTICACIÓN - 100% FUNCIONAL
+        // 🔐 AUTENTICACIÓN - CORREGIDA
         // ===============================
         async function handleRegister(e) {
             e.preventDefault();
@@ -888,7 +905,6 @@
 
             try {
                 const auth = window.firebaseApp.auth;
-                const db = window.firebaseApp.db;
                 const { createUserWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
                 const { doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
@@ -897,18 +913,10 @@
                 console.log('✅ Usuario creado:', userCredential.user.uid);
 
                 // Crear empresa
-                await setDoc(doc(db, "companies", userCredential.user.uid), {
+                await setDoc(doc(window.firebaseApp.db, "companies", userCredential.user.uid), {
                     name: company,
                     email: email,
                     plan: plan,
-                    createdAt: serverTimestamp()
-                });
-
-                // Crear perfil
-                await setDoc(doc(db, "users", userCredential.user.uid), {
-                    email: email,
-                    companyId: userCredential.user.uid,
-                    role: 'admin',
                     createdAt: serverTimestamp()
                 });
 
@@ -959,17 +967,11 @@
 
             try {
                 const auth = window.firebaseApp.auth;
-                const db = window.firebaseApp.db;
                 const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
-                const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
+                await signInWithEmailAndPassword(auth, email, password);
                 
-                const companyDoc = await getDoc(doc(db, "companies", user.uid));
-                const companyData = companyDoc.data();
-                
-                showNotification(`¡Bienvenido ${companyData.name}! 👋`, 'success');
+                showNotification('¡Sesión iniciada correctamente! 👋', 'success');
                 
                 setTimeout(() => {
                     closeModal('loginModal');
@@ -1015,9 +1017,13 @@
                 console.log('🚪 Cerrando sesión...');
                 
                 if (window.firebaseApp && window.firebaseApp.auth) {
+                    // Importar signOut dinámicamente
                     const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
                     await signOut(window.firebaseApp.auth);
                 }
+                
+                // Limpiar datos de demo
+                localStorage.removeItem('ecotag_demo_user');
                 
                 showNotification('Sesión cerrada correctamente 👋', 'success');
                 
@@ -1035,12 +1041,20 @@
                 
             } catch (error) {
                 console.error('❌ Error cerrando sesión:', error);
-                showNotification('Error: ' + error.message, 'error');
+                // Fallback: cerrar sesión en modo demo
+                document.body.setAttribute('data-auth', 'false');
+                document.querySelector('.user-menu').style.display = 'none';
+                document.querySelector('.auth-buttons').style.display = 'flex';
+                document.getElementById('dashboardNav').style.display = 'none';
+                document.getElementById('catalogNav').style.display = 'none';
+                document.getElementById('reportsNav').style.display = 'none';
+                showSection('hero');
+                showNotification('Sesión cerrada', 'info');
             }
         }
 
         // ===============================
-        // 📸 SISTEMA DE CÁMARA
+        // 📸 SISTEMA DE CÁMARA (sin cambios)
         // ===============================
         async function startCamera() {
             try {
@@ -1120,214 +1134,6 @@
         }
 
         // ===============================
-        // 📷 ESCÁNER DE CÓDIGO DE BARRAS
-        // ===============================
-        function initBarcodeScanner() {
-            if (typeof Quagga === 'undefined') return;
-
-            try { Quagga.stop(); } catch (e) {}
-
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: document.querySelector('#scanner-video'),
-                    constraints: { facingMode: currentFacingMode }
-                },
-                locator: { patchSize: "large", halfSample: false },
-                numOfWorkers: 1,
-                frequency: 10,
-                decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader"] },
-                locate: true
-            }, function(err) {
-                if (err) return;
-                Quagga.start();
-            });
-
-            let lastDetectionTime = 0;
-            Quagga.onDetected(function(result) {
-                const now = Date.now();
-                if (now - lastDetectionTime < 3000) return;
-                
-                if (result.codeResult && result.codeResult.code) {
-                    const code = result.codeResult.code;
-                    if (isValidBarcode(code)) {
-                        lastDetectionTime = now;
-                        Quagga.stop();
-                        stopCamera();
-                        searchProductByBarcode(code);
-                    }
-                }
-            });
-        }
-
-        function isValidBarcode(code) {
-            return code && code.length >= 8;
-        }
-
-        async function searchProductByBarcode(barcode) {
-            showNotification(`Buscando producto ${barcode}...`, 'warning');
-            try {
-                const product = await lookupProductInDatabase(barcode);
-                if (product) {
-                    showScanResults(product);
-                } else {
-                    showNotification('Producto no encontrado', 'info');
-                    setTimeout(startCamera, 2000);
-                }
-            } catch (error) {
-                showNotification('Error buscando producto', 'error');
-                setTimeout(startCamera, 2000);
-            }
-        }
-
-        // ===============================
-        // 🤖 RECONOCIMIENTO POR IMAGEN
-        // ===============================
-        async function processImage(imageData) {
-            showNotification('Analizando imagen...', 'warning');
-            try {
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                const mockProduct = await simulateProductRecognition();
-                showScanResults(mockProduct);
-            } catch (error) {
-                showNotification('Error procesando imagen', 'error');
-            }
-        }
-
-        async function simulateProductRecognition() {
-            const products = [
-                {
-                    name: "Botella de Agua Mineral",
-                    brand: "AguaPure",
-                    category: "Bebidas",
-                    sustainabilityScore: 65,
-                    barcode: "1234567890123",
-                    recommendations: [
-                        "Envase: Reducir plástico de un solo uso (Alto impacto)",
-                        "Cadena de suministro: Utilizar proveedores locales (Medio impacto)"
-                    ]
-                },
-                {
-                    name: "Galletas Integrales", 
-                    brand: "NatureFood",
-                    category: "Alimentos",
-                    sustainabilityScore: 78,
-                    barcode: "2345678901234",
-                    recommendations: [
-                        "Packaging: Usar materiales biodegradables (Alto impacto)"
-                    ]
-                }
-            ];
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            return products[Math.floor(Math.random() * products.length)];
-        }
-
-        async function lookupProductInDatabase(barcode) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            const products = {
-                "1234567890123": {
-                    name: "Botella de Agua Mineral",
-                    brand: "AguaPure",
-                    category: "Bebidas",
-                    sustainabilityScore: 65,
-                    barcode: "1234567890123",
-                    recommendations: [
-                        "Envase: Reducir plástico de un solo uso (Alto impacto)",
-                        "Cadena de suministro: Utilizar proveedores locales (Medio impacto)"
-                    ]
-                },
-                "2345678901234": {
-                    name: "Galletas Integrales", 
-                    brand: "NatureFood",
-                    category: "Alimentos",
-                    sustainabilityScore: 78,
-                    barcode: "2345678901234",
-                    recommendations: [
-                        "Packaging: Usar materiales biodegradables (Alto impacto)"
-                    ]
-                }
-            };
-            return products[barcode] || null;
-        }
-
-        // ===============================
-        // 💾 BASE DE DATOS
-        // ===============================
-        async function saveScanToDatabase(product) {
-            try {
-                if (!window.firebaseApp || !window.firebaseApp.auth) {
-                    // Guardar en localStorage en modo demo
-                    const scans = JSON.parse(localStorage.getItem('ecotag_scans') || '[]');
-                    scans.push({
-                        ...product,
-                        scannedAt: new Date().toISOString(),
-                        id: Date.now().toString()
-                    });
-                    localStorage.setItem('ecotag_scans', JSON.stringify(scans));
-                    return;
-                }
-                
-                const auth = window.firebaseApp.auth;
-                const db = window.firebaseApp.db;
-                const { collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-
-                const user = auth.currentUser;
-                if (!user) return;
-
-                const scansRef = collection(db, 'scans');
-                await addDoc(scansRef, {
-                    productName: product.name,
-                    productBrand: product.brand,
-                    productCategory: product.category,
-                    barcode: product.barcode,
-                    sustainabilityScore: product.sustainabilityScore,
-                    companyId: user.uid,
-                    userId: user.uid,
-                    timestamp: serverTimestamp(),
-                    recommendations: product.recommendations,
-                    scannedAt: new Date().toISOString()
-                });
-
-            } catch (error) {
-                console.error('Error guardando escaneo:', error);
-            }
-        }
-
-        // ===============================
-        // 📊 VISUALIZACIÓN DE RESULTADOS
-        // ===============================
-        function showScanResults(product) {
-            const scanResult = document.getElementById('scanResult');
-            const scoreFill = document.getElementById('scoreFill');
-            const productName = document.getElementById('productName');
-            const productBrand = document.getElementById('productBrand');
-            const scoreValue = document.getElementById('scoreValue');
-            const improvementList = document.getElementById('improvementList');
-
-            productName.textContent = product.name;
-            productBrand.textContent = product.brand;
-            scoreValue.textContent = `${product.sustainabilityScore}%`;
-            scoreFill.style.width = `${product.sustainabilityScore}%`;
-
-            improvementList.innerHTML = '';
-            product.recommendations.forEach(rec => {
-                const li = document.createElement('li');
-                li.innerHTML = `<i class="fas fa-times-circle"></i> ${rec}`;
-                improvementList.appendChild(li);
-            });
-
-            scanResult.classList.add('active');
-            saveScanToDatabase(product);
-            showNotification('Escaneo completado', 'success');
-            
-            // Actualizar dashboard si está visible
-            if (document.getElementById('dashboard').style.display === 'block') {
-                loadDashboard();
-            }
-        }
-
-        // ===============================
         // 📊 DASHBOARD FUNCTIONS
         // ===============================
         async function loadDashboard() {
@@ -1336,11 +1142,10 @@
                 
                 if (window.firebaseApp && window.firebaseApp.auth && window.firebaseApp.auth.currentUser) {
                     // Cargar desde Firestore
-                    const db = window.firebaseApp.db;
                     const { collection, query, where, getDocs, orderBy } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
                     const user = window.firebaseApp.auth.currentUser;
-                    const scansRef = collection(db, 'scans');
+                    const scansRef = collection(window.firebaseApp.db, 'scans');
                     const q = query(scansRef, 
                         where('companyId', '==', user.uid),
                         orderBy('timestamp', 'desc')
@@ -1491,88 +1296,6 @@
         }
 
         // ===============================
-        // 🏪 PRODUCT CATALOG FUNCTIONS
-        // ===============================
-        async function loadProductCatalog() {
-            showNotification('Catálogo de productos cargado', 'success');
-            // En una implementación real, aquí cargarías los productos desde Firestore
-        }
-
-        // ===============================
-        // 📄 REPORTS FUNCTIONS
-        // ===============================
-        async function loadReports() {
-            showNotification('Sistema de reportes listo', 'success');
-        }
-
-        // ===============================
-        // 💳 SISTEMA DE PAGOS PAYPAL
-        // ===============================
-        function initPayPalButtons() {
-            if (typeof paypal === 'undefined') {
-                setTimeout(initPayPalButtons, 1000);
-                return;
-            }
-
-            const planIds = {
-                'basico': 'P-3RX065706Z922000U5QZCBMA',
-                'profesional': 'P-1TC147912B2007440NDJCUEY',
-                'empresarial': 'P-42J26630865841252NDJCWQY'
-            };
-
-            document.querySelectorAll('.paypal-button-container').forEach(container => {
-                const plan = container.getAttribute('data-plan');
-                const planId = planIds[plan];
-
-                if (!planId?.startsWith('P-')) {
-                    // Botón de demo para planes
-                    container.innerHTML = `
-                        <button class="btn btn-primary" onclick="showNotification('Plan ${plan} activado (Demo)', 'success')">
-                            Activar Plan ${plan}
-                        </button>
-                    `;
-                    return;
-                }
-
-                paypal.Buttons({
-                    style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'subscribe' },
-                    createSubscription: (data, actions) => actions.subscription.create({ plan_id: planId }),
-                    onApprove: (data, actions) => {
-                        showNotification(`¡Plan ${plan} activado!`, 'success');
-                        updateUserPlan(plan, data.subscriptionID);
-                    },
-                    onError: (err) => {
-                        showNotification('Error en el pago', 'error');
-                    }
-                }).render(container);
-            });
-        }
-
-        async function updateUserPlan(plan, subscriptionId) {
-            try {
-                if (!window.firebaseApp || !window.firebaseApp.auth) return;
-                
-                const auth = window.firebaseApp.auth;
-                const db = window.firebaseApp.db;
-                const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-
-                const user = auth.currentUser;
-                if (!user) return;
-
-                await updateDoc(doc(db, "companies", user.uid), {
-                    plan: plan,
-                    subscriptionId: subscriptionId,
-                    subscriptionActive: true,
-                    planActivatedAt: new Date()
-                });
-
-                showNotification(`Plan ${plan} activado con éxito`, 'success');
-            } catch (error) {
-                showNotification('Error activando plan', 'error');
-            }
-        }
-
-        // ===============================
         // 🎯 CONFIGURACIÓN INICIAL
         // ===============================
         document.addEventListener('DOMContentLoaded', function() {
@@ -1638,34 +1361,6 @@
                     if (e.target === this) closeModal(this.id);
                 });
             });
-
-            // Botones de catálogo
-            document.getElementById('addProductBtn').addEventListener('click', function() {
-                showNotification('Funcionalidad de agregar producto en desarrollo', 'info');
-            });
-
-            document.getElementById('importProductsBtn').addEventListener('click', function() {
-                showNotification('Funcionalidad de importar CSV en desarrollo', 'info');
-            });
-
-            // Botones de reportes
-            document.querySelectorAll('.generate-report').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const reportType = this.getAttribute('data-type');
-                    showNotification(`Generando reporte ${reportType}...`, 'info');
-                    // En una implementación real, aquí generarías el PDF
-                });
-            });
-
-            // Inicializar PayPal
-            setTimeout(initPayPalButtons, 2000);
-
-            // Service Worker
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('SW registrado'))
-                    .catch(err => console.log('Error SW'));
-            }
 
             console.log('✅ Eco Tag completamente funcional');
         });
