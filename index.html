@@ -1115,6 +1115,8 @@ async function handleLogout() {
             setTimeout(() => {
                 document.getElementById('loadingOverlay').classList.add('hidden');
             }, 1000);
+              // ✅ AÑADE ESTE EVENT LISTENER PARA EL BOTÓN DE LOGOUT
+    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
             // Event listeners
             document.getElementById('start-camera').addEventListener('click', startCamera);
