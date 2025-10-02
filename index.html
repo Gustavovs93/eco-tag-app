@@ -174,417 +174,862 @@
     </div>
 
     <script>
-        // ============================================
-        // 🎯 ECO TAG - VERSIÓN COMPLETAMENTE LIMPIA
-        // ============================================
-        // ✅ SIN FIREBASE - ✅ SIN signOut - ✅ 100% LOCAL
+        // ===============================
+// 🎯 VARIABLES GLOBALES
+// ===============================
+let stream = null;
+let currentFacingMode = 'environment';
+let scannerInterval = null;
+let scanCompleted = false;
 
-        // 🏗️ ESTADO DE LA APLICACIÓN
-        const appState = {
-            currentUser: null,
-            scans: []
-        };
+// ===============================
+// 🛠️ FUNCIONES DE UTILIDAD
+// ===============================
+function showNotification(message, type = 'success') {
+    let notification = document.getElementById('notification');
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'notification';
+        document.body.appendChild(notification);
+    }
+    
+    notification.textContent = message;
+    notification.className = `notification ${type}`;
+    notification.classList.add('show');
+    
+    setTimeout(() => notification.classList.remove('show'), 4000);
+}
 
-        // 🚀 INICIALIZACIÓN
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Eco Tag - Sistema Local Iniciado');
-            initializeApp();
-        });
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
 
-        function initializeApp() {
-            // Cargar datos guardados
-            loadSavedData();
-            
-            // Configurar eventos
-            setupEventListeners();
-            
-            console.log('✅ Eco Tag listo - Modo 100% Local');
-            showNotification('Aplicación cargada correctamente ✅', 'success');
-        }
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+}
 
-        // 💾 CARGA DE DATOS
-        function loadSavedData() {
-            try {
-                // Cargar usuario
-                const savedUser = localStorage.getItem('ecotag_user');
-                if (savedUser) {
-                    appState.currentUser = JSON.parse(savedUser);
-                    updateAuthUI(true);
-                    console.log('👤 Usuario cargado:', appState.currentUser.email);
-                }
+function waitForFirebase(maxWait = 10000) {
+    return new Promise((resolve, reject) => {
+        const startTime = Date.now();
+        
+        console.log('⏳ Verificando estado de Firebase...');
+        
+        function checkFirebase() {
+            if (window.firebaseApp && 
+                window.firebaseApp.auth && 
+                window.firebaseApp.db) {
                 
-                // Cargar escaneos
-                const savedScans = localStorage.getItem('ecotag_scans');
-                if (savedScans) {
-                    appState.scans = JSON.parse(savedScans);
-                    console.log('📊 Escaneos cargados:', appState.scans.length);
-                }
-            } catch (error) {
-                console.log('⚠️ Iniciando con datos vacíos');
+                console.log('✅ Firebase está listo');
+                resolve();
+            } else if (Date.now() - startTime > maxWait) {
+                const errorMsg = 'Firebase no se cargó correctamente';
+                console.error('❌', errorMsg);
+                reject(new Error(errorMsg));
+            } else {
+                setTimeout(checkFirebase, 100);
             }
         }
+        
+        checkFirebase();
+    });
+}
 
-        // ✅ LOGOUT SIMPLE Y DIRECTO
-        function handleLogout() {
-            console.log('🔍 Iniciando proceso de logout...');
-            
-            if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-                console.log('❌ Logout cancelado por el usuario');
+// ===============================
+// 🔐 AUTENTICACIÓN
+// ===============================
+async function handleRegister(e) {
+    e.preventDefault();
+    
+    console.log('🔐 Iniciando proceso de registro...');
+    
+    const company = document.getElementById('register-company').value;
+    const email = document.getElementById('register-email').value;
+    const password = document.getElementById('register-password').value;
+    const confirmPassword = document.getElementById('register-confirmPassword').value;
+    const plan = document.getElementById('register-plan').value;
+
+    if (!company || !email || !password || !confirmPassword || !plan) {
+        showNotification('Por favor completa todos los campos', 'error');
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        showNotification('Las contraseñas no coinciden', 'error');
+        return;
+    }
+
+    if (password.length < 6) {
+        showNotification('La contraseña debe tener al menos 6 caracteres', 'error');
+        return;
+    }
+
+    const registerText = document.getElementById('registerText');
+    const registerSpinner = document.getElementById('registerSpinner');
+    const registerSubmit = document.getElementById('registerSubmit');
+    
+    registerText.style.display = 'none';
+    registerSpinner.style.display = 'inline-block';
+    registerSubmit.disabled = true;
+
+    try {
+        console.log('⏳ Esperando a que Firebase esté listo...');
+        await waitForFirebase(10000);
+        
+        const { auth, createUserWithEmailAndPassword } = window.firebaseAuth;
+        const { db } = window.firebaseApp;
+        const { doc, setDoc, serverTimestamp } = window.firebaseFirestore;
+
+        console.log('📝 Creando usuario en Authentication...');
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        console.log('✅ Usuario creado en Auth:', user.uid);
+
+        await setDoc(doc(db, "companies", user.uid), {
+            name: company,
+            email: email,
+            plan: plan,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+        });
+
+        await setDoc(doc(db, "users", user.uid), {
+            email: email,
+            companyId: user.uid,
+            role: 'admin',
+            createdAt: serverTimestamp()
+        });
+
+        console.log('✅ Perfil de usuario creado');
+        showNotification('¡Cuenta creada exitosamente! Bienvenido a Eco Tag', 'success');
+        
+        setTimeout(() => {
+            closeModal('registerModal');
+            document.getElementById('registerForm').reset();
+        }, 2000);
+        
+    } catch (error) {
+        console.error('❌ Error en el registro:', error);
+        
+        let errorMessage = 'Error en el registro';
+        if (error.code === 'auth/email-already-in-use') {
+            errorMessage = 'Este email ya está registrado';
+        } else if (error.code === 'auth/weak-password') {
+            errorMessage = 'La contraseña es muy débil';
+        } else if (error.code === 'auth/invalid-email') {
+            errorMessage = 'Email inválido';
+        } else {
+            errorMessage = error.message || 'Error desconocido';
+        }
+        
+        showNotification(errorMessage, 'error');
+    } finally {
+        registerText.style.display = 'inline-block';
+        registerSpinner.style.display = 'none';
+        registerSubmit.disabled = false;
+    }
+}
+
+async function handleLogin(e) {
+    e.preventDefault();
+    
+    console.log('🔐 Iniciando proceso de login...');
+    
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    if (!email || !password) {
+        showNotification('Por favor completa todos los campos', 'error');
+        return;
+    }
+
+    const loginText = document.getElementById('loginText');
+    const loginSpinner = document.getElementById('loginSpinner');
+    const loginSubmit = document.getElementById('loginSubmit');
+    
+    loginText.style.display = 'none';
+    loginSpinner.style.display = 'inline-block';
+    loginSubmit.disabled = true;
+
+    try {
+        await waitForFirebase(10000);
+        
+        const { auth, signInWithEmailAndPassword } = window.firebaseAuth;
+        const { db } = window.firebaseApp;
+        const { doc, getDoc } = window.firebaseFirestore;
+
+        console.log('📝 Iniciando sesión...');
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        console.log('✅ Login exitoso:', user.email);
+        
+        const companyDoc = await getDoc(doc(db, "companies", user.uid));
+        
+        if (!companyDoc.exists()) {
+            throw new Error('No se encontraron datos de la empresa');
+        }
+        
+        const companyData = companyDoc.data();
+        console.log('✅ Datos de empresa obtenidos:', companyData.name);
+        
+        showNotification(`¡Bienvenido de vuelta ${companyData.name}!`, 'success');
+        
+        setTimeout(() => {
+            closeModal('loginModal');
+            document.getElementById('loginForm').reset();
+        }, 1500);
+        
+    } catch (error) {
+        console.error('❌ Error en el login:', error);
+        
+        let errorMessage = 'Error en el login';
+        if (error.code === 'auth/user-not-found') {
+            errorMessage = 'Usuario no encontrado';
+        } else if (error.code === 'auth/wrong-password') {
+            errorMessage = 'Contraseña incorrecta';
+        } else if (error.code === 'auth/invalid-email') {
+            errorMessage = 'Email inválido';
+        } else {
+            errorMessage = error.message || 'Error desconocido';
+        }
+        
+        showNotification(errorMessage, 'error');
+    } finally {
+        loginText.style.display = 'inline-block';
+        loginSpinner.style.display = 'none';
+        loginSubmit.disabled = false;
+    }
+}
+
+async function handleLogout() {
+    try {
+        await waitForFirebase();
+        const { auth, signOut } = window.firebaseAuth;
+        await signOut(auth);
+        showNotification('Sesión cerrada correctamente', 'success');
+    } catch (error) {
+        showNotification('Error cerrando sesión: ' + error.message, 'error');
+    }
+}
+
+// ===============================
+// 📸 SISTEMA DE CÁMARA
+// ===============================
+async function startCamera() {
+    try {
+        const video = document.getElementById('scanner-video');
+        const cameraView = document.getElementById('camera-view');
+        const startBtn = document.getElementById('start-camera');
+        const captureBtn = document.getElementById('capture-btn');
+        const switchBtn = document.getElementById('switch-camera');
+
+        if (navigator.permissions) {
+            const permission = await navigator.permissions.query({ name: 'camera' });
+            if (permission.state === 'denied') {
+                showNotification('Permiso de cámara denegado', 'error');
                 return;
             }
-            
-            try {
-                // 1. Limpiar estado
-                appState.currentUser = null;
-                console.log('✅ Estado limpiado');
-                
-                // 2. Limpiar almacenamiento
-                localStorage.removeItem('ecotag_user');
-                console.log('✅ Almacenamiento limpiado');
-                
-                // 3. Actualizar interfaz
-                updateAuthUI(false);
-                console.log('✅ Interfaz actualizada');
-                
-                // 4. Cerrar modales
-                closeModal('loginModal');
-                closeModal('registerModal');
-                console.log('✅ Modales cerrados');
-                
-                // 5. Resetear formularios
-                document.getElementById('loginForm').reset();
-                document.getElementById('registerForm').reset();
-                console.log('✅ Formularios reseteados');
-                
-                // 6. Mostrar sección principal
-                showSection('hero');
-                console.log('✅ Navegación completada');
-                
-                // 7. Notificación final
-                showNotification('Sesión cerrada correctamente 👋', 'success');
-                console.log('🎯 Logout completado exitosamente');
-                
-            } catch (error) {
-                console.error('❌ Error durante logout:', error);
-                // Forzar limpieza incluso con errores
-                forceCleanup();
-                showNotification('Sesión cerrada', 'info');
-            }
         }
 
-        // 🛡️ LIMPIEZA DE EMERGENCIA
-        function forceCleanup() {
-            console.log('🛡️ Ejecutando limpieza de emergencia...');
-            
-            // Limpiar todo
-            appState.currentUser = null;
-            localStorage.removeItem('ecotag_user');
-            localStorage.removeItem('ecotag_scans');
-            
-            // Forzar actualización de UI
-            document.body.setAttribute('data-auth', 'false');
-            document.querySelector('.user-menu').style.display = 'none';
-            document.querySelector('.auth-buttons').style.display = 'flex';
-            document.getElementById('userEmail').textContent = '';
-            
-            showSection('hero');
-        }
-
-        // 📝 SISTEMA DE AUTENTICACIÓN
-        function handleRegister(e) {
-            e.preventDefault();
-            
-            const company = document.getElementById('registerCompany').value;
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
-
-            try {
-                // Crear usuario local
-                appState.currentUser = { 
-                    email: email, 
-                    company: company,
-                    id: 'user_' + Date.now(),
-                    created: new Date().toISOString()
-                };
-                
-                // Guardar localmente
-                localStorage.setItem('ecotag_user', JSON.stringify(appState.currentUser));
-                
-                // Actualizar UI
-                updateAuthUI(true);
-                
-                showNotification('¡Cuenta creada exitosamente! 🎉', 'success');
-                closeModal('registerModal');
-                document.getElementById('registerForm').reset();
-                
-            } catch (error) {
-                console.error('Error en registro:', error);
-                showNotification('Error creando cuenta', 'error');
-            }
-        }
-
-        function handleLogin(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-
-            try {
-                // Verificación simple
-                if (email && password) {
-                    appState.currentUser = { 
-                        email: email,
-                        id: 'user_' + Date.now(),
-                        lastLogin: new Date().toISOString()
-                    };
-                    
-                    localStorage.setItem('ecotag_user', JSON.stringify(appState.currentUser));
-                    updateAuthUI(true);
-                    
-                    showNotification('¡Sesión iniciada! 👋', 'success');
-                    closeModal('loginModal');
-                    document.getElementById('loginForm').reset();
-                } else {
-                    throw new Error('Ingresa email y contraseña');
-                }
-                
-            } catch (error) {
-                console.error('Error en login:', error);
-                showNotification('Error: ' + error.message, 'error');
-            }
-        }
-
-        // 💾 GUARDADO DE ESCANEOS
-        function saveScanToDatabase(product) {
-            console.log('💾 Guardando escaneo...');
-            
-            try {
-                const scanData = {
-                    ...product,
-                    id: 'scan_' + Date.now(),
-                    timestamp: new Date().toISOString(),
-                    userId: appState.currentUser?.id || 'guest'
-                };
-                
-                // Agregar a estado local
-                appState.scans.push(scanData);
-                
-                // Guardar en localStorage
-                localStorage.setItem('ecotag_scans', JSON.stringify(appState.scans));
-                
-                console.log('✅ Escaneo guardado:', scanData.id);
-                
-            } catch (error) {
-                console.error('❌ Error guardando escaneo:', error);
-            }
-        }
-
-        // 📸 SISTEMA DE CÁMARA
-        let cameraStream = null;
-
-        async function startCamera() {
-            try {
-                const video = document.getElementById('scanner-video');
-                const cameraView = document.getElementById('camera-view');
-                const startBtn = document.getElementById('start-camera');
-                const captureBtn = document.getElementById('capture-btn');
-
-                // Detener cámara anterior
-                if (cameraStream) {
-                    cameraStream.getTracks().forEach(track => track.stop());
-                }
-
-                // Iniciar nueva cámara
-                cameraStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment' },
-                    audio: false
-                });
-
-                video.srcObject = cameraStream;
-                video.classList.add('active');
-                cameraView.classList.add('hidden');
-                captureBtn.disabled = false;
-                startBtn.disabled = true;
-                
-                video.onloadedmetadata = () => video.play();
-                
-            } catch (error) {
-                console.error('Error cámara:', error);
-                showNotification('Usando modo simulación', 'info');
-                setTimeout(simulateScan, 1000);
-            }
-        }
-
-        function stopCamera() {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-                cameraStream = null;
-            }
-            
-            const video = document.getElementById('scanner-video');
-            const cameraView = document.getElementById('camera-view');
-            const startBtn = document.getElementById('start-camera');
-            const captureBtn = document.getElementById('capture-btn');
-
-            if (video) {
-                video.srcObject = null;
-                video.classList.remove('active');
-            }
-            
-            cameraView.classList.remove('hidden');
-            captureBtn.disabled = true;
-            startBtn.disabled = false;
-        }
-
-        function captureImage() {
-            showNotification('Analizando producto...', 'info');
-            setTimeout(simulateScan, 1500);
-        }
-
-        function simulateScan() {
-            const products = [
-                {
-                    name: "Botella de Agua Mineral",
-                    brand: "AguaPure",
-                    sustainabilityScore: 65,
-                    recommendations: [
-                        "Envase: Reducir plástico de un solo uso",
-                        "Cadena: Proveedores locales"
-                    ]
-                },
-                {
-                    name: "Galletas Integrales", 
-                    brand: "NatureFood",
-                    sustainabilityScore: 78,
-                    recommendations: [
-                        "Packaging: Materiales biodegradables"
-                    ]
-                }
-            ];
-            
-            const product = products[Math.floor(Math.random() * products.length)];
-            showScanResults(product);
+        if (stream) {
             stopCamera();
+            await new Promise(resolve => setTimeout(resolve, 500));
         }
 
-        function showScanResults(product) {
-            const scanResult = document.getElementById('scanResult');
-            const scoreFill = document.getElementById('scoreFill');
-            const productName = document.getElementById('productName');
-            const productBrand = document.getElementById('productBrand');
-            const scoreValue = document.getElementById('scoreValue');
-            const improvementList = document.getElementById('improvementList');
-
-            // Actualizar datos
-            productName.textContent = product.name;
-            productBrand.textContent = product.brand;
-            scoreValue.textContent = `${product.sustainabilityScore}%`;
-            scoreFill.style.width = `${product.sustainabilityScore}%`;
-
-            // Actualizar recomendaciones
-            improvementList.innerHTML = '';
-            product.recommendations.forEach(rec => {
-                const li = document.createElement('li');
-                li.innerHTML = `<i class="fas fa-lightbulb"></i> ${rec}`;
-                improvementList.appendChild(li);
-            });
-
-            // Mostrar resultados
-            scanResult.classList.add('active');
-            
-            // Guardar escaneo
-            saveScanToDatabase(product);
-            
-            showNotification('¡Análisis completado! ✅', 'success');
-        }
-
-        // 🛠️ FUNCIONES DE UTILIDAD
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.textContent = message;
-            notification.style.cssText = `
-                position: fixed; top: 80px; right: 20px; z-index: 10000;
-                background: ${type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#3498db'};
-                color: white; padding: 12px 20px; border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-weight: 500;
-            `;
-            
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 4000);
-        }
-
-        function updateAuthUI(isAuthenticated) {
-            if (isAuthenticated) {
-                document.body.setAttribute('data-auth', 'true');
-                document.getElementById('userEmail').textContent = appState.currentUser.email;
-            } else {
-                document.body.setAttribute('data-auth', 'false');
-                document.getElementById('userEmail').textContent = '';
-            }
-        }
-
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        function showSection(sectionId) {
-            document.querySelectorAll('section').forEach(section => {
-                section.style.display = 'none';
-            });
-            const target = document.getElementById(sectionId);
-            if (target) target.style.display = 'block';
-        }
-
-        // 📋 CONFIGURACIÓN DE EVENT LISTENERS
-        function setupEventListeners() {
-            // Autenticación
-            document.getElementById('registerBtn').addEventListener('click', () => openModal('registerModal'));
-            document.getElementById('loginBtn').addEventListener('click', () => openModal('loginModal'));
-            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-            document.getElementById('startBtn').addEventListener('click', () => openModal('registerModal'));
-            document.getElementById('demoBtn').addEventListener('click', () => showSection('scanner'));
-
-            // Formularios
-            document.getElementById('registerForm').addEventListener('submit', handleRegister);
-            document.getElementById('loginForm').addEventListener('submit', handleLogin);
-
-            // Cámara
-            document.getElementById('start-camera').addEventListener('click', startCamera);
-            document.getElementById('capture-btn').addEventListener('click', captureImage);
-
-            // Cerrar modales
-            document.querySelectorAll('.modal').forEach(modal => {
-                modal.addEventListener('click', function(e) {
-                    if (e.target === this) closeModal(this.id);
-                });
-            });
-        }
-
-        // 🎯 BOTÓN DE DEBUG (eliminar en producción)
-        document.addEventListener('DOMContentLoaded', function() {
-            const debugBtn = document.createElement('button');
-            debugBtn.innerHTML = '🐛 Debug';
-            debugBtn.style.cssText = `
-                position: fixed; bottom: 20px; right: 20px; z-index: 9999;
-                background: #e74c3c; color: white; border: none; padding: 8px 12px;
-                border-radius: 5px; cursor: pointer; font-size: 12px;
-            `;
-            debugBtn.onclick = function() {
-                console.clear();
-                console.log('=== DEBUG ECO TAG ===');
-                console.log('Usuario:', appState.currentUser);
-                console.log('Escaneos:', appState.scans.length);
-                console.log('LocalStorage user:', localStorage.getItem('ecotag_user') ? 'Sí' : 'No');
-                console.log('=====================');
-            };
-            document.body.appendChild(debugBtn);
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { 
+                facingMode: currentFacingMode,
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
+            audio: false
         });
 
-        console.log('✅ Eco Tag - Sistema 100% local inicializado');
-    </script>
+        video.srcObject = stream;
+        video.hidden = false;
+        video.classList.add('active');
+        
+        cameraView.classList.add('hidden');
+        captureBtn.disabled = false;
+        switchBtn.disabled = false;
+        startBtn.disabled = true;
+        startBtn.innerHTML = '<i class="fas fa-sync"></i> Reiniciar Cámara';
+        
+        video.onloadedmetadata = () => {
+            video.play();
+            initBarcodeScanner();
+            
+            if (scannerInterval) {
+                clearInterval(scannerInterval);
+                scannerInterval = null;
+            }
+            
+            scannerInterval = setInterval(() => {
+                const scanResult = document.getElementById('scanResult');
+                const isResultActive = scanResult.classList.contains('active');
+                
+                if (!isResultActive && stream) {
+                    console.log('Captura automática iniciada...');
+                    tryCapture();
+                }
+            }, 20000);
+        };
+        
+        video.onerror = () => {
+            showNotification('Error al cargar la cámara', 'error');
+            stopCamera();
+        };
+            
+    } catch (error) {
+        console.error('Error accediendo a la cámara:', error);
+     
+        if (error.name === 'NotAllowedError') {
+            showNotification('Permiso de cámara requerido', 'error');
+        } else if (error.name === 'NotFoundError') {
+            showNotification('No se encontró cámara', 'error');
+        } else {
+            showNotification('Error: ' + error.message, 'error');
+        }
+        stopCamera();
+    }
+}
+
+async function switchCamera() {
+    if (stream) stream.getTracks().forEach(track => track.stop());
+    currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+    await startCamera();
+}
+
+function stopCamera() {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+    }
+    
+    if (scannerInterval) {
+        clearInterval(scannerInterval);
+        scannerInterval = null;
+    }
+    
+    const video = document.getElementById('scanner-video');
+    const cameraView = document.getElementById('camera-view');
+    const startBtn = document.getElementById('start-camera');
+    const captureBtn = document.getElementById('capture-btn');
+    const switchBtn = document.getElementById('switch-camera');
+
+    if (video) {
+        video.srcObject = null;
+        video.classList.remove('active');
+        video.hidden = true;
+    }
+    
+    cameraView.classList.remove('hidden');
+    captureBtn.disabled = true;
+    switchBtn.disabled = true;
+    startBtn.disabled = false;
+    startBtn.innerHTML = '<i class="fas fa-camera"></i> Activar Cámara';
+}
+
+function captureImage() {
+    const video = document.getElementById('scanner-video');
+    const canvas = document.getElementById('scanner-canvas');
+    const context = canvas.getContext('2d');
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    processImage(canvas.toDataURL('image/jpeg'));
+}
+
+function tryCapture() {
+    const video = document.getElementById('scanner-video');
+    if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
+        captureImage();
+    }
+}
+
+// ===============================
+// 📷 ESCÁNER DE CÓDIGO DE BARRAS
+// ===============================
+function initBarcodeScanner() {
+    if (typeof Quagga === 'undefined') {
+        console.warn('Quagga no está disponible');
+        return;
+    }
+
+    try { Quagga.stop(); } catch (e) {}
+
+    Quagga.init({
+        inputStream: {
+            name: "Live",
+            type: "LiveStream",
+            target: document.querySelector('#scanner-video'),
+            constraints: {
+                width: 400,
+                height: 300,
+                facingMode: currentFacingMode
+            }
+        },
+        locator: {
+            patchSize: "large",
+            halfSample: false
+        },
+        numOfWorkers: 1,
+        frequency: 10,
+        decoder: {
+            readers: [
+                "ean_reader",
+                "ean_8_reader", 
+                "code_128_reader"
+            ],
+            multiple: false
+        },
+        locate: true,
+        debug: false
+    }, function(err) {
+        if (err) {
+            console.error('Error inicializando Quagga:', err);
+            return;
+        }
+        console.log('Quagga inicializado con configuración mejorada');
+        Quagga.start();
+    });
+
+    let lastDetectionTime = 0;
+    const DETECTION_COOLDOWN = 3000;
+
+    Quagga.onDetected(function(result) {
+        const now = Date.now();
+        
+        if (now - lastDetectionTime < DETECTION_COOLDOWN) {
+            console.log('Detección ignorada (en cooldown)');
+            return;
+        }
+
+        if (result.codeResult && result.codeResult.code) {
+            const code = result.codeResult.code;
+            
+            if (isValidBarcode(code)) {
+                console.log('✅ Código válido detectado:', code);
+                lastDetectionTime = now;
+                
+                Quagga.stop();
+                stopCamera();
+                searchProductByBarcode(code);
+            } else {
+                console.log('❌ Código inválido ignorado:', code);
+            }
+        }
+    });
+}
+
+function isValidBarcode(code) {
+    if (!code || code.length < 8) return false;
+    
+    if (code.length === 13) {
+        return /^\d+$/.test(code);
+    }
+    
+    if (code.length >= 8) {
+        return true;
+    }
+    
+    return false;
+}
+
+async function searchProductByBarcode(barcode) {
+    showNotification(`Buscando producto ${barcode}...`, 'warning');
+    
+    try {
+        const product = await lookupProductInDatabase(barcode);
+        if (product) {
+            showScanResults(product);
+        } else {
+            showNotification('Producto no encontrado en base de datos', 'info');
+            setTimeout(() => startCamera(), 2000);
+        }
+    } catch (error) {
+        console.error('Error buscando producto:', error);
+        showNotification('Error buscando producto', 'error');
+        setTimeout(() => startCamera(), 2000);
+    }
+}
+
+// ===============================
+// 🤖 RECONOCIMIENTO POR IMAGEN
+// ===============================
+async function processImage(imageData) {
+    showNotification('Analizando imagen...', 'warning');
+    
+    try {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        const mockProduct = await simulateProductRecognition(imageData);
+        
+        try {
+            await waitForFirebase(2000);
+            showScanResults(mockProduct);
+        } catch (error) {
+            showScanResultsDemo(mockProduct);
+        }
+        
+    } catch (error) {
+        console.error('Error procesando imagen:', error);
+        showNotification('Error al procesar imagen', 'error');
+    }
+}
+
+async function simulateProductRecognition() {
+    const products = [
+        {
+            name: "Botella de Agua Mineral",
+            brand: "AguaPure",
+            category: "Bebidas",
+            sustainabilityScore: 65,
+            barcode: "1234567890123",
+            recommendations: [
+                "Envase: Reducir plástico de un solo uso (Alto impacto)",
+                "Cadena de suministro: Utilizar proveedores locales (Medio impacto)"
+            ]
+        },
+        {
+            name: "Galletas Integrales", 
+            brand: "NatureFood",
+            category: "Alimentos",
+            sustainabilityScore: 78,
+            barcode: "2345678901234",
+            recommendations: [
+                "Packaging: Usar materiales biodegradables (Alto impacto)"
+            ]
+        }
+    ];
+    
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    return products[Math.floor(Math.random() * products.length)];
+}
+
+async function lookupProductInDatabase(barcode) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const products = {
+        "1234567890123": {
+            name: "Botella de Agua Mineral",
+            brand: "AguaPure",
+            category: "Bebidas",
+            sustainabilityScore: 65,
+            barcode: "1234567890123",
+            recommendations: [
+                "Envase: Reducir plástico de un solo uso (Alto impacto)",
+                "Cadena de suministro: Utilizar proveedores locales (Medio impacto)"
+            ]
+        },
+        "2345678901234": {
+            name: "Galletas Integrales", 
+            brand: "NatureFood",
+            category: "Alimentos",
+            sustainabilityScore: 78,
+            barcode: "2345678901234",
+            recommendations: [
+                "Packaging: Usar materiales biodegradables (Alto impacto)"
+            ]
+        }
+    };
+    
+    return products[barcode] || null;
+}
+
+// ===============================
+// 💾 BASE DE DATOS
+// ===============================
+async function saveScanToDatabase(product) {
+    try {
+        console.log('🔄 Intentando guardar escaneo en base de datos...');
+        
+        await waitForFirebase(5000);
+        
+        const db = window.firebaseApp.db;
+        const { auth } = window.firebaseApp;
+        const { collection, addDoc, serverTimestamp } = window.firebaseFirestore;
+
+        console.log('=== VERIFICACIÓN ===');
+        console.log('db:', db);
+        console.log('auth:', auth);
+        console.log('usuario actual:', auth.currentUser);
+
+        if (!db) {
+            console.error('❌ ERROR: db no disponible');
+            return;
+        }
+
+        const user = auth.currentUser;
+        if (!user) {
+            console.log('👤 Usuario no autenticado, escaneo no guardado (modo demo)');
+            return;
+        }
+
+        console.log('✅ Usuario autenticado:', user.email);
+        console.log('📝 Guardando escaneo...');
+        
+        const scansRef = collection(db, 'scans');
+        
+        const scanData = {
+            productName: product.name || 'No name',
+            productBrand: product.brand || 'Unknown',
+            productCategory: product.category || 'General',
+            barcode: product.barcode || 'No barcode',
+            sustainabilityScore: product.sustainabilityScore || 0,
+            companyId: user.uid,
+            userId: user.uid,
+            timestamp: serverTimestamp(),
+            recommendations: product.recommendations || [],
+            scannedAt: new Date().toISOString()
+        };
+
+        console.log('📊 Datos a guardar:', scanData);
+        
+        const result = await addDoc(scansRef, scanData);
+        
+        console.log('✅ Escaneo guardado exitosamente. ID:', result.id);
+        showNotification('Escaneo guardado en la base de datos', 'success');
+
+    } catch (error) {
+        console.error('❌ Error guardando escaneo:', error);
+        
+        if (error.code === 'permission-denied') {
+            showNotification('Error: No tienes permisos para guardar escaneos', 'error');
+        } else {
+            showNotification('Error al guardar el escaneo: ' + error.message, 'error');
+        }
+    }
+}
+
+// ===============================
+// 📊 VISUALIZACIÓN DE RESULTADOS
+// ===============================
+function showScanResults(product) {
+    const scanResult = document.getElementById('scanResult');
+    const scoreFill = document.getElementById('scoreFill');
+    const productName = document.querySelector('.product-info h4');
+    const scoreValue = document.getElementById('scoreValue');
+    const improvementList = document.getElementById('improvementList');
+
+    productName.textContent = product.name;
+    scoreValue.textContent = `${product.sustainabilityScore}%`;
+    scoreFill.style.width = `${product.sustainabilityScore}%`;
+
+    improvementList.innerHTML = '';
+    product.recommendations.forEach(rec => {
+        const li = document.createElement('li');
+        li.innerHTML = `<i class="fas fa-times-circle"></i> ${rec}`;
+        improvementList.appendChild(li);
+    });
+
+    scanResult.classList.add('active');
+
+    saveScanToDatabase(product).catch(() => {
+        console.log('Modo demo - escaneo no guardado');
+    });
+
+    showNotification('Escaneo completado', 'success');
+}
+
+function showScanResultsDemo(product) {
+    showScanResults(product);
+    showNotification('Escaneo completado (modo demo)', 'info');
+}
+
+// ===============================
+// 💳 SISTEMA DE PAGOS PAYPAL
+// ===============================
+function initPayPalButtons() {
+    if (typeof paypal === 'undefined') {
+        setTimeout(initPayPalButtons, 1000);
+        return;
+    }
+
+    const planIds = {
+        'basico': 'P-3RX065706Z922000U5QZCBMA',
+        'profesional': 'P-1TC147912B2007440NDJCUEY',
+        'empresarial': 'P-42J26630865841252NDJCWQY'
+    };
+
+    document.querySelectorAll('.paypal-button-container').forEach(container => {
+        const plan = container.getAttribute('data-plan');
+        const planId = planIds[plan];
+
+        if (!planId?.startsWith('P-')) {
+            container.innerHTML = `<button class="btn btn-outline" disabled>Configurar Plan</button>`;
+            return;
+        }
+
+        paypal.Buttons({
+            style: {
+                shape: 'rect',
+                color: 'gold',
+                layout: 'vertical',
+                label: 'subscribe'
+            },
+            createSubscription: (data, actions) => {
+                return actions.subscription.create({ plan_id: planId });
+            },
+            onApprove: (data, actions) => {
+                console.log('Suscripción aprobada:', data);
+                showNotification(`¡Plan ${plan} activado!`, 'success');
+                updateUserPlan(plan, data.subscriptionID);
+            },
+            onError: (err) => {
+                console.error('Error PayPal:', err);
+                showNotification('Error en el pago', 'error');
+            }
+        }).render(container);
+    });
+}
+
+async function updateUserPlan(plan, subscriptionId) {
+    try {
+        await waitForFirebase();
+        const { auth } = window.firebaseApp;
+        const { db } = window.firebaseApp;
+        const { doc, updateDoc } = window.firebaseFirestore;
+
+        const user = auth.currentUser;
+        if (!user) {
+            showNotification('Inicia sesión para activar el plan', 'error');
+            return;
+        }
+
+        await updateDoc(doc(db, "companies", user.uid), {
+            plan: plan,
+            subscriptionId: subscriptionId,
+            subscriptionActive: true,
+            planActivatedAt: new Date(),
+            updatedAt: new Date()
+        });
+
+        showNotification(`Plan ${plan} activado con éxito`, 'success');
+    } catch (error) {
+        console.error('Error actualizando plan:', error);
+        showNotification('Error activando plan', 'error');
+    }
+}
+
+// ===============================
+// 🧪 FUNCIÓN DE PRUEBA FIREBASE
+// ===============================
+async function testFirebaseConnection() {
+    try {
+        console.log('🧪 Probando conexión a Firebase...');
+        
+        await waitForFirebase();
+        
+        const db = window.firebaseApp.db;
+        const { collection, addDoc } = window.firebaseFirestore;
+        const { auth } = window.firebaseApp;
+        
+        console.log('🔐 Estado de autenticación:', auth.currentUser ? 'Autenticado' : 'No autenticado');
+        
+        const testRef = collection(db, 'test_connection');
+        const testData = {
+            test: true,
+            timestamp: new Date().toISOString(),
+            message: 'Prueba de conexión exitosa',
+            userId: auth.currentUser ? auth.currentUser.uid : 'anonymous'
+        };
+        
+        console.log('📝 Intentando guardar documento de prueba...');
+        const testDoc = await addDoc(testRef, testData);
+        
+        console.log('✅ Conexión exitosa. Documento ID:', testDoc.id);
+        showNotification('✅ Conexión a Firebase verificada', 'success');
+        
+        return testDoc.id;
+        
+    } catch (error) {
+        console.error('❌ Error en la conexión:', error);
+        showNotification('Error de conexión: ' + error.message, 'error');
+        throw error;
+    }
+}
+
+// ===============================
+// 🎯 CONFIGURACIÓN INICIAL
+// ===============================
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Inicializando Eco Tag...');
+    
+    // Ocultar loading
+    setTimeout(() => {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+    }, 1000);
+
+    // Event listeners
+    document.getElementById('start-camera').addEventListener('click', startCamera);
+    document.getElementById('capture-btn').addEventListener('click', captureImage);
+    document.getElementById('switch-camera').addEventListener('click', switchCamera);
+    document.getElementById('loginBtn').addEventListener('click', () => openModal('loginModal'));
+    document.getElementById('registerBtn').addEventListener('click', () => openModal('registerModal'));
+    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+    document.getElementById('loginForm').addEventListener('submit', handleLogin);
+    document.getElementById('registerForm').addEventListener('submit', handleRegister);
+
+    // Navegación entre modales
+    document.getElementById('goToRegister').addEventListener('click', (e) => {
+        e.preventDefault();
+        closeModal('loginModal');
+        openModal('registerModal');
+    });
+
+    document.getElementById('goToLogin').addEventListener('click', (e) => {
+        e.preventDefault();
+        closeModal('registerModal');
+        openModal('loginModal');
+    });
+
+    // Cerrar modales
+    document.querySelectorAll('.close').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const modal = this.closest('.modal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+    });
+
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+    });
+
+    // Inicializar PayPal
+    setTimeout(initPayPalButtons, 2000);
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('SW registrado:', reg.scope))
+            .catch(err => console.log('Error SW:', err));
+    }
+
+    console.log('✅ Eco Tag inicializado');
+});
+
+// Limpiar al cerrar
+window.addEventListener('beforeunload', stopCamera);
+ </script>
 </body>
 </html>
