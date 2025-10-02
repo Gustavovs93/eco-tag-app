@@ -34,6 +34,26 @@
         .modal-content { background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 400px; }
         .form-group { margin-bottom: 15px; }
         .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+
+        /* Scanner Styles */
+        .scanner { padding: 80px 0; background: var(--white); display: none; }
+        .scanner-container { display: flex; flex-direction: column; align-items: center; }
+        .camera-view { width: 100%; max-width: 400px; height: 300px; background: #f1f1f1; border-radius: 10px; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; }
+        .scanning-frame { text-align: center; color: #95a5a6; }
+        .scanning-frame i { font-size: 3rem; margin-bottom: 10px; display: block; }
+        .camera-controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+        #scanner-video { width: 100%; max-width: 400px; border-radius: 10px; display: none; }
+        #scanner-video.active { display: block; }
+        .camera-view.hidden { display: none; }
+        .scan-result { background: var(--white); border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); padding: 30px; margin-top: 30px; display: none; width: 100%; max-width: 800px; }
+        .scan-result.active { display: block; }
+        .product-info { display: flex; align-items: center; margin-bottom: 20px; }
+        .product-info i { font-size: 48px; padding: 16px; background: #f1f1f1; border-radius: 10px; margin-right: 20px; color: var(--primary); }
+        .score-bar { height: 20px; background: #f1f1f1; border-radius: 10px; overflow: hidden; margin: 10px 0; }
+        .score-fill { height: 100%; background: var(--primary); border-radius: 10px; width: 0; transition: width 1s ease-in-out; }
+        .improvement-list { list-style: none; }
+        .improvement-list li { padding: 10px 0; border-bottom: 1px solid #eee; display: flex; align-items: center; }
+        .improvement-list li i { color: #f39c12; margin-right: 10px; }
     </style>
 </head>
 <body>
@@ -56,11 +76,63 @@
         </div>
     </header>
     
-    <section class="hero">
+    <section class="hero" id="hero">
         <div class="container">
             <h2>Impulsa la Sostenibilidad</h2>
             <p>Plataforma de análisis de sostenibilidad para productos.</p>
-            <button class="btn btn-primary" id="startBtn">Comenzar Ahora</button>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" id="startBtn">Comenzar Ahora</button>
+                <button class="btn btn-outline" style="background: rgba(255,255,255,0.2); color: white; border-color: white;" id="demoBtn">Ver Demo</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scanner Section -->
+    <section class="scanner" id="scanner">
+        <div class="container">
+            <div class="scanner-container">
+                <div class="scanner-wrapper">
+                    <video id="scanner-video" autoplay playsinline></video>
+                    <div id="camera-view" class="camera-view">
+                        <div class="scanning-frame">
+                            <i class="fas fa-camera"></i>
+                            <p>Enfoca el código de barras del producto</p>
+                        </div>
+                    </div>
+                    
+                    <div class="camera-controls">
+                        <button id="start-camera" class="btn btn-primary">
+                            <i class="fas fa-camera"></i> Activar Cámara
+                        </button>
+                        <button id="capture-btn" class="btn btn-outline" disabled>
+                            <i class="fas fa-camera"></i> Capturar Imagen
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="scan-result" id="scanResult">
+                    <div class="product-info">
+                        <i class="fas fa-cube"></i>
+                        <div>
+                            <h4 id="productName">Producto Escaneado</h4>
+                            <p id="productBrand">Marca del producto</p>
+                        </div>
+                    </div>
+                    
+                    <div class="sustainability-score">
+                        <h3>Puntuación de Sostenibilidad</h3>
+                        <div class="score-bar">
+                            <div class="score-fill" id="scoreFill"></div>
+                        </div>
+                        <p><span class="score-value" id="scoreValue">0%</span> Sostenible</p>
+                    </div>
+                    
+                    <div class="improvements">
+                        <h3>Recomendaciones de Mejora</h3>
+                        <ul class="improvement-list" id="improvementList"></ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -103,137 +175,350 @@
 
     <script>
         // ===============================
-        // 🎯 SISTEMA DE AUTENTICACIÓN INFALIBLE
+        // 🎯 ECO TAG - VERSIÓN 100% INDEPENDIENTE
         // ===============================
+        // ✅ SIN FIREBASE - ✅ SIN DEPENDENCIAS EXTERNAS - ✅ FUNCIONA EN TODOS LOS DISPOSITIVOS
         
-        // 🔧 CONFIGURACIÓN
-        const APP_CONFIG = {
-            firebaseConfig: {
-                apiKey: "TU_API_KEY",
-                authDomain: "TU_PROYECTO.firebaseapp.com",
-                projectId: "TU_PROYECTO_ID",
-                storageBucket: "TU_PROYECTO.appspot.com",
-                messagingSenderId: "123456789",
-                appId: "TU_APP_ID"
-            },
-            useFirebase: false // Cambiar a true cuando Firebase esté listo
-        };
-
         // 🏗️ ESTADO DE LA APLICACIÓN
         let appState = {
             currentUser: null,
-            firebaseAvailable: false,
-            auth: null,
-            db: null
+            isDemoMode: true, // Siempre en modo demo
+            scans: []
         };
 
         // 🚀 INICIALIZACIÓN
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Iniciando Eco Tag...');
+            console.log('🚀 Eco Tag - Modo Demo Activado');
             initializeApp();
         });
 
-        async function initializeApp() {
+        function initializeApp() {
             try {
-                // 1. Intentar cargar Firebase
-                await loadFirebaseSDK();
+                // 1. CARGAR DATOS EXISTENTES
+                loadSavedData();
                 
-                // 2. Configurar event listeners
+                // 2. CONFIGURAR EVENT LISTENERS
                 setupEventListeners();
                 
-                // 3. Verificar si hay usuario guardado
-                checkSavedUser();
-                
-                console.log('✅ Eco Tag inicializado correctamente');
-                console.log('🔧 Firebase disponible:', appState.firebaseAvailable);
+                // 3. MOSTRAR ESTADO INICIAL
+                console.log('✅ Eco Tag inicializado en modo demo');
+                showNotification('Aplicación lista ✅', 'success');
                 
             } catch (error) {
-                console.error('❌ Error inicializando app:', error);
-                showNotification('Error inicializando la aplicación', 'error');
+                console.error('❌ Error inicializando:', error);
+                // La app debe funcionar incluso con errores
+                setupEventListeners();
+                showNotification('App cargada en modo seguro', 'info');
             }
         }
 
-        // 🔥 CARGAR FIREBASE SDK
-        function loadFirebaseSDK() {
-            return new Promise((resolve) => {
-                // Si no queremos usar Firebase, resolvemos inmediatamente
-                if (!APP_CONFIG.useFirebase) {
-                    console.log('🔶 Modo demo - Firebase deshabilitado');
-                    resolve();
-                    return;
-                }
-
-                // Verificar si Firebase ya está cargado
-                if (typeof firebase !== 'undefined') {
-                    initializeFirebase();
-                    resolve();
-                    return;
-                }
-
-                // Cargar Firebase dinámicamente
-                const scripts = [
-                    'https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js',
-                    'https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js',
-                    'https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js'
-                ];
-
-                let loadedCount = 0;
-                
-                scripts.forEach(src => {
-                    const script = document.createElement('script');
-                    script.src = src;
-                    script.onload = () => {
-                        loadedCount++;
-                        if (loadedCount === scripts.length) {
-                            initializeFirebase();
-                            resolve();
-                        }
-                    };
-                    script.onerror = () => {
-                        console.error(`❌ Error cargando: ${src}`);
-                        loadedCount++;
-                        if (loadedCount === scripts.length) {
-                            console.log('🔶 Firebase no disponible - Modo demo activado');
-                            resolve();
-                        }
-                    };
-                    document.head.appendChild(script);
-                });
-            });
-        }
-
-        function initializeFirebase() {
+        // 💾 SISTEMA DE ALMACENAMIENTO LOCAL
+        function loadSavedData() {
             try {
-                if (typeof firebase === 'undefined') {
-                    throw new Error('Firebase no está definido');
+                // Cargar usuario
+                const savedUser = localStorage.getItem('ecotag_demo_user');
+                if (savedUser) {
+                    appState.currentUser = JSON.parse(savedUser);
+                    updateAuthUI(true);
+                    console.log('👤 Usuario cargado:', appState.currentUser.email);
                 }
                 
-                firebase.initializeApp(APP_CONFIG.firebaseConfig);
-                appState.firebaseAvailable = true;
-                appState.auth = firebase.auth();
-                appState.db = firebase.firestore();
-                
-                // Escuchar cambios de autenticación
-                appState.auth.onAuthStateChanged(handleAuthStateChange);
-                
-                console.log('✅ Firebase inicializado correctamente');
+                // Cargar escaneos
+                const savedScans = localStorage.getItem('ecotag_scans');
+                if (savedScans) {
+                    appState.scans = JSON.parse(savedScans);
+                    console.log('📊 Escaneos cargados:', appState.scans.length);
+                }
                 
             } catch (error) {
-                console.error('❌ Error inicializando Firebase:', error);
-                appState.firebaseAvailable = false;
+                console.warn('⚠️ Error cargando datos locales:', error);
+                // Inicializar datos vacíos
+                appState.scans = [];
             }
         }
 
-        // 👤 MANEJO DE AUTENTICACIÓN
-        function handleAuthStateChange(user) {
-            if (user) {
-                appState.currentUser = user;
-                updateAuthUI(true);
-                showNotification(`Bienvenido ${user.email}`, 'success');
-            } else {
-                appState.currentUser = null;
-                updateAuthUI(false);
+        function saveScansToStorage() {
+            try {
+                localStorage.setItem('ecotag_scans', JSON.stringify(appState.scans));
+            } catch (error) {
+                console.warn('⚠️ Error guardando escaneos:', error);
             }
+        }
+
+        // ✅ LOGOUT 100% FUNCIONAL - SIN FIREBASE
+        function handleLogout() {
+            if (!confirm('¿Estás seguro de cerrar sesión?')) return;
+            
+            console.log('🚪 Cerrando sesión en modo demo...');
+            
+            // Limpiar estado
+            appState.currentUser = null;
+            
+            // Limpiar almacenamiento
+            localStorage.removeItem('ecotag_demo_user');
+            
+            // Actualizar UI
+            updateAuthUI(false);
+            closeModal('loginModal');
+            closeModal('registerModal');
+            document.getElementById('loginForm')?.reset();
+            document.getElementById('registerForm')?.reset();
+            showSection('hero');
+            
+            console.log('✅ Logout completado exitosamente');
+            showNotification('Sesión cerrada correctamente 👋', 'success');
+        }
+
+        // 📝 SISTEMA DE AUTENTICACIÓN LOCAL
+        function handleRegister(e) {
+            e.preventDefault();
+            
+            const company = document.getElementById('registerCompany').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            try {
+                // Crear usuario local
+                appState.currentUser = { 
+                    email: email, 
+                    company: company,
+                    uid: 'demo-' + Date.now(),
+                    registeredAt: new Date().toISOString()
+                };
+                
+                // Guardar en localStorage
+                localStorage.setItem('ecotag_demo_user', JSON.stringify(appState.currentUser));
+                
+                // Actualizar UI
+                updateAuthUI(true);
+                
+                showNotification('¡Cuenta creada exitosamente! 🎉', 'success');
+                closeModal('registerModal');
+                document.getElementById('registerForm').reset();
+                
+                console.log('👤 Nuevo usuario registrado:', email);
+                
+            } catch (error) {
+                console.error('Error en registro:', error);
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                // Verificación básica
+                if (email && password) {
+                    appState.currentUser = { 
+                        email: email,
+                        uid: 'demo-' + Date.now(),
+                        lastLogin: new Date().toISOString()
+                    };
+                    
+                    localStorage.setItem('ecotag_demo_user', JSON.stringify(appState.currentUser));
+                    updateAuthUI(true);
+                    
+                    showNotification('¡Sesión iniciada! 👋', 'success');
+                    closeModal('loginModal');
+                    document.getElementById('loginForm').reset();
+                } else {
+                    throw new Error('Por favor ingresa email y contraseña');
+                }
+                
+            } catch (error) {
+                console.error('Error en login:', error);
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        // 💾 GUARDAR ESCANEOS - COMPLETAMENTE LOCAL
+        function saveScanToDatabase(product) {
+            console.log('💾 Guardando escaneo localmente...');
+            
+            try {
+                const scanData = {
+                    ...product,
+                    id: 'scan-' + Date.now(),
+                    scannedAt: new Date().toISOString(),
+                    userId: appState.currentUser?.uid || 'anonymous',
+                    device: /Mobile/.test(navigator.userAgent) ? 'mobile' : 'desktop'
+                };
+                
+                // Agregar a estado local
+                appState.scans.push(scanData);
+                
+                // Guardar en localStorage
+                saveScansToStorage();
+                
+                console.log('✅ Escaneo guardado:', scanData.id);
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Error guardando escaneo:', error);
+                // En modo demo, esto no debería interrumpir la experiencia
+                return true;
+            }
+        }
+
+        // 📸 SISTEMA DE CÁMARA
+        let stream = null;
+
+        async function startCamera() {
+            try {
+                const video = document.getElementById('scanner-video');
+                const cameraView = document.getElementById('camera-view');
+                const startBtn = document.getElementById('start-camera');
+                const captureBtn = document.getElementById('capture-btn');
+
+                if (stream) stopCamera();
+
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' },
+                    audio: false
+                });
+
+                video.srcObject = stream;
+                video.classList.add('active');
+                cameraView.classList.add('hidden');
+                captureBtn.disabled = false;
+                startBtn.disabled = true;
+                startBtn.innerHTML = '<i class="fas fa-sync"></i> Reiniciar Cámara';
+                
+                video.onloadedmetadata = () => {
+                    video.play();
+                };
+                
+            } catch (error) {
+                console.error('Error accediendo a la cámara:', error);
+                showNotification('No se pudo acceder a la cámara. Usando modo simulación.', 'warning');
+                // Simular escaneo automáticamente
+                setTimeout(simulateScan, 1000);
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            
+            const video = document.getElementById('scanner-video');
+            const cameraView = document.getElementById('camera-view');
+            const startBtn = document.getElementById('start-camera');
+            const captureBtn = document.getElementById('capture-btn');
+
+            if (video) {
+                video.srcObject = null;
+                video.classList.remove('active');
+            }
+            
+            cameraView.classList.remove('hidden');
+            captureBtn.disabled = true;
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fas fa-camera"></i> Activar Cámara';
+        }
+
+        function captureImage() {
+            showNotification('Analizando producto...', 'info');
+            setTimeout(simulateScan, 1500);
+        }
+
+        function simulateScan() {
+            const products = [
+                {
+                    name: "Botella de Agua Mineral",
+                    brand: "AguaPure",
+                    sustainabilityScore: 65,
+                    recommendations: [
+                        "Envase: Reducir plástico de un solo uso (Alto impacto)",
+                        "Cadena de suministro: Utilizar proveedores locales (Medio impacto)"
+                    ]
+                },
+                {
+                    name: "Galletas Integrales", 
+                    brand: "NatureFood",
+                    sustainabilityScore: 78,
+                    recommendations: [
+                        "Packaging: Usar materiales biodegradables (Alto impacto)"
+                    ]
+                },
+                {
+                    name: "Jugo de Naranja Natural",
+                    brand: "FruitFresh", 
+                    sustainabilityScore: 82,
+                    recommendations: [
+                        "Transporte: Optimizar rutas de distribución (Medio impacto)"
+                    ]
+                }
+            ];
+            
+            const product = products[Math.floor(Math.random() * products.length)];
+            showScanResults(product);
+            stopCamera();
+        }
+
+        function showScanResults(product) {
+            const scanResult = document.getElementById('scanResult');
+            const scoreFill = document.getElementById('scoreFill');
+            const productName = document.getElementById('productName');
+            const productBrand = document.getElementById('productBrand');
+            const scoreValue = document.getElementById('scoreValue');
+            const improvementList = document.getElementById('improvementList');
+
+            productName.textContent = product.name;
+            productBrand.textContent = product.brand;
+            scoreValue.textContent = `${product.sustainabilityScore}%`;
+            scoreFill.style.width = `${product.sustainabilityScore}%`;
+
+            improvementList.innerHTML = '';
+            product.recommendations.forEach(rec => {
+                const li = document.createElement('li');
+                li.innerHTML = `<i class="fas fa-lightbulb"></i> ${rec}`;
+                improvementList.appendChild(li);
+            });
+
+            scanResult.classList.add('active');
+            
+            // Guardar escaneo
+            saveScanToDatabase(product);
+            
+            showNotification('¡Análisis completado! ✅', 'success');
+        }
+
+        // 🛠️ FUNCIONES DE UTILIDAD
+        function showNotification(message, type = 'success') {
+            // Sistema de notificaciones mejorado
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed; top: 80px; right: 20px; z-index: 10000;
+                background: ${getNotificationColor(type)};
+                color: white; padding: 12px 20px; border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                font-weight: 500; max-width: 300px;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+
+        function getNotificationColor(type) {
+            const colors = {
+                success: '#2ecc71',
+                error: '#e74c3c', 
+                warning: '#f39c12',
+                info: '#3498db'
+            };
+            return colors[type] || colors.info;
         }
 
         function updateAuthUI(isAuthenticated) {
@@ -246,183 +531,49 @@
             }
         }
 
-        // ✅ LOGOUT 100% INFALIBLE
-        async function handleLogout() {
-            if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) return;
-            
-            console.log('🚪 Iniciando proceso de logout...');
-            console.log('Firebase disponible:', appState.firebaseAvailable);
-            console.log('Usuario actual:', appState.currentUser);
-            
-            try {
-                // INTENTO 1: Logout con Firebase si está disponible
-                if (appState.firebaseAvailable && appState.auth && appState.currentUser) {
-                    console.log('🔐 Intentando logout con Firebase...');
-                    await appState.auth.signOut();
-                    console.log('✅ Logout con Firebase exitoso');
-                }
-                // INTENTO 2: Logout con método directo
-                else if (typeof firebase !== 'undefined' && firebase.auth) {
-                    console.log('🔐 Intentando logout con firebase.auth()...');
-                    await firebase.auth().signOut();
-                    console.log('✅ Logout con firebase.auth() exitoso');
-                }
-                else {
-                    console.log('🔶 Firebase no disponible, usando logout local');
-                    throw new Error('Firebase no disponible');
-                }
-                
-            } catch (error) {
-                console.warn('⚠️ Logout con Firebase falló, usando método local:', error.message);
-                
-                // LIMPIAR DATOS LOCALES
-                localStorage.removeItem('ecotag_demo_user');
-                localStorage.removeItem('ecotag_scans');
-                sessionStorage.clear();
-                
-                // FORZAR LOGOUT EN EL ESTADO
-                appState.currentUser = null;
-                appState.firebaseAvailable = false;
-            } finally {
-                // GARANTIZAR QUE LA UI SE ACTUALICE
-                forceLogoutUI();
-                showNotification('Sesión cerrada correctamente 👋', 'success');
-                
-                console.log('🎯 Logout completado');
-            }
-        }
-
-        function forceLogoutUI() {
-            // Actualizar estado de autenticación
-            document.body.setAttribute('data-auth', 'false');
-            document.querySelector('.user-menu').style.display = 'none';
-            document.querySelector('.auth-buttons').style.display = 'flex';
-            
-            // Limpiar formularios
-            document.getElementById('loginForm').reset();
-            document.getElementById('registerForm').reset();
-            
-            // Cerrar modales
-            closeModal('loginModal');
-            closeModal('registerModal');
-            
-            // Recargar estado de la aplicación
-            appState.currentUser = null;
-        }
-
-        // 📝 REGISTRO E INICIO DE SESIÓN
-        async function handleRegister(e) {
-            e.preventDefault();
-            
-            const company = document.getElementById('registerCompany').value;
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
-
-            try {
-                if (appState.firebaseAvailable) {
-                    // Firebase
-                    const userCredential = await appState.auth.createUserWithEmailAndPassword(email, password);
-                    const user = userCredential.user;
-
-                    await appState.db.collection('companies').doc(user.uid).set({
-                        name: company,
-                        email: email,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-
-                    showNotification('¡Cuenta creada exitosamente! 🎉', 'success');
-                } else {
-                    // Modo demo
-                    appState.currentUser = { email: email, company: company };
-                    localStorage.setItem('ecotag_demo_user', JSON.stringify(appState.currentUser));
-                    updateAuthUI(true);
-                    showNotification('¡Cuenta demo creada! 🎉', 'success');
-                }
-                
-                closeModal('registerModal');
-                document.getElementById('registerForm').reset();
-
-            } catch (error) {
-                console.error('Error en registro:', error);
-                showNotification('Error: ' + error.message, 'error');
-            }
-        }
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-
-            try {
-                if (appState.firebaseAvailable) {
-                    await appState.auth.signInWithEmailAndPassword(email, password);
-                    showNotification('¡Sesión iniciada correctamente! 👋', 'success');
-                closeModal('loginModal');
-                document.getElementById('loginForm').reset();
-                return;
-                }
-                
-                // Modo demo - credenciales básicas
-                if (email && password.length >= 6) {
-                    appState.currentUser = { email: email };
-                    localStorage.setItem('ecotag_demo_user', JSON.stringify(appState.currentUser));
-                    updateAuthUI(true);
-                    showNotification('¡Sesión demo iniciada! 👋', 'success');
-                    closeModal('loginModal');
-                    document.getElementById('loginForm').reset();
-                } else {
-                    throw new Error('Credenciales inválidas');
-                }
-
-            } catch (error) {
-                console.error('Error en login:', error);
-                showNotification('Error: ' + error.message, 'error');
-            }
-        }
-
-        // 🛠️ FUNCIONES DE UTILIDAD
-        function showNotification(message, type = 'success') {
-            alert(`[${type.toUpperCase()}] ${message}`);
-        }
-
         function openModal(modalId) {
             document.getElementById(modalId).classList.add('active');
-            document.body.style.overflow = 'hidden';
         }
 
         function closeModal(modalId) {
             document.getElementById(modalId).classList.remove('active');
-            document.body.style.overflow = 'auto';
         }
 
-        function checkSavedUser() {
-            const savedUser = localStorage.getItem('ecotag_demo_user');
-            if (savedUser) {
-                appState.currentUser = JSON.parse(savedUser);
-                updateAuthUI(true);
-            }
+        function showSection(sectionId) {
+            document.querySelectorAll('section').forEach(section => {
+                section.style.display = 'none';
+            });
+            const target = document.getElementById(sectionId);
+            if (target) target.style.display = 'block';
         }
 
         // 📋 CONFIGURACIÓN DE EVENT LISTENERS
         function setupEventListeners() {
-            // Botones de autenticación
+            // Autenticación
             document.getElementById('registerBtn').addEventListener('click', () => openModal('registerModal'));
             document.getElementById('loginBtn').addEventListener('click', () => openModal('loginModal'));
             document.getElementById('logoutBtn').addEventListener('click', handleLogout);
             document.getElementById('startBtn').addEventListener('click', () => {
                 if (appState.currentUser) {
-                    showNotification('Ya estás autenticado', 'info');
+                    showNotification('¡Bienvenido de nuevo!', 'info');
                 } else {
                     openModal('registerModal');
                 }
+            });
+            document.getElementById('demoBtn').addEventListener('click', () => {
+                showNotification('Modo demostración activado', 'info');
+                showSection('scanner');
             });
 
             // Formularios
             document.getElementById('registerForm').addEventListener('submit', handleRegister);
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
 
-            // Cerrar modales al hacer clic fuera
+            // Cámara
+            document.getElementById('start-camera').addEventListener('click', startCamera);
+            document.getElementById('capture-btn').addEventListener('click', captureImage);
+
+            // Cerrar modales
             document.querySelectorAll('.modal').forEach(modal => {
                 modal.addEventListener('click', function(e) {
                     if (e.target === this) closeModal(this.id);
@@ -430,23 +581,39 @@
             });
         }
 
-        // 🎯 BOTÓN DE DIAGNÓSTICO (eliminar en producción)
+        // 🎯 BOTÓN DE INFORMACIÓN DEL SISTEMA
         document.addEventListener('DOMContentLoaded', function() {
-            const diagnoseBtn = document.createElement('button');
-            diagnoseBtn.innerHTML = '🔧 Diagnóstico';
-            diagnoseBtn.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #e74c3c; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;';
-            diagnoseBtn.onclick = function() {
-                console.clear();
-                console.log('=== DIAGNÓSTICO ECO TAG ===');
-                console.log('Firebase disponible:', appState.firebaseAvailable);
-                console.log('Usuario actual:', appState.currentUser);
-                console.log('Auth object:', appState.auth);
-                console.log('Firebase global:', typeof firebase);
-                console.log('==========================');
-                alert('Revisa la consola (F12) para el diagnóstico');
+            const infoBtn = document.createElement('button');
+            infoBtn.innerHTML = 'ℹ️ Info';
+            infoBtn.style.cssText = `
+                position: fixed; bottom: 20px; right: 20px; z-index: 9999;
+                background: #9b59b6; color: white; border: none;
+                padding: 10px 15px; border-radius: 50px; cursor: pointer;
+                font-size: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            `;
+            infoBtn.onclick = function() {
+                const scanCount = appState.scans.length;
+                const userStatus = appState.currentUser ? 'Conectado' : 'Invitado';
+                alert(`🌱 Eco Tag - Modo Demo\n\n📊 Escaneos realizados: ${scanCount}\n👤 Estado: ${userStatus}\n📱 Dispositivo: ${/Mobile/.test(navigator.userAgent) ? 'Móvil' : 'Desktop'}\n\n✅ Funcionando al 100%`);
             };
-            document.body.appendChild(diagnoseBtn);
+            document.body.appendChild(infoBtn);
         });
+
+        // 🎨 ANIMACIONES CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        console.log('🎯 Eco Tag - Sistema 100% independiente cargado');
     </script>
 </body>
 </html>
