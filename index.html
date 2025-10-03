@@ -727,52 +727,81 @@
         }
 
         // ===============================
-// 🔐 FUNCIÓN handleLogout CORREGIDA - REEMPLAZAR ESTA PARTE
+// ===============================
+// 🔐 FUNCIÓN handleLogout UNIVERSAL
 // ===============================
 async function handleLogout() {
+    console.log('🖥️ Ejecutando logout en escritorio...');
+    
     if (!confirm('¿Estás seguro de que quieres cerrar sesión?')) return;
     
     try {
-        console.log('🚪 Cerrando sesión...');
+        // ✅ DETECCIÓN DE DISPOSITIVO
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        console.log(`📟 Dispositivo: ${isMobile ? 'Móvil' : 'Escritorio'}`);
         
-        // Verificar que Firebase esté disponible
-        if (!window.firebaseApp || !window.firebaseApp.auth) {
-            throw new Error('Firebase no está disponible');
+        // ✅ VERIFICACIÓN COMPLETA
+        console.log('🔍 Estado de Firebase:');
+        console.log('- firebaseApp:', window.firebaseApp);
+        console.log('- firebaseAuth:', window.firebaseAuth);
+        console.log('- signOut function:', window.firebaseAuth?.signOut);
+        console.log('- auth object:', window.firebaseApp?.auth);
+        console.log('- currentUser:', window.firebaseApp?.auth?.currentUser?.email);
+        
+        // 🔄 MÚLTIPLES ESTRATEGIAS DE LOGOUT
+        let logoutSuccess = false;
+        
+        // ESTRATEGIA 1: Para escritorio - método directo
+        if (!isMobile && window.firebaseApp?.auth) {
+            console.log('🖥️ Estrategia 1 para escritorio: auth.signOut()');
+            if (typeof window.firebaseApp.auth.signOut === 'function') {
+                await window.firebaseApp.auth.signOut();
+                logoutSuccess = true;
+                console.log('✅ Logout exitoso en escritorio - Estrategia 1');
+            }
         }
-
-        const auth = window.firebaseApp.auth;
         
-        // Verificar si hay usuario autenticado
-        if (!auth.currentUser) {
-            showNotification('No hay sesión activa', 'info');
+        // ESTRATEGIA 2: Método importado (funciona en móvil)
+        if (!logoutSuccess && window.firebaseAuth?.signOut && window.firebaseApp?.auth) {
+            console.log('🔄 Estrategia 2: signOut importado');
+            await window.firebaseAuth.signOut(window.firebaseApp.auth);
+            logoutSuccess = true;
+            console.log('✅ Logout exitoso - Estrategia 2');
+        }
+        
+        // ESTRATEGIA 3: Fallback para escritorio
+        if (!logoutSuccess && !isMobile) {
+            console.log('🔄 Estrategia 3: Fallback para escritorio');
+            // Limpiar todo y forzar logout
+            localStorage.clear();
+            sessionStorage.clear();
+            // Forzar recarga completa
+            window.location.href = window.location.href + '?logout=' + Date.now();
             return;
         }
-
-        console.log('👤 Cerrando sesión de:', auth.currentUser.email);
         
-        // ✅ CORRECCIÓN: Usar signOut directamente del auth importado
-        await auth.signOut();
-        
-        console.log('✅ Sesión cerrada en Firebase');
-        
-        showNotification('Sesión cerrada correctamente 👋', 'success');
-        
-        // Recargar para actualizar completamente el estado
-        setTimeout(() => {
-            window.location.reload();
-        }, 1000);
+        if (logoutSuccess) {
+            showNotification('Sesión cerrada correctamente 👋', 'success');
+            
+            // Actualizar UI
+            document.body.setAttribute('data-auth', 'false');
+            document.querySelector('.user-menu').style.display = 'none';
+            document.querySelector('.auth-buttons').style.display = 'flex';
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        }
         
     } catch (error) {
-        console.error('❌ Error cerrando sesión:', error);
+        console.error('❌ Error en logout escritorio:', error);
         
-        // Mostrar mensaje específico según el error
-        if (error.message.includes('Firebase no está disponible')) {
-            showNotification('Error: Firebase no está configurado correctamente', 'error');
-        } else if (error.code === 'auth/network-request-failed') {
-            showNotification('Error de conexión. Intenta nuevamente.', 'error');
-        } else {
-            showNotification('Error al cerrar sesión: ' + error.message, 'error');
-        }
+        // FALLBACK ULTIMATE PARA ESCRITORIO
+        showNotification('Redirigiendo...', 'info');
+        setTimeout(() => {
+            // Forzar recarga con parámetro para evitar cache
+            window.location.href = window.location.origin + window.location.pathname + '?logout=' + Date.now();
+        }, 1000);
     }
 }
 
