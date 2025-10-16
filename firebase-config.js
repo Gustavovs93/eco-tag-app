@@ -1,4 +1,4 @@
-// firebase-config.js
+// firebase-config.js - VERSIÓN COMPLETA CORREGIDA
 const firebaseConfig = {
     apiKey: "AIzaSyDpBbiM_ALSLLhfJBDXDWOd6H_Gh3THqSs",
     authDomain: "ecotag-app-c53c2.firebaseapp.com",
@@ -10,6 +10,7 @@ const firebaseConfig = {
 
 // Inicialización diferida de Firebase
 let firebaseInitialized = false;
+let initializationPromise = null;
 
 const initializeFirebase = async () => {
     if (firebaseInitialized) return;
@@ -20,8 +21,7 @@ const initializeFirebase = async () => {
         const { 
             getAuth, 
             setPersistence, 
-            browserLocalPersistence,
-            sendPasswordResetEmail  // ✅ NUEVO - Importar función de reset
+            browserLocalPersistence
         } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
         const { getFirestore } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
 
@@ -43,7 +43,7 @@ const initializeFirebase = async () => {
     }
 };
 
-// ✅ NUEVA FUNCIÓN: Recuperación de contraseña
+// ✅ FUNCIÓN COMPLETA: Recuperación de contraseña
 const sendPasswordReset = async (email) => {
     try {
         if (!window.firebaseApp?.auth) {
@@ -55,7 +55,7 @@ const sendPasswordReset = async (email) => {
         
         return { 
             success: true, 
-            message: 'Email de recuperación enviado. Revisa tu bandeja de entrada.' 
+            message: '📧 Email de recuperación enviado. Revisa tu bandeja de entrada.' 
         };
         
     } catch (error) {
@@ -63,15 +63,16 @@ const sendPasswordReset = async (email) => {
         
         // Mensajes de error específicos
         const errorMessages = {
-            'auth/invalid-email': 'El formato del email es inválido',
-            'auth/user-not-found': 'No existe una cuenta con este email',
-            'auth/too-many-requests': 'Demasiados intentos. Intenta más tarde.',
-            'auth/network-request-failed': 'Error de conexión. Verifica tu internet.'
+            'auth/invalid-email': '❌ El formato del email es inválido',
+            'auth/user-not-found': '❌ No existe una cuenta con este email',
+            'auth/missing-email': '❌ Por favor ingresa tu email',
+            'auth/too-many-requests': '❌ Demasiados intentos. Intenta más tarde.',
+            'auth/network-request-failed': '❌ Error de conexión. Verifica tu internet.'
         };
         
         return { 
             success: false, 
-            message: errorMessages[error.code] || 'Error al enviar el email de recuperación' 
+            message: errorMessages[error.code] || '❌ Error al enviar el email de recuperación' 
         };
     }
 };
@@ -79,4 +80,4 @@ const sendPasswordReset = async (email) => {
 // Exportar para uso global
 window.initializeFirebase = initializeFirebase;
 window.firebaseConfig = firebaseConfig;
-window.sendPasswordReset = sendPasswordReset;  // ✅ NUEVO - Exportar función
+window.sendPasswordReset = sendPasswordReset;

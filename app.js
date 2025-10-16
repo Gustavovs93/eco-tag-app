@@ -1,4 +1,4 @@
-// app.js - Aplicación principal optimizada para producción
+// app.js - Aplicación principal optimizada para producción COMPLETA
 class EcoTagApp {
     constructor() {
         this.currentUser = null;
@@ -34,7 +34,7 @@ class EcoTagApp {
         }
     }
 
-        setupEventListeners() {
+    setupEventListeners() {
         // Autenticación
         document.getElementById('loginBtn')?.addEventListener('click', () => this.openModal('loginModal'));
         document.getElementById('registerBtn')?.addEventListener('click', () => this.openModal('registerModal'));
@@ -53,7 +53,7 @@ class EcoTagApp {
         document.getElementById('startBtn')?.addEventListener('click', () => this.handleStart());
         document.getElementById('demoBtn')?.addEventListener('click', () => this.showDemo());
         
-        // ✅ NUEVO: Recuperación de contraseña
+        // ✅ RECUPERACIÓN DE CONTRASEÑA CORREGIDO
         document.getElementById('forgotPasswordLink')?.addEventListener('click', (e) => {
             e.preventDefault();
             this.openForgotPasswordModal();
@@ -93,7 +93,7 @@ class EcoTagApp {
         });
     }
 
-        // ✅ NUEVO: Abrir modal de recuperación de contraseña
+    // ✅ FUNCIÓN CORREGIDA: Abrir modal de recuperación de contraseña
     openForgotPasswordModal() {
         this.closeModal('loginModal');
         this.openModal('forgotPasswordModal');
@@ -102,33 +102,22 @@ class EcoTagApp {
         document.getElementById('resetEmail').focus();
     }
 
-    // ✅ NUEVO: Manejar envío de recuperación
+    // ✅ FUNCIÓN CORREGIDA: Manejar envío de recuperación
     async handlePasswordReset(e) {
         e.preventDefault();
-            const resetemail = document.getElementById('resetEmail').value.trim();
-    console.log('🔍 Debug - Email ingresado:', resetemail);
-    
-    // Verificar que la función existe
-    if (typeof window.sendPasswordReset !== 'function') {
-        console.error('❌ ERROR: sendPasswordReset no está definida en window');
-        this.showNotification('Error de configuración. Recarga la página.', 'error');
-        return;
-    }
-    
-    console.log('✅ Función sendPasswordReset encontrada');
         
-        const email = document.getElementById('resetEmail').value.trim();
+        const userEmail = document.getElementById('resetEmail').value.trim();
         const resetText = document.getElementById('resetText');
         const resetSpinner = document.getElementById('resetSpinner');
         const resetSubmit = document.getElementById('forgotPasswordForm').querySelector('button[type="submit"]');
         
-        if (!email) {
+        if (!userEmail) {
             this.showNotification('Por favor ingresa tu email', 'error');
             return;
         }
         
         // Validar formato email
-        if (!this.isValidEmail(email)) {
+        if (!this.isValidEmail(userEmail)) {
             this.showNotification('Por favor ingresa un email válido', 'error');
             return;
         }
@@ -140,9 +129,7 @@ class EcoTagApp {
         
         try {
             // Usar la función del firebase-config.js
-            console.log('🔄 Ejecutando sendPasswordReset...');
-            const result = await window.sendPasswordReset(email);
-            console.log('📨 Resultado:', result);
+            const result = await window.sendPasswordReset(userEmail);
             
             if (result.success) {
                 this.showNotification(result.message, 'success');
@@ -171,14 +158,11 @@ class EcoTagApp {
         }
     }
 
-    // ✅ NUEVO: Validar formato de email
+    // ✅ FUNCIÓN CORREGIDA: Validar formato de email
     isValidEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     }
-     
-
-
 
     async checkAuthState() {
         try {
@@ -546,7 +530,7 @@ class EcoTagApp {
         }
     }
 
-        getErrorMessage(error) {
+    getErrorMessage(error) {
         const messages = {
             'auth/user-not-found': 'Usuario no encontrado',
             'auth/wrong-password': 'Contraseña incorrecta',
