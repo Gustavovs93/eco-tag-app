@@ -14,11 +14,29 @@ class EcoTagApp {
             this.setupEventListeners();
             this.checkAuthState();
             this.isInitialized = true;
+
+             // ✅ VERIFICAR QUE EL ENLACE EXISTE
+            this.verifyForgotPasswordLink();
             
             console.log('🚀 Eco Tag App inicializada en producción');
         } catch (error) {
             console.error('Error inicializando app:', error);
             this.showNotification('Error inicializando la aplicación', 'error');
+        }
+    }
+      // ✅ NUEVA FUNCIÓN: Verificar que el enlace existe
+    verifyForgotPasswordLink() {
+        const link = document.getElementById('forgotPasswordLink');
+        console.log('🔍 Verificando enlace recuperación:', link);
+        
+        if (!link) {
+            console.error('❌ ERROR: No se encuentra el enlace "forgotPasswordLink"');
+            console.log('📝 IDs disponibles:');
+            document.querySelectorAll('[id]').forEach(el => {
+                console.log(' -', el.id);
+            });
+        } else {
+            console.log('✅ Enlace de recuperación encontrado correctamente');
         }
     }
 
@@ -92,6 +110,7 @@ class EcoTagApp {
             }
         });
     }
+      
 
     // ✅ FUNCIÓN CORREGIDA: Abrir modal de recuperación de contraseña
     openForgotPasswordModal() {
