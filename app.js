@@ -105,6 +105,17 @@ class EcoTagApp {
     // ✅ NUEVO: Manejar envío de recuperación
     async handlePasswordReset(e) {
         e.preventDefault();
+            const resetemail = document.getElementById('resetEmail').value.trim();
+    console.log('🔍 Debug - Email ingresado:', resetemail);
+    
+    // Verificar que la función existe
+    if (typeof window.sendPasswordReset !== 'function') {
+        console.error('❌ ERROR: sendPasswordReset no está definida en window');
+        this.showNotification('Error de configuración. Recarga la página.', 'error');
+        return;
+    }
+    
+    console.log('✅ Función sendPasswordReset encontrada');
         
         const email = document.getElementById('resetEmail').value.trim();
         const resetText = document.getElementById('resetText');
@@ -129,7 +140,9 @@ class EcoTagApp {
         
         try {
             // Usar la función del firebase-config.js
+            console.log('🔄 Ejecutando sendPasswordReset...');
             const result = await window.sendPasswordReset(email);
+            console.log('📨 Resultado:', result);
             
             if (result.success) {
                 this.showNotification(result.message, 'success');
